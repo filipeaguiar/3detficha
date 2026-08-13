@@ -161,7 +161,7 @@ export default function App() {
   useEffect(() => {
     if (mode === 'play' && !diceBoxRef.current) {
       const diceBox = new DiceBox("#dice-box", {
-        assetPath: './assets/',
+        assetPath: `${import.meta.env.BASE_URL}assets/`,
         theme: "default",
         themeColor: accentColor,
         scale: 6,
