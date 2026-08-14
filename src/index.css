@@ -9,6 +9,7 @@
   --text-muted: hsl(220, 15%, 60%);
   
   --accent-color: #ff0066;
+  --accent-text-color: #ffffff;
   --accent-hover: #ff3385;
   --accent-glow: rgba(255, 0, 102, 0.3);
   --accent-transparent: rgba(255, 0, 102, 0.1);
@@ -173,7 +174,7 @@ h1, h2, h3, h4, h5, h6 {
   left: 0;
   width: 100%;
   background-color: var(--accent-color);
-  color: #fff;
+  color: var(--accent-text-color);
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -206,8 +207,8 @@ h1, h2, h3, h4, h5, h6 {
 
 .toggle-btn.active {
   border-color: var(--accent-color);
-  background-color: var(--accent-transparent);
-  color: var(--accent-color);
+  background-color: var(--accent-color);
+  color: var(--accent-text-color);
 }
 
 .derived-stats {
@@ -316,7 +317,8 @@ h1, h2, h3, h4, h5, h6 {
 
 .checkbox-label.active {
   border-color: var(--accent-color);
-  background-color: var(--accent-transparent);
+  background-color: var(--accent-color);
+  color: var(--accent-text-color);
 }
 
 .checkbox-input {
@@ -338,7 +340,7 @@ h1, h2, h3, h4, h5, h6 {
   transform: scale(0);
   transition: 120ms transform ease-in-out;
   box-shadow: inset 1em 1em var(--bg-color);
-  background-color: var(--bg-color);
+  background-color: var(--accent-text-color);
   transform-origin: bottom left;
   clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
 }
@@ -370,7 +372,7 @@ h1, h2, h3, h4, h5, h6 {
 .btn-roll {
   width: 100%;
   background-color: var(--accent-color);
-  color: #fff;
+  color: var(--accent-text-color);
   border: none;
   padding: 1rem;
   font-size: 1.5rem;

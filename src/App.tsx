@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 // @ts-ignore
 import DiceBox from '@3d-dice/dice-box';
+import { HexColorPicker } from "react-colorful";
 
 const CubeIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -122,6 +123,11 @@ export default function App() {
     const lg = Math.min(255, g + 50);
     const lb = Math.min(255, b + 50);
     document.documentElement.style.setProperty('--accent-hover', `rgb(${lr}, ${lg}, ${lb})`);
+
+    // Calculate luminance for text color adjustment
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    const textColor = luminance > 0.5 ? '#000000' : '#ffffff';
+    document.documentElement.style.setProperty('--accent-text-color', textColor);
 
     if (diceBoxRef.current) {
       diceBoxRef.current.updateConfig({ themeColor: accentColor });
@@ -295,21 +301,9 @@ export default function App() {
 
               <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
                 <div className="stat-label" style={{ marginBottom: '0.5rem', color: 'var(--text-muted)' }}>COR DO PERSONAGEM (DADOS)</div>
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                  <input 
-                    type="color" 
-                    value={accentColor}
-                    onChange={(e) => setAccentColor(e.target.value)}
-                    style={{ 
-                      width: '100px', 
-                      height: '40px', 
-                      border: '1px solid var(--border-color)', 
-                      borderRadius: 'var(--radius)', 
-                      background: 'transparent',
-                      cursor: 'pointer',
-                      padding: '2px'
-                    }}
-                  />
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <HexColorPicker color={accentColor} onChange={setAccentColor} />
+                  <div style={{ marginTop: '1rem', color: accentColor, fontWeight: 'bold' }}>{accentColor.toUpperCase()}</div>
                 </div>
               </div>
 
