@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { useDiceSound } from './useDiceSound';
 // @ts-ignore
 import DiceBox from '@3d-dice/dice-box';
 import { HexColorPicker } from "react-colorful";
@@ -24,9 +25,23 @@ const ChevronDownIcon = () => (
 );
 
 const PencilIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 20h9"></path>
-    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+  </svg>
+);
+
+const VolumeIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+  </svg>
+);
+
+const VolumeXIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+    <line x1="23" y1="9" x2="17" y2="15"></line>
+    <line x1="17" y1="9" x2="23" y2="15"></line>
   </svg>
 );
 
@@ -49,6 +64,9 @@ export default function App() {
   const [mode, setMode] = useState<'edit' | 'play'>(hasSavedData ? 'play' : 'edit');
   const [characterName, setCharacterName] = useState(initData.characterName ?? '');
   const [accentColor, setAccentColor] = useState(initData.accentColor ?? '#ff0066');
+  const [soundOn, setSoundOn] = useState(initData.soundOn ?? true);
+  
+  const playDiceSound = useDiceSound();
 
   // Atributos base
   const [poder, setPoder] = useState(initData.poder ?? 1);
@@ -121,7 +139,7 @@ export default function App() {
 
   const handleSave = () => {
     const dataToSave = {
-      poder, habilidade, resistencia, maisVida, maisMana, characterName, accentColor
+      poder, habilidade, resistencia, maisVida, maisMana, characterName, accentColor, soundOn
     };
     localStorage.setItem('3det_ficha', JSON.stringify(dataToSave));
     setMode('play');
@@ -131,10 +149,10 @@ export default function App() {
   useEffect(() => {
     if (mode === 'play') {
       localStorage.setItem('3det_ficha', JSON.stringify({
-        poder, habilidade, resistencia, maisVida, maisMana, characterName, accentColor
+        poder, habilidade, resistencia, maisVida, maisMana, characterName, accentColor, soundOn
       }));
     }
-  }, [mode, poder, habilidade, resistencia, maisVida, maisMana, characterName, accentColor]);
+  }, [mode, poder, habilidade, resistencia, maisVida, maisMana, characterName, accentColor, soundOn]);
 
   const handleEdit = () => {
     setMode('edit');
@@ -203,6 +221,10 @@ export default function App() {
     const calculatedDice = base + bonusDice;
     const diceCount = Math.max(1, Math.min(3, calculatedDice));
     
+    if (soundOn) {
+      playDiceSound(diceCount);
+    }
+
     diceBoxRef.current.clear();
     const diceResults = await diceBoxRef.current.roll(`${diceCount}d6`);
     
@@ -333,13 +355,22 @@ export default function App() {
           <div className="panel slide-up" style={{ animationDelay: '0.1s', gridColumn: '1 / -1', maxWidth: '600px', margin: '0 auto', width: '100%' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <h1 className="panel-title" style={{ borderBottom: 'none', margin: 0, padding: 0 }}>{characterName || 'HERÓI DESCONHECIDO'}</h1>
-                <button 
-                  onClick={handleEdit} 
-                  style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)', width: '38px', height: '38px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', cursor: 'pointer' }}
-                  title="Editar Ficha"
-                >
-                  <PencilIcon />
-                </button>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button 
+                    onClick={() => setSoundOn(!soundOn)} 
+                    style={{ background: 'transparent', border: '1px solid var(--border-color)', color: soundOn ? 'var(--accent-color)' : 'var(--text-muted)', width: '38px', height: '38px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', cursor: 'pointer' }}
+                    title={soundOn ? "Desativar Som" : "Ativar Som"}
+                  >
+                    {soundOn ? <VolumeIcon /> : <VolumeXIcon />}
+                  </button>
+                  <button 
+                    onClick={handleEdit} 
+                    style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)', width: '38px', height: '38px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', cursor: 'pointer' }}
+                    title="Editar Ficha"
+                  >
+                    <PencilIcon />
+                  </button>
+                </div>
               </div>
               
               <div className="derived-stats">
