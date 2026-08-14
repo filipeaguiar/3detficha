@@ -30,26 +30,45 @@ const PencilIcon = () => (
   </svg>
 );
 
+const loadInitialData = () => {
+  const saved = localStorage.getItem('3det_ficha');
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      console.error('Failed to parse saved data', e);
+    }
+  }
+  return {};
+};
+
 export default function App() {
-  const [mode, setMode] = useState<'edit' | 'play'>('edit');
-  const [characterName, setCharacterName] = useState('');
-  const [accentColor, setAccentColor] = useState('#ff0066');
+  const initData = useRef(loadInitialData()).current;
+  const hasSavedData = initData.poder !== undefined;
+
+  const [mode, setMode] = useState<'edit' | 'play'>(hasSavedData ? 'play' : 'edit');
+  const [characterName, setCharacterName] = useState(initData.characterName ?? '');
+  const [accentColor, setAccentColor] = useState(initData.accentColor ?? '#ff0066');
 
   // Atributos base
-  const [poder, setPoder] = useState(1);
-  const [habilidade, setHabilidade] = useState(1);
-  const [resistencia, setResistencia] = useState(1);
+  const [poder, setPoder] = useState(initData.poder ?? 1);
+  const [habilidade, setHabilidade] = useState(initData.habilidade ?? 1);
+  const [resistencia, setResistencia] = useState(initData.resistencia ?? 1);
   
   // Vantagens
-  const [maisVida, setMaisVida] = useState(0);
-  const [maisMana, setMaisMana] = useState(0);
+  const [maisVida, setMaisVida] = useState(initData.maisVida ?? 0);
+  const [maisMana, setMaisMana] = useState(initData.maisMana ?? 0);
+
+  // Cálculos Derivados (Máximos)
+  const maxPV = (resistencia * 5) + (maisVida * 10);
+  const maxPM = (habilidade * 5) + (maisMana * 10);
+  const maxPA = poder * 1;
 
   // Valores Atuais (Controláveis)
-  const [currentPV, setCurrentPV] = useState(-1);
-  const [currentPM, setCurrentPM] = useState(-1);
-  const [currentPA, setCurrentPA] = useState(-1);
+  const [currentPV, setCurrentPV] = useState(maxPV);
+  const [currentPM, setCurrentPM] = useState(maxPM);
+  const [currentPA, setCurrentPA] = useState(maxPA);
 
-  const [dataLoaded, setDataLoaded] = useState(false);
   const [editStat, setEditStat] = useState<'PA' | 'PM' | 'PV' | null>(null);
 
   // Modificadores de rolagem
@@ -71,46 +90,6 @@ export default function App() {
 
   const diceBoxRef = useRef<any>(null);
   const clearDiceTimeoutRef = useRef<any>(null);
-
-  // Carregar dados do LocalStorage ao montar
-  useEffect(() => {
-    const saved = localStorage.getItem('3det_ficha');
-    if (saved) {
-      try {
-        const data = JSON.parse(saved);
-        let hasData = false;
-        if (data.poder !== undefined) { setPoder(data.poder); hasData = true; }
-        if (data.habilidade !== undefined) setHabilidade(data.habilidade);
-        if (data.resistencia !== undefined) setResistencia(data.resistencia);
-        if (data.maisVida !== undefined) setMaisVida(data.maisVida);
-        if (data.maisMana !== undefined) setMaisMana(data.maisMana);
-        if (data.characterName !== undefined) setCharacterName(data.characterName);
-        if (data.accentColor !== undefined) setAccentColor(data.accentColor);
-        
-        // Se encontramos dados salvos válidos, pulamos direto para a tela do jogo
-        if (hasData) {
-          setMode('play');
-        }
-      } catch (e) {
-        console.error('Failed to parse saved data', e);
-      }
-    }
-    setDataLoaded(true);
-  }, []);
-
-  // Cálculos Derivados (Máximos)
-  const maxPV = (resistencia * 5) + (maisVida * 10);
-  const maxPM = (habilidade * 5) + (maisMana * 10);
-  const maxPA = poder * 1;
-
-  // Initialize current values when data is loaded (on app open)
-  useEffect(() => {
-    if (dataLoaded && currentPV === -1) {
-      setCurrentPV(maxPV);
-      setCurrentPM(maxPM);
-      setCurrentPA(maxPA);
-    }
-  }, [dataLoaded, maxPV, maxPM, maxPA, currentPV]);
 
   // Apply accent color to CSS variables and DiceBox
   useEffect(() => {

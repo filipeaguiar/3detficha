@@ -8,6 +8,35 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      (function() {
+        try {
+          var saved = localStorage.getItem('3det_ficha');
+          if (saved) {
+            var data = JSON.parse(saved);
+            var accentColor = data.accentColor || '#ff0066';
+            document.documentElement.style.setProperty('--accent-color', accentColor);
+            
+            var hex = accentColor.replace('#', '');
+            var r = parseInt(hex.length === 3 ? hex[0] + hex[0] : hex.substring(0, 2), 16) || 255;
+            var g = parseInt(hex.length === 3 ? hex[1] + hex[1] : hex.substring(2, 4), 16) || 0;
+            var b = parseInt(hex.length === 3 ? hex[2] + hex[2] : hex.substring(4, 6), 16) || 102;
+            
+            document.documentElement.style.setProperty('--accent-glow', 'rgba(' + r + ', ' + g + ', ' + b + ', 0.3)');
+            document.documentElement.style.setProperty('--accent-transparent', 'rgba(' + r + ', ' + g + ', ' + b + ', 0.1)');
+            
+            var lr = Math.min(255, r + 50);
+            var lg = Math.min(255, g + 50);
+            var lb = Math.min(255, b + 50);
+            document.documentElement.style.setProperty('--accent-hover', 'rgb(' + lr + ', ' + lg + ', ' + lb + ')');
+
+            var luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            var textColor = luminance > 0.5 ? '#000000' : '#ffffff';
+            document.documentElement.style.setProperty('--accent-text-color', textColor);
+          }
+        } catch (e) {}
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
