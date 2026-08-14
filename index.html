@@ -5,10 +5,39 @@
     <link rel="icon" type="image/png" href="/3detficha/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>3detficha</title>
-    <script type="module" crossorigin src="/3detficha/assets/index-BPNylVNu.js"></script>
+    <script type="module" crossorigin src="/3detficha/assets/index-Cg79o0P5.js"></script>
     <link rel="stylesheet" crossorigin href="/3detficha/assets/index-C342rQ8v.css">
   <link rel="manifest" href="/3detficha/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/3detficha/registerSW.js"></script></head>
   <body>
     <div id="root"></div>
+    <script>
+      (function() {
+        try {
+          var saved = localStorage.getItem('3det_ficha');
+          if (saved) {
+            var data = JSON.parse(saved);
+            var accentColor = data.accentColor || '#ff0066';
+            document.documentElement.style.setProperty('--accent-color', accentColor);
+            
+            var hex = accentColor.replace('#', '');
+            var r = parseInt(hex.length === 3 ? hex[0] + hex[0] : hex.substring(0, 2), 16) || 255;
+            var g = parseInt(hex.length === 3 ? hex[1] + hex[1] : hex.substring(2, 4), 16) || 0;
+            var b = parseInt(hex.length === 3 ? hex[2] + hex[2] : hex.substring(4, 6), 16) || 102;
+            
+            document.documentElement.style.setProperty('--accent-glow', 'rgba(' + r + ', ' + g + ', ' + b + ', 0.3)');
+            document.documentElement.style.setProperty('--accent-transparent', 'rgba(' + r + ', ' + g + ', ' + b + ', 0.1)');
+            
+            var lr = Math.min(255, r + 50);
+            var lg = Math.min(255, g + 50);
+            var lb = Math.min(255, b + 50);
+            document.documentElement.style.setProperty('--accent-hover', 'rgb(' + lr + ', ' + lg + ', ' + lb + ')');
+
+            var luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            var textColor = luminance > 0.5 ? '#000000' : '#ffffff';
+            document.documentElement.style.setProperty('--accent-text-color', textColor);
+          }
+        } catch (e) {}
+      })();
+    </script>
   </body>
 </html>
