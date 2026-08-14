@@ -2,50 +2,68 @@ import { useRef, useCallback } from 'react';
 
 export function useDiceSound() {
   const audioCtxRef = useRef<AudioContext | null>(null);
+  const noiseBufferRef = useRef<AudioBuffer | null>(null);
+
+  const createNoiseBuffer = (ctx: AudioContext) => {
+    // 0.1 seconds of white noise
+    const bufferSize = ctx.sampleRate * 0.1; 
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+    return buffer;
+  };
 
   const playSound = useCallback((amount: number = 3) => {
-    // Inicializa o AudioContext apenas na primeira interação
     if (!audioCtxRef.current) {
       const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
       if (AudioContext) {
         audioCtxRef.current = new AudioContext();
+        noiseBufferRef.current = createNoiseBuffer(audioCtxRef.current);
       }
     }
 
     const ctx = audioCtxRef.current;
-    if (!ctx) return;
+    const noiseBuffer = noiseBufferRef.current;
+    if (!ctx || !noiseBuffer) return;
 
-    // Se o contexto estiver suspenso (política de autoplay), tenta retormar
     if (ctx.state === 'suspended') {
       ctx.resume();
     }
 
-    // Gera de 3 a 5 "batidas" dependendo da quantidade de dados
-    const clackCount = amount + Math.floor(Math.random() * 2);
+    // Amount of clacks is roughly proportional to dice amount + bounces
+    const clacks = amount + 1 + Math.floor(Math.random() * 3);
 
-    for (let i = 0; i < clackCount; i++) {
-      // Pequeno atraso aleatório para simular dados quicando em momentos diferentes
-      const delay = (i * 0.08) + (Math.random() * 0.1);
+    for (let i = 0; i < clacks; i++) {
+      // Simulate rolling: hits get closer together as they settle
+      const delay = (i * 0.08) + (Math.random() * 0.05);
       const time = ctx.currentTime + delay;
 
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
+      // 1. Noise source (The broadband impact of physical collision)
+      const noiseSource = ctx.createBufferSource();
+      noiseSource.buffer = noiseBuffer;
 
-      // Som percussivo e agudo (plástico batendo)
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(800 + Math.random() * 600, time);
-      osc.frequency.exponentialRampToValueAtTime(100, time + 0.05);
+      // 2. Bandpass filter to shape the noise into a "plastic click"
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      
+      // Randomize the resonant frequency to simulate different dice/angles (2000Hz - 4500Hz)
+      filter.frequency.value = 2000 + Math.random() * 2500;
+      filter.Q.value = 1.5; // Moderate Q for a sharp plastic sound
 
-      // Envelope de volume muito rápido (impacto)
-      gain.gain.setValueAtTime(0, time);
-      gain.gain.linearRampToValueAtTime(0.4, time + 0.01);
-      gain.gain.exponentialRampToValueAtTime(0.01, time + 0.05);
+      // 3. Gain envelope for the sharp transient (ADSR: instantaneous Attack, very fast Decay)
+      const gainNode = ctx.createGain();
+      gainNode.gain.setValueAtTime(0, time);
+      gainNode.gain.linearRampToValueAtTime(1.5, time + 0.002); // 2ms attack (very sharp)
+      gainNode.gain.exponentialRampToValueAtTime(0.01, time + 0.05); // 50ms decay
 
-      osc.connect(gain);
-      gain.connect(ctx.destination);
+      noiseSource.connect(filter);
+      filter.connect(gainNode);
+      gainNode.connect(ctx.destination);
 
-      osc.start(time);
-      osc.stop(time + 0.06);
+      noiseSource.start(time);
+      noiseSource.stop(time + 0.06);
     }
   }, []);
 
