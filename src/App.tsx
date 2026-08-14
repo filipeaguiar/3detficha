@@ -17,6 +17,12 @@ const ChevronUpIcon = () => (
   </svg>
 );
 
+const ChevronDownIcon = () => (
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="6 9 12 15 18 9"></polyline>
+  </svg>
+);
+
 const PencilIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 20h9"></path>
@@ -451,7 +457,25 @@ export default function App() {
       {(isModalOpen || isClosing) && result && !rolling && (
         <div className={`modal-overlay ${isClosing ? 'overlay-out' : 'overlay-in'}`}>
           <div className={`modal-content ${isClosing ? 'slide-down' : 'slide-up'}`}>
-            <button className="modal-close" onClick={closeResult}>✕</button>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+              <button 
+                onClick={closeResult} 
+                title="Fechar Resultado"
+                style={{ 
+                  background: 'var(--surface-hover)', 
+                  border: 'none', 
+                  color: 'var(--text-muted)', 
+                  cursor: 'pointer', 
+                  padding: '0.5rem 2rem',
+                  borderRadius: '2rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <ChevronDownIcon />
+              </button>
+            </div>
             
             <div className="total-score-container">
               <div className="total-label">Resultado ({result?.usedAttributeName})</div>
