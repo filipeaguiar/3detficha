@@ -643,18 +643,10 @@ export default function App() {
               </button>
             </div>
             
-            <div className="total-score-container">
+            <div className={`total-score-container ${result?.isCriticalFail ? 'critical-fail' : ''}`}>
               <div className="total-label">Resultado ({result?.usedAttributeName})</div>
               <div className="total-score">{result?.finalTotal}</div>
             </div>
-
-            {result?.isCriticalFail && (
-              <div className="critical-fail-msg">FALHA CRÍTICA! (Todos os dados rolaram 1)</div>
-            )}
-
-            {result && result.criticals > 0 && !result.isCriticalFail && (
-              <div className="critical-msg">{result.criticals}x ACERTO CRÍTICO!</div>
-            )}
 
             {/* Visual dice + breakdown */}
             <div className="result-summary">

@@ -570,23 +570,15 @@ h1, h2, h3, h4, h5, h6 {
   white-space: nowrap;
 }
 
-/* Critical messages */
-.critical-msg {
-  color: var(--success-color);
-  font-weight: 700;
-  margin-top: 0.5rem;
-  font-size: 1.2rem;
-  text-align: center;
-  animation: pulse 2s infinite;
+/* Critical fail state on total */
+.total-score-container.critical-fail {
+  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards,
+             shake 0.5s cubic-bezier(.36,.07,.19,.97) 0.5s both;
 }
 
-.critical-fail-msg {
+.total-score-container.critical-fail .total-score {
   color: var(--danger-color);
-  font-weight: 700;
-  margin-top: 0.5rem;
-  font-size: 1.2rem;
-  text-align: center;
-  animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+  text-shadow: 0 0 20px hsla(0, 100%, 60%, 0.4);
 }
 
 #dice-box {
