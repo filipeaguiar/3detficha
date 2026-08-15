@@ -165,13 +165,13 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .roll-btn:hover:not(:disabled) {
-  border-color: var(--accent-color);
+  border-color: var(--btn-color, var(--accent-color));
   transform: translateY(-4px);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
 }
 
 .roll-btn:hover:not(:disabled) .stat-value {
-  color: var(--accent-color);
+  color: var(--btn-color, var(--accent-color));
 }
 
 .roll-btn:hover:not(:disabled) .roll-hint {
@@ -189,7 +189,7 @@ h1, h2, h3, h4, h5, h6 {
   bottom: 0;
   left: 0;
   width: 100%;
-  background-color: var(--accent-color);
+  background-color: var(--btn-color, var(--accent-color));
   color: var(--accent-text-color);
   font-size: 0.75rem;
   font-weight: 700;

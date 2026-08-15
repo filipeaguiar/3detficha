@@ -413,17 +413,17 @@ export default function App() {
             </p>
 
             <div className="stats-grid">
-              <div className="stat-box">
-                <div className="stat-title">Poder</div>
-                <input type="number" className="stat-input" min="0" max="10" value={poder} onChange={(e) => setPoder(Number(e.target.value))} />
+              <div className="stat-box" style={{ borderColor: 'var(--success-color)' }}>
+                <div className="stat-title" style={{ color: 'var(--success-color)' }}>Poder</div>
+                <input type="number" className="stat-input" style={{ color: 'var(--success-color)' }} min="0" max="10" value={poder} onChange={(e) => setPoder(Number(e.target.value))} />
               </div>
-              <div className="stat-box">
-                <div className="stat-title">Habilidade</div>
-                <input type="number" className="stat-input" min="0" max="10" value={habilidade} onChange={(e) => setHabilidade(Number(e.target.value))} />
+              <div className="stat-box" style={{ borderColor: '#4fc3f7' }}>
+                <div className="stat-title" style={{ color: '#4fc3f7' }}>Habilidade</div>
+                <input type="number" className="stat-input" style={{ color: '#4fc3f7' }} min="0" max="10" value={habilidade} onChange={(e) => setHabilidade(Number(e.target.value))} />
               </div>
-              <div className="stat-box">
-                <div className="stat-title">Resistência</div>
-                <input type="number" className="stat-input" min="0" max="10" value={resistencia} onChange={(e) => setResistencia(Number(e.target.value))} />
+              <div className="stat-box" style={{ borderColor: 'var(--danger-color)' }}>
+                <div className="stat-title" style={{ color: 'var(--danger-color)' }}>Resistência</div>
+                <input type="number" className="stat-input" style={{ color: 'var(--danger-color)' }} min="0" max="10" value={resistencia} onChange={(e) => setResistencia(Number(e.target.value))} />
               </div>
             </div>
 
@@ -535,18 +535,18 @@ export default function App() {
               </div>
               
               <div className="stats-grid">
-                <button className="stat-box roll-btn" onClick={() => handleRoll('poder')} disabled={rolling}>
-                  <div className="stat-title">Poder</div>
+                <button className="stat-box roll-btn" style={{ '--btn-color': 'var(--success-color)' } as React.CSSProperties} onClick={() => handleRoll('poder')} disabled={rolling}>
+                  <div className="stat-title" style={{ color: 'var(--success-color)' }}>Poder</div>
                   <div className="stat-value">{poder}</div>
                   <div className="roll-hint">Rolar</div>
                 </button>
-                <button className="stat-box roll-btn" onClick={() => handleRoll('habilidade')} disabled={rolling}>
-                  <div className="stat-title">Habilidade</div>
+                <button className="stat-box roll-btn" style={{ '--btn-color': '#4fc3f7' } as React.CSSProperties} onClick={() => handleRoll('habilidade')} disabled={rolling}>
+                  <div className="stat-title" style={{ color: '#4fc3f7' }}>Habilidade</div>
                   <div className="stat-value">{habilidade}</div>
                   <div className="roll-hint">Rolar</div>
                 </button>
-                <button className="stat-box roll-btn" onClick={() => handleRoll('resistencia')} disabled={rolling}>
-                  <div className="stat-title">Resistência</div>
+                <button className="stat-box roll-btn" style={{ '--btn-color': 'var(--danger-color)' } as React.CSSProperties} onClick={() => handleRoll('resistencia')} disabled={rolling}>
+                  <div className="stat-title" style={{ color: 'var(--danger-color)' }}>Resistência</div>
                   <div className="stat-value">{resistencia}</div>
                   <div className="roll-hint">Rolar</div>
                 </button>
@@ -666,7 +666,16 @@ export default function App() {
                       <span className="sum-operator">+</span>
                     </span>
                   ))}
-                  <span className="sum-attr">{result?.usedAttributeValue}<span className="sum-attr-label" style={{ color: 'var(--accent-color)' }}>{result?.usedAttributeName?.charAt(0)}</span></span>
+                  <span className="sum-attr">
+                    {result?.usedAttributeValue}
+                    <span className="sum-attr-label" style={{ 
+                      color: result?.usedAttributeName === 'Poder' ? 'var(--success-color)' : 
+                             result?.usedAttributeName === 'Habilidade' ? '#4fc3f7' : 
+                             result?.usedAttributeName === 'Resistência' ? 'var(--danger-color)' : 'var(--accent-color)' 
+                    }}>
+                      {result?.usedAttributeName?.charAt(0)}
+                    </span>
+                  </span>
                   
                   {result && result.criticals > 0 && (
                     <span className="sum-bonus-part">
