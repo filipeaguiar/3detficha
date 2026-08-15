@@ -201,9 +201,6 @@ export default function App() {
         theme: "default",
         themeColor: accentColor,
         scale: 6,
-        spinForce: 5,
-        throwForce: 5,
-        startingHeight: 8,
         enableShadows: true,
         lightIntensity: 1
       });
@@ -302,6 +299,17 @@ export default function App() {
       if (soundOn) {
         playDiceSound(diceCount);
       }
+
+      // Microajustes de força: cria entropia extra na simulação 3D a cada rolagem
+      const randomSpin = 4 + (Math.random() * 3); // 4 a 7
+      const randomThrow = 4 + (Math.random() * 3); // 4 a 7
+      const randomHeight = 7 + (Math.random() * 3); // 7 a 10
+      
+      diceBoxRef.current.updateConfig({
+        spinForce: randomSpin,
+        throwForce: randomThrow,
+        startingHeight: randomHeight
+      });
 
       diceBoxRef.current.clear();
       const diceResults = await diceBoxRef.current.roll(`${diceCount}d6`);
