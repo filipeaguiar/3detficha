@@ -298,56 +298,62 @@ export default function App() {
     const calculatedDice = base + bonusDice;
     const diceCount = Math.max(1, Math.min(3, calculatedDice));
     
-    if (soundOn) {
-      playDiceSound(diceCount);
-    }
-
-    diceBoxRef.current.clear();
-    const diceResults = await diceBoxRef.current.roll(`${diceCount}d6`);
-    
-    // Sumir com os dados 3 segundos após pararem de rolar
-    clearDiceTimeoutRef.current = setTimeout(() => {
-      if (diceBoxRef.current) {
-        diceBoxRef.current.clear();
+    try {
+      if (soundOn) {
+        playDiceSound(diceCount);
       }
-    }, 3000);
-    
-    let rolls: number[] = [];
-    if (diceResults && diceResults.length > 0) {
-      if (diceResults[0].rolls) {
-        rolls = diceResults[0].rolls.map((r: any) => r.value);
-      } else if (diceResults[0].value) {
-        rolls = diceResults.map((r: any) => r.value);
+
+      diceBoxRef.current.clear();
+      const diceResults = await diceBoxRef.current.roll(`${diceCount}d6`);
+      
+      // Sumir com os dados 3 segundos após pararem de rolar
+      clearDiceTimeoutRef.current = setTimeout(() => {
+        if (diceBoxRef.current) {
+          diceBoxRef.current.clear();
+        }
+      }, 3000);
+      
+      let rolls: number[] = [];
+      if (diceResults && diceResults.length > 0) {
+        if (diceResults[0].rolls) {
+          rolls = diceResults[0].rolls.map((r: any) => r.value);
+        } else if (diceResults[0].value) {
+          rolls = diceResults.map((r: any) => r.value);
+        }
       }
+
+      const diceSum = rolls.reduce((a, b) => a + b, 0);
+      const isCriticalFail = rolls.length > 0 && rolls.every((r) => r === 1);
+      const criticals = rolls.filter((r) => r >= critRange).length;
+      
+      // Calculate active bonuses
+      const bonusDetails: { label: string; value: number }[] = [];
+      rollBonuses.filter(b => activeBonuses.has(b.id)).forEach(b => {
+        const val = resolveBonusValue(b);
+        bonusDetails.push({ label: b.label || getBonusDisplayValue(b), value: val });
+      });
+      const bonusTotal = bonusDetails.reduce((sum, d) => sum + d.value, 0);
+
+      const finalTotal = diceSum + attrValue + (attrValue * criticals) + bonusTotal;
+
+      setResult({
+        rolls,
+        diceSum,
+        criticals,
+        isCriticalFail,
+        finalTotal,
+        usedAttributeName: label,
+        usedAttributeValue: attrValue,
+        bonusTotal,
+        bonusDetails
+      });
+      setRolling(false);
+      setIsModalOpen(true);
+    } catch (e) {
+      console.error("Erro ao rolar os dados 3D:", e);
+      setRolling(false);
+      alert("Houve um erro com os dados 3D. Tente recarregar a página.");
     }
-
-    const diceSum = rolls.reduce((a, b) => a + b, 0);
-    const isCriticalFail = rolls.length > 0 && rolls.every((r) => r === 1);
-    const criticals = rolls.filter((r) => r >= critRange).length;
-    
-    // Calculate active bonuses
-    const bonusDetails: { label: string; value: number }[] = [];
-    rollBonuses.filter(b => activeBonuses.has(b.id)).forEach(b => {
-      const val = resolveBonusValue(b);
-      bonusDetails.push({ label: b.label || getBonusDisplayValue(b), value: val });
-    });
-    const bonusTotal = bonusDetails.reduce((sum, d) => sum + d.value, 0);
-
-    const finalTotal = diceSum + attrValue + (attrValue * criticals) + bonusTotal;
-
-    setResult({
-      rolls,
-      diceSum,
-      criticals,
-      isCriticalFail,
-      finalTotal,
-      usedAttributeName: label,
-      usedAttributeValue: attrValue,
-      bonusTotal,
-      bonusDetails
-    });
-    setRolling(false);
-    setIsModalOpen(true);
   };
 
   const closeResult = () => {
