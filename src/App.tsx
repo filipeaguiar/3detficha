@@ -4,6 +4,27 @@ import { useDiceSound } from './useDiceSound';
 import DiceBox from '@3d-dice/dice-box';
 import { HexColorPicker } from "react-colorful";
 
+type RollBonus = {
+  id: string;
+  label: string;
+  type: 'fixed' | 'poder' | 'habilidade' | 'resistencia';
+  value: number; // used only when type === 'fixed'
+};
+
+const PlusIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19"></line>
+    <line x1="5" y1="12" x2="19" y2="12"></line>
+  </svg>
+);
+
+const TrashIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6"></polyline>
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+  </svg>
+);
+
 const CubeIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
@@ -93,6 +114,10 @@ export default function App() {
   const [bonusDice, setBonusDice] = useState<0 | 1 | 2>(0);
   const [critRange, setCritRange] = useState(6);
 
+  // Bônus customizados de rolagem
+  const [rollBonuses, setRollBonuses] = useState<RollBonus[]>(initData.rollBonuses ?? []);
+  const [activeBonuses, setActiveBonuses] = useState<Set<string>>(new Set());
+
   const [rolling, setRolling] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -104,6 +129,8 @@ export default function App() {
     finalTotal: number;
     usedAttributeName: string;
     usedAttributeValue: number;
+    bonusTotal: number;
+    bonusDetails: { label: string; value: number }[];
   } | null>(null);
 
   const diceBoxRef = useRef<any>(null);
@@ -139,7 +166,7 @@ export default function App() {
 
   const handleSave = () => {
     const dataToSave = {
-      poder, habilidade, resistencia, maisVida, maisMana, characterName, accentColor, soundOn
+      poder, habilidade, resistencia, maisVida, maisMana, characterName, accentColor, soundOn, rollBonuses
     };
     localStorage.setItem('3det_ficha', JSON.stringify(dataToSave));
     setMode('play');
@@ -149,10 +176,10 @@ export default function App() {
   useEffect(() => {
     if (mode === 'play') {
       localStorage.setItem('3det_ficha', JSON.stringify({
-        poder, habilidade, resistencia, maisVida, maisMana, characterName, accentColor, soundOn
+        poder, habilidade, resistencia, maisVida, maisMana, characterName, accentColor, soundOn, rollBonuses
       }));
     }
-  }, [mode, poder, habilidade, resistencia, maisVida, maisMana, characterName, accentColor, soundOn]);
+  }, [mode, poder, habilidade, resistencia, maisVida, maisMana, characterName, accentColor, soundOn, rollBonuses]);
 
   const handleEdit = () => {
     setMode('edit');
@@ -192,6 +219,56 @@ export default function App() {
 
   const toggleBonus = (val: 1 | 2) => {
     setBonusDice(prev => prev === val ? 0 : val);
+  };
+
+  const addRollBonus = () => {
+    const newBonus: RollBonus = {
+      id: Date.now().toString(),
+      label: '',
+      type: 'fixed',
+      value: 1,
+    };
+    setRollBonuses(prev => [...prev, newBonus]);
+  };
+
+  const removeRollBonus = (id: string) => {
+    setRollBonuses(prev => prev.filter(b => b.id !== id));
+    setActiveBonuses(prev => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+  };
+
+  const updateRollBonus = (id: string, updates: Partial<RollBonus>) => {
+    setRollBonuses(prev => prev.map(b => b.id === id ? { ...b, ...updates } : b));
+  };
+
+  const toggleActiveBonus = (id: string) => {
+    setActiveBonuses(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const resolveBonusValue = (bonus: RollBonus): number => {
+    switch (bonus.type) {
+      case 'poder': return poder;
+      case 'habilidade': return habilidade;
+      case 'resistencia': return resistencia;
+      default: return bonus.value;
+    }
+  };
+
+  const getBonusDisplayValue = (bonus: RollBonus): string => {
+    switch (bonus.type) {
+      case 'poder': return `+P (${poder})`;
+      case 'habilidade': return `+H (${habilidade})`;
+      case 'resistencia': return `+R (${resistencia})`;
+      default: return `+${bonus.value}`;
+    }
   };
 
   const handleEditStatChange = (delta: number) => {
@@ -248,7 +325,15 @@ export default function App() {
     const isCriticalFail = rolls.length > 0 && rolls.every((r) => r === 1);
     const criticals = rolls.filter((r) => r >= critRange).length;
     
-    const finalTotal = diceSum + attrValue + (attrValue * criticals);
+    // Calculate active bonuses
+    const bonusDetails: { label: string; value: number }[] = [];
+    rollBonuses.filter(b => activeBonuses.has(b.id)).forEach(b => {
+      const val = resolveBonusValue(b);
+      bonusDetails.push({ label: b.label || getBonusDisplayValue(b), value: val });
+    });
+    const bonusTotal = bonusDetails.reduce((sum, d) => sum + d.value, 0);
+
+    const finalTotal = diceSum + attrValue + (attrValue * criticals) + bonusTotal;
 
     setResult({
       rolls,
@@ -257,7 +342,9 @@ export default function App() {
       isCriticalFail,
       finalTotal,
       usedAttributeName: label,
-      usedAttributeValue: attrValue
+      usedAttributeValue: attrValue,
+      bonusTotal,
+      bonusDetails
     });
     setRolling(false);
     setIsModalOpen(true);
@@ -344,6 +431,56 @@ export default function App() {
                 <input type="number" className="stat-input" min="0" max="10" value={maisMana} onChange={(e) => setMaisMana(Number(e.target.value))} />
               </div>
             </div>
+
+            <h2 className="panel-title" style={{ marginTop: '2rem' }}>Bônus de Rolagem</h2>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '1rem', fontSize: '0.9rem' }}>
+              Cadastre bônus que podem ser ativados antes de rolar. Use valores fixos (+2, +3) ou baseados em atributos (+P, +H, +R).
+            </p>
+
+            <div className="bonus-editor-list">
+              {rollBonuses.map((bonus) => (
+                <div key={bonus.id} className="bonus-editor-row">
+                  <input
+                    type="text"
+                    className="bonus-name-input"
+                    placeholder="Nome (ex: Ataque Especial)"
+                    value={bonus.label}
+                    onChange={(e) => updateRollBonus(bonus.id, { label: e.target.value })}
+                  />
+                  <select
+                    className="bonus-type-select"
+                    value={bonus.type}
+                    onChange={(e) => updateRollBonus(bonus.id, { type: e.target.value as RollBonus['type'] })}
+                  >
+                    <option value="fixed">Fixo</option>
+                    <option value="poder">+Poder</option>
+                    <option value="habilidade">+Habilidade</option>
+                    <option value="resistencia">+Resistência</option>
+                  </select>
+                  {bonus.type === 'fixed' && (
+                    <input
+                      type="number"
+                      className="bonus-value-input"
+                      min={-10}
+                      max={20}
+                      value={bonus.value}
+                      onChange={(e) => updateRollBonus(bonus.id, { value: Number(e.target.value) })}
+                    />
+                  )}
+                  <button
+                    className="bonus-remove-btn"
+                    onClick={() => removeRollBonus(bonus.id)}
+                    title="Remover bônus"
+                  >
+                    <TrashIcon />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <button className="bonus-add-btn" onClick={addRollBonus}>
+              <PlusIcon /> Adicionar Bônus
+            </button>
 
             <button className="btn-roll" onClick={handleSave} style={{ marginTop: '2rem' }}>
               Salvar Ficha e Jogar
@@ -459,6 +596,25 @@ export default function App() {
                   </button>
                 </div>
               </div>
+
+              {rollBonuses.length > 0 && (
+                <div className="form-group">
+                  <h2 className="panel-title" style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Bônus de Rolagem</h2>
+                  <div className="bonus-toggles-grid">
+                    {rollBonuses.map((bonus) => (
+                      <button
+                        key={bonus.id}
+                        className={`bonus-toggle ${activeBonuses.has(bonus.id) ? 'active' : ''}`}
+                        onClick={() => toggleActiveBonus(bonus.id)}
+                        title={`${bonus.label || 'Bônus'}: ${getBonusDisplayValue(bonus)}`}
+                      >
+                        <span className="bonus-toggle-label">{bonus.label || 'Bônus'}</span>
+                        <span className="bonus-toggle-value">{getBonusDisplayValue(bonus)}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
         )}
       </div>
@@ -500,24 +656,37 @@ export default function App() {
               <div className="critical-msg">{result.criticals}x ACERTO CRÍTICO!</div>
             )}
 
-            <div className="breakdown" style={{ marginTop: '2rem' }}>
-              <div className="breakdown-item">
-                <span>Dados [{result?.rolls.join(', ')}]</span>
-                <span className="value">{result?.diceSum}</span>
+            {/* Visual dice + breakdown */}
+            <div className="result-summary">
+              {/* Dice face rectangles */}
+              <div className="dice-faces-row">
+                {result?.rolls.map((roll, i) => (
+                  <div key={i} className={`dice-face ${roll >= critRange ? 'crit' : ''} ${roll === 1 ? 'fail' : ''}`}>
+                    <span className="dice-face-value">{roll}</span>
+                  </div>
+                ))}
               </div>
-              <div className="breakdown-item">
-                <span>Atributo ({result?.usedAttributeName})</span>
-                <span className="value">+{result?.usedAttributeValue}</span>
-              </div>
-              {result && result.criticals > 0 && (
-                <div className="breakdown-item">
-                  <span>Bônus Crítico ({result.criticals}x)</span>
-                  <span className="value">+{result.criticals * result.usedAttributeValue}</span>
+
+              {/* Summation line */}
+              <div className="sum-line">
+                <div className="sum-parts">
+                  <span className="sum-dice">{result?.diceSum}</span>
+                  <span className="sum-operator">+</span>
+                  <span className="sum-attr">{result?.usedAttributeValue}<span className="sum-attr-label">{result?.usedAttributeName?.charAt(0)}</span></span>
+                  {result && result.criticals > 0 && (
+                    <>
+                      <span className="sum-operator">+</span>
+                      <span className="sum-crit">{result.criticals * result.usedAttributeValue}<span className="sum-attr-label">crit</span></span>
+                    </>
+                  )}
+                  {result && result.bonusDetails.map((bd, i) => (
+                    <span key={i} className="sum-bonus-part">
+                      <span className="sum-operator">+</span>
+                      <span className="sum-bonus-val">{bd.value}<span className="sum-attr-label">{bd.label}</span></span>
+                    </span>
+                  ))}
                 </div>
-              )}
-              <div className="breakdown-item">
-                <span>Total Final</span>
-                <span className="value">{result?.finalTotal}</span>
+                <span className="sum-equals">= {result?.finalTotal}</span>
               </div>
             </div>
           </div>
