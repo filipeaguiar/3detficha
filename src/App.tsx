@@ -654,31 +654,28 @@ export default function App() {
               <div className="total-score">{result?.finalTotal}</div>
             </div>
 
-            {/* Visual dice + breakdown */}
+            {/* Visual breakdown formula */}
             <div className="result-summary">
-              {/* Dice face rectangles */}
-              <div className="dice-faces-row">
-                {result?.rolls.map((roll, i) => (
-                  <div key={i} className={`dice-face ${roll >= critRange ? 'crit' : ''} ${roll === 1 ? 'fail' : ''}`}>
-                    <span className="dice-face-value">{roll}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Summation line */}
               <div className="sum-line">
                 <div className="sum-parts">
-                  <span className="sum-dice">{result?.diceSum}</span>
-                  <span className="sum-operator">+</span>
-                  <span className="sum-attr">{result?.usedAttributeValue}<span className="sum-attr-label">{result?.usedAttributeName?.charAt(0)}</span></span>
+                  {result?.rolls.map((roll, i) => (
+                    <span key={i} className="sum-bonus-part">
+                      <div className={`sum-dice-face ${roll >= critRange ? 'crit' : ''} ${roll === 1 ? 'fail' : ''}`}>
+                        {roll}
+                      </div>
+                      <span className="sum-operator">+</span>
+                    </span>
+                  ))}
+                  <span className="sum-attr">{result?.usedAttributeValue}<span className="sum-attr-label" style={{ color: 'var(--accent-color)' }}>{result?.usedAttributeName?.charAt(0)}</span></span>
+                  
                   {result && result.criticals > 0 && (
-                    <>
+                    <span className="sum-bonus-part">
                       <span className="sum-operator">+</span>
                       <span className="sum-crit">{result.criticals * result.usedAttributeValue}<span className="sum-attr-label">crit</span></span>
-                    </>
+                    </span>
                   )}
                   {result && result.bonusDetails.map((bd, i) => (
-                    <span key={i} className="sum-bonus-part">
+                    <span key={`bonus-${i}`} className="sum-bonus-part">
                       <span className="sum-operator">+</span>
                       <span className="sum-bonus-val">{bd.value}<span className="sum-attr-label">{bd.label}</span></span>
                     </span>
