@@ -464,9 +464,9 @@ export default function App() {
             </p>
 
             <div className="stats-grid">
-              <div className="stat-box" style={{ borderColor: 'var(--success-color)' }}>
-                <div className="stat-title" style={{ color: 'var(--success-color)' }}>Poder</div>
-                <input type="number" className="stat-input" style={{ color: 'var(--success-color)' }} min="0" max="10" value={poder} onChange={(e) => setPoder(Number(e.target.value))} />
+              <div className="stat-box" style={{ borderColor: '#ffcc00' }}>
+                <div className="stat-title" style={{ color: '#ffcc00' }}>Poder</div>
+                <input type="number" className="stat-input" style={{ color: '#ffcc00' }} min="0" max="10" value={poder} onChange={(e) => setPoder(Number(e.target.value))} />
               </div>
               <div className="stat-box" style={{ borderColor: '#4fc3f7' }}>
                 <div className="stat-title" style={{ color: '#4fc3f7' }}>Habilidade</div>
@@ -617,7 +617,7 @@ export default function App() {
               
               <div className="panel slide-up" style={{ animationDelay: '0.15s', width: '100%' }}>
                 <div className="stats-grid">
-                <button className="stat-box roll-btn" style={{ '--btn-color': 'var(--success-color)' } as React.CSSProperties} onClick={() => handleRoll('poder')} disabled={rolling}>
+                <button className="stat-box roll-btn" style={{ '--btn-color': '#ffcc00' } as React.CSSProperties} onClick={() => handleRoll('poder')} disabled={rolling}>
                   <div className="stat-value">{poder}</div>
                 </button>
                 <button className="stat-box roll-btn" style={{ '--btn-color': '#4fc3f7' } as React.CSSProperties} onClick={() => handleRoll('habilidade')} disabled={rolling}>
@@ -746,7 +746,7 @@ export default function App() {
                   <span className="sum-attr">
                     {result?.usedAttributeValue}
                     <span className="sum-attr-label" style={{ 
-                      color: result?.usedAttributeName === 'Poder' ? 'var(--success-color)' : 
+                      color: result?.usedAttributeName === 'Poder' ? '#ffcc00' : 
                              result?.usedAttributeName === 'Habilidade' ? '#4fc3f7' : 
                              result?.usedAttributeName === 'Resistência' ? 'var(--danger-color)' : 'var(--accent-color)' 
                     }}>
