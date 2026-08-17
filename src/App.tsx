@@ -23,6 +23,7 @@ export type RollBonus = {
 export type CharacterForm = {
   id: string;
   name: string;
+  avatarUrl?: string; // Image for this specific form
   poder: number;
   habilidade: number;
   resistencia: number;
@@ -30,6 +31,15 @@ export type CharacterForm = {
   maisMana: number;
   rollBonuses: RollBonus[];
   wildShapeAdvantages?: string[]; // Druid chosen advantages
+};
+
+export type CharacterSheet = {
+  id: string;
+  characterName: string;
+  selectedKitId: string;
+  accentColor: string;
+  soundOn: boolean;
+  forms: CharacterForm[];
 };
 
 export type KitPower = {
@@ -208,7 +218,7 @@ export const KITS_CATALOG: CharacterKit[] = [
       {
         id: 'barbaro_resistencia',
         name: 'Resistência Superior',
-        desc: 'A vantagem Vigoroso concede R+3 ao seu personagem em vez de R+2.',
+        desc: 'A vantagem Vigoroso concede R+3 em vez de R+2.',
         type: 'passive'
       }
     ]
@@ -554,6 +564,43 @@ function normalizeRollBonus(raw: any): RollBonus {
   };
 }
 
+// Compress and resize uploaded image to keep localStorage healthy
+function processImageUpload(file: File, callback: (base64Url: string) => void) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const maxDim = 320;
+      let width = img.width;
+      let height = img.height;
+
+      if (width > height) {
+        if (width > maxDim) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        }
+      } else {
+        if (height > maxDim) {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        callback(dataUrl);
+      }
+    };
+    img.src = e.target?.result as string;
+  };
+  reader.readAsDataURL(file);
+}
+
 const PlusIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -573,6 +620,29 @@ const CubeIcon = () => (
     <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
     <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
     <line x1="12" y1="22.08" x2="12" y2="12"></line>
+  </svg>
+);
+
+const UsersIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+    <circle cx="9" cy="7" r="4"/>
+    <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+  </svg>
+);
+
+const CameraIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+    <circle cx="12" cy="13" r="3"/>
+  </svg>
+);
+
+const CopyIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
   </svg>
 );
 
@@ -688,72 +758,115 @@ const SegmentedBar = ({ current, max, color, onClick, halfWidth, pulseCount = 0 
   );
 };
 
-const loadInitialData = () => {
-  const saved = localStorage.getItem('3det_ficha');
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed.forms) && parsed.forms.length > 0) {
-        parsed.forms = parsed.forms.map((f: any) => ({
+// Initial Data & Multi-Sheet Storage Loader
+const loadInitialSheets = (): { sheets: CharacterSheet[]; activeId: string } => {
+  const defaultSheet: CharacterSheet = {
+    id: 'char_default',
+    characterName: 'Dahllan Druida',
+    selectedKitId: 'druida',
+    accentColor: '#5EB05D',
+    soundOn: true,
+    forms: [
+      {
+        id: 'base',
+        name: 'Forma Humana',
+        poder: 1,
+        habilidade: 2,
+        resistencia: 2,
+        maisVida: 0,
+        maisMana: 0,
+        rollBonuses: [],
+        wildShapeAdvantages: []
+      }
+    ]
+  };
+
+  try {
+    const savedList = localStorage.getItem('3det_character_list');
+    const savedActiveId = localStorage.getItem('3det_active_character_id');
+
+    if (savedList) {
+      const parsedList = JSON.parse(savedList);
+      if (Array.isArray(parsedList) && parsedList.length > 0) {
+        const normalized = parsedList.map((sheet: any) => ({
+          ...sheet,
+          forms: (sheet.forms || []).map((f: any) => ({
+            ...f,
+            rollBonuses: (f.rollBonuses || []).map(normalizeRollBonus)
+          }))
+        }));
+        const activeId = savedActiveId || normalized[0].id;
+        return { sheets: normalized, activeId };
+      }
+    }
+
+    // Migrate from legacy single-sheet storage '3det_ficha'
+    const legacySaved = localStorage.getItem('3det_ficha');
+    if (legacySaved) {
+      const parsed = JSON.parse(legacySaved);
+      const migratedSheet: CharacterSheet = {
+        id: 'char_' + Date.now(),
+        characterName: parsed.characterName || 'Personagem',
+        selectedKitId: parsed.selectedKitId || 'druida',
+        accentColor: parsed.accentColor || '#ff0066',
+        soundOn: parsed.soundOn ?? true,
+        forms: Array.isArray(parsed.forms) && parsed.forms.length > 0 ? parsed.forms.map((f: any) => ({
           ...f,
           rollBonuses: (f.rollBonuses || []).map(normalizeRollBonus)
-        }));
-      } else {
-        // Migrate legacy single form
-        const legacyBonuses = Array.isArray(parsed.rollBonuses) ? parsed.rollBonuses.map(normalizeRollBonus) : [];
-        parsed.forms = [{
-          id: 'base',
-          name: parsed.characterName || 'Forma Normal',
-          poder: parsed.poder ?? 1,
-          habilidade: parsed.habilidade ?? 1,
-          resistencia: parsed.resistencia ?? 1,
-          maisVida: parsed.maisVida ?? 0,
-          maisMana: parsed.maisMana ?? 0,
-          rollBonuses: legacyBonuses,
-          wildShapeAdvantages: []
-        }];
-      }
-      return parsed;
-    } catch (e) {
-      console.error('Failed to parse saved data', e);
+        })) : [
+          {
+            id: 'base',
+            name: 'Forma Normal',
+            poder: parsed.poder ?? 1,
+            habilidade: parsed.habilidade ?? 1,
+            resistencia: parsed.resistencia ?? 1,
+            maisVida: parsed.maisVida ?? 0,
+            maisMana: parsed.maisMana ?? 0,
+            rollBonuses: (parsed.rollBonuses || []).map(normalizeRollBonus),
+            wildShapeAdvantages: []
+          }
+        ]
+      };
+      return { sheets: [migratedSheet], activeId: migratedSheet.id };
     }
+  } catch (e) {
+    console.error('Error loading characters from storage:', e);
   }
-  return {};
+
+  return { sheets: [defaultSheet], activeId: defaultSheet.id };
 };
 
 export default function App() {
-  const initData = useRef(loadInitialData()).current;
-  const hasSavedData = initData.forms && initData.forms.length > 0;
+  const initial = useRef(loadInitialSheets()).current;
+  const [characterSheets, setCharacterSheets] = useState<CharacterSheet[]>(initial.sheets);
+  const [activeCharacterId, setActiveCharacterId] = useState<string>(initial.activeId);
 
-  const [mode, setMode] = useState<'edit' | 'play'>(hasSavedData ? 'play' : 'edit');
-  const [characterName, setCharacterName] = useState(initData.characterName ?? '');
-  const [selectedKitId, setSelectedKitId] = useState<string>(initData.selectedKitId ?? 'druida');
-  const [accentColor, setAccentColor] = useState(initData.accentColor ?? '#ff0066');
-  const [soundOn, setSoundOn] = useState(initData.soundOn ?? true);
-  
+  // Get Active Character Sheet
+  const activeSheet = useMemo(() => {
+    return characterSheets.find(c => c.id === activeCharacterId) || characterSheets[0];
+  }, [characterSheets, activeCharacterId]);
+
+  const [mode, setMode] = useState<'edit' | 'play'>('play');
+  const [activeFormIndex, setActiveFormIndex] = useState<number>(0);
+  const [isSheetsModalOpen, setIsSheetsModalOpen] = useState(false);
+  const [isPresetModalOpen, setIsPresetModalOpen] = useState(false);
+  const [isWildShapeModalOpen, setIsWildShapeModalOpen] = useState(false);
+  const [isEditingStats, setIsEditingStats] = useState(false);
+  const [editingBonusId, setEditingBonusId] = useState<string | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const playDiceSound = useDiceSound();
 
-  // Multi-Form / Transformation state
-  const defaultBaseForm: CharacterForm = {
-    id: 'base',
-    name: 'Forma Normal',
-    poder: 1,
-    habilidade: 1,
-    resistencia: 1,
-    maisVida: 0,
-    maisMana: 0,
-    rollBonuses: [],
-    wildShapeAdvantages: []
-  };
+  // Active Sheet properties
+  const characterName = activeSheet.characterName;
+  const selectedKitId = activeSheet.selectedKitId;
+  const accentColor = activeSheet.accentColor;
+  const soundOn = activeSheet.soundOn;
+  const forms = activeSheet.forms;
 
-  const [forms, setForms] = useState<CharacterForm[]>(
-    Array.isArray(initData.forms) && initData.forms.length > 0 ? initData.forms : [defaultBaseForm]
-  );
-  const [activeFormIndex, setActiveFormIndex] = useState<number>(0);
+  const currentForm = forms[activeFormIndex] || forms[0];
 
-  const currentForm = forms[activeFormIndex] || forms[0] || defaultBaseForm;
-
-  // Selected Kit
+  // Selected Kit Info
   const currentKit = useMemo(() => {
     return KITS_CATALOG.find(k => k.id === selectedKitId) || null;
   }, [selectedKitId]);
@@ -783,10 +896,7 @@ export default function App() {
     setCurrentPV(maxPV);
     setCurrentPM(maxPM);
     setCurrentPA(maxPA);
-  }, [activeFormIndex, maxPV, maxPM, maxPA]);
-
-  const [isEditingStats, setIsEditingStats] = useState(false);
-  const [isWildShapeModalOpen, setIsWildShapeModalOpen] = useState(false);
+  }, [activeFormIndex, activeCharacterId, maxPV, maxPM, maxPA]);
 
   // Modificadores manuais de rolagem
   const [manualBonusDice, setManualBonusDice] = useState<0 | 1 | 2>(0);
@@ -794,8 +904,6 @@ export default function App() {
 
   // Bônus e Técnicas Ativas
   const [activeBonuses, setActiveBonuses] = useState<Set<string>>(new Set());
-  const [editingBonusId, setEditingBonusId] = useState<string | null>(null);
-  const [isPresetModalOpen, setIsPresetModalOpen] = useState(false);
 
   const [rolling, setRolling] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -845,7 +953,7 @@ export default function App() {
     return Math.max(0, Math.min(2, extra));
   }, [activeBonusesList, manualBonusDice, currentForm.wildShapeAdvantages]);
 
-  // Restricted Attribute: check if active bonuses require a specific attribute
+  // Restricted Attribute
   const allowedAttributes = useMemo(() => {
     const required = new Set<'poder' | 'habilidade' | 'resistencia'>();
     activeBonusesList.forEach(b => {
@@ -890,39 +998,25 @@ export default function App() {
     }
   }, [accentColor]);
 
-  // Save changes
-  const handleSave = () => {
-    const dataToSave = {
-      characterName,
-      selectedKitId,
-      accentColor,
-      soundOn,
-      forms
-    };
-    localStorage.setItem('3det_ficha', JSON.stringify(dataToSave));
-    setMode('play');
+  // Save changes to localStorage
+  const saveAllSheets = (updatedSheets: CharacterSheet[], activeId = activeCharacterId) => {
+    setCharacterSheets(updatedSheets);
+    setActiveCharacterId(activeId);
+    localStorage.setItem('3det_character_list', JSON.stringify(updatedSheets));
+    localStorage.setItem('3det_active_character_id', activeId);
   };
 
-  useEffect(() => {
-    if (mode === 'play') {
-      localStorage.setItem('3det_ficha', JSON.stringify({
-        characterName,
-        selectedKitId,
-        accentColor,
-        soundOn,
-        forms
-      }));
-    }
-  }, [mode, characterName, selectedKitId, accentColor, soundOn, forms]);
+  const updateActiveSheet = (updates: Partial<CharacterSheet>) => {
+    const updatedList = characterSheets.map(sheet =>
+      sheet.id === activeCharacterId ? { ...sheet, ...updates } : sheet
+    );
+    saveAllSheets(updatedList);
+  };
 
   const handleEdit = () => {
     setMode('edit');
-    if (diceBoxRef.current) {
-      diceBoxRef.current.clear();
-    }
-    if (clearDiceTimeoutRef.current) {
-      clearTimeout(clearDiceTimeoutRef.current);
-    }
+    if (diceBoxRef.current) diceBoxRef.current.clear();
+    if (clearDiceTimeoutRef.current) clearTimeout(clearDiceTimeoutRef.current);
     setIsModalOpen(false);
     setIsClosing(false);
   };
@@ -947,9 +1041,10 @@ export default function App() {
     }
   }, [mode]);
 
-  // Form management
+  // Form management for active sheet
   const updateCurrentForm = (updates: Partial<CharacterForm>) => {
-    setForms(prev => prev.map((f, i) => i === activeFormIndex ? { ...f, ...updates } : f));
+    const updatedForms = forms.map((f, i) => i === activeFormIndex ? { ...f, ...updates } : f);
+    updateActiveSheet({ forms: updatedForms });
   };
 
   const addTransformationForm = () => {
@@ -965,13 +1060,78 @@ export default function App() {
       rollBonuses: [],
       wildShapeAdvantages: isDruid ? ['Ágil', 'Forte'] : []
     };
-    setForms(prev => [...prev, newForm]);
+    const updatedForms = [...forms, newForm];
+    updateActiveSheet({ forms: updatedForms });
     setActiveFormIndex(forms.length);
   };
 
   const removeCurrentForm = (index: number) => {
     if (forms.length <= 1) return;
-    setForms(prev => prev.filter((_, i) => i !== index));
+    const updatedForms = forms.filter((_, i) => i !== index);
+    updateActiveSheet({ forms: updatedForms });
+    setActiveFormIndex(0);
+  };
+
+  // Avatar Upload Handler
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    processImageUpload(file, (base64Url) => {
+      updateCurrentForm({ avatarUrl: base64Url });
+    });
+  };
+
+  const removeAvatar = () => {
+    updateCurrentForm({ avatarUrl: undefined });
+  };
+
+  // Character Sheet Switcher Actions
+  const createNewCharacter = () => {
+    const newSheet: CharacterSheet = {
+      id: 'char_' + Date.now(),
+      characterName: 'Novo Herói',
+      selectedKitId: 'guerreiro',
+      accentColor: '#FF9E00',
+      soundOn: true,
+      forms: [
+        {
+          id: 'base',
+          name: 'Forma Normal',
+          poder: 1,
+          habilidade: 1,
+          resistencia: 1,
+          maisVida: 0,
+          maisMana: 0,
+          rollBonuses: [],
+          wildShapeAdvantages: []
+        }
+      ]
+    };
+    saveAllSheets([...characterSheets, newSheet], newSheet.id);
+    setActiveFormIndex(0);
+    setIsSheetsModalOpen(false);
+    setMode('edit');
+  };
+
+  const duplicateCurrentCharacter = () => {
+    const duplicatedSheet: CharacterSheet = {
+      ...activeSheet,
+      id: 'char_' + Date.now(),
+      characterName: `${activeSheet.characterName} (Cópia)`,
+      forms: activeSheet.forms.map(f => ({ ...f, id: 'form_' + Date.now() + Math.random().toString().slice(2, 6) }))
+    };
+    saveAllSheets([...characterSheets, duplicatedSheet], duplicatedSheet.id);
+    setActiveFormIndex(0);
+  };
+
+  const deleteCharacter = (sheetId: string) => {
+    if (characterSheets.length <= 1) {
+      alert("Você não pode excluir o único personagem.");
+      return;
+    }
+    const updatedList = characterSheets.filter(s => s.id !== sheetId);
+    const nextActive = updatedList[0].id;
+    saveAllSheets(updatedList, nextActive);
     setActiveFormIndex(0);
   };
 
@@ -1062,7 +1222,6 @@ export default function App() {
 
   const handleResetScene = () => {
     setUsedKitPowers({});
-    // Deactivate scene-duration bonuses
     setActiveBonuses(prev => {
       const next = new Set<string>();
       rollBonuses.forEach(b => {
@@ -1143,7 +1302,6 @@ export default function App() {
       label = 'Resistência';
     }
 
-    // Calculate attribute modifications and flat bonuses
     let attrModValue = 0;
     let flatBonusTotal = 0;
     let hasAutoCrit = false;
@@ -1163,9 +1321,7 @@ export default function App() {
         desc = `+${val} (${bonus.attrSource})`;
       }
 
-      if (bonus.critThresholdMod) {
-        desc += desc ? ' | Crítico 5+' : 'Crítico 5+';
-      }
+      if (bonus.critThresholdMod) desc += desc ? ' | Crítico 5+' : 'Crítico 5+';
       if (bonus.autoCrit) {
         hasAutoCrit = true;
         desc += desc ? ' | Crítico Automático' : 'Crítico Automático';
@@ -1214,9 +1370,7 @@ export default function App() {
       const diceResults = await diceBoxRef.current.roll(`${diceCount}d6`);
       
       clearDiceTimeoutRef.current = setTimeout(() => {
-        if (diceBoxRef.current) {
-          diceBoxRef.current.clear();
-        }
+        if (diceBoxRef.current) diceBoxRef.current.clear();
       }, 3000);
       
       let rolls: number[] = [];
@@ -1237,10 +1391,9 @@ export default function App() {
       }
       const criticals = rolledCrits;
 
-      // In 3DeT Victory: Final = DiceSum + Attribute + (Attribute * Criticals) + FlatBonus
       const finalTotal = diceSum + totalEffectiveAttribute + (totalEffectiveAttribute * criticals) + flatBonusTotal;
 
-      // Deduct resource costs ONLY for instant bonuses (scene bonuses deducted on toggle)
+      // Deduct resource costs for instant bonuses
       const instantBonuses = activeBonusesList.filter(b => b.duration === 'instant');
       const costPV = instantBonuses.filter(b => b.costResource === 'PV').reduce((sum, b) => sum + (b.costValue || 0), 0);
       const costPM = instantBonuses.filter(b => b.costResource === 'PM').reduce((sum, b) => sum + (b.costValue || 0), 0);
@@ -1250,7 +1403,7 @@ export default function App() {
       if (costPM > 0) setCurrentPM(prev => Math.max(0, prev - costPM));
       if (costPA > 0) setCurrentPA(prev => Math.max(0, prev - costPA));
 
-      // Auto-deactivate instant bonuses after the roll
+      // Auto-deactivate instant bonuses
       setActiveBonuses(prev => {
         const next = new Set<string>();
         rollBonuses.forEach(b => {
@@ -1292,7 +1445,6 @@ export default function App() {
     }, 400);
   };
 
-  // Calculate current active instant costs for pulsing
   const instantActiveBonuses = activeBonusesList.filter(b => b.duration === 'instant');
   const totalCostPV = instantActiveBonuses.filter(b => b.costResource === 'PV').reduce((sum, b) => sum + (b.costValue || 0), 0);
   const totalCostPM = instantActiveBonuses.filter(b => b.costResource === 'PM').reduce((sum, b) => sum + (b.costValue || 0), 0);
@@ -1302,18 +1454,37 @@ export default function App() {
     <>
       <div id="dice-box" style={{ visibility: mode === 'play' ? 'visible' : 'hidden' }}></div>
       
+      {/* Hidden File Input for Avatar */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleAvatarUpload}
+        accept="image/*"
+        style={{ display: 'none' }}
+      />
+
       <div className="app-container">
         
         {mode === 'edit' && (
           <div className="panel slide-up" style={{ animationDelay: '0.1s', gridColumn: '1 / -1', maxWidth: '650px', margin: '0 auto', width: '100%' }}>
-            <h1 className="panel-title">Cadastro da Ficha</h1>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h1 className="panel-title" style={{ margin: 0 }}>Cadastro da Ficha</h1>
+              <button
+                className="control-btn"
+                style={{ width: 'auto', padding: '0.4rem 0.8rem', fontSize: '0.85rem', borderColor: 'var(--accent-color)', color: 'var(--accent-color)' }}
+                onClick={() => setIsSheetsModalOpen(true)}
+              >
+                <UsersIcon /> Trocar Ficha
+              </button>
+            </div>
             
             <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
               <div className="stat-label" style={{ marginBottom: '0.5rem', color: 'var(--text-muted)' }}>NOME DO PERSONAGEM</div>
               <input 
                 type="text" 
                 value={characterName}
-                onChange={(e) => setCharacterName(e.target.value)}
+                onChange={(e) => updateActiveSheet({ characterName: e.target.value })}
                 placeholder="Seu Nome Aqui"
                 style={{ 
                   width: '100%', 
@@ -1340,7 +1511,7 @@ export default function App() {
               <select
                 className="select-box"
                 value={selectedKitId}
-                onChange={(e) => setSelectedKitId(e.target.value)}
+                onChange={(e) => updateActiveSheet({ selectedKitId: e.target.value })}
                 style={{ fontSize: '1.1rem', fontWeight: 'bold', background: 'var(--bg-color)', color: '#fff' }}
               >
                 {KITS_CATALOG.map((kit) => (
@@ -1366,7 +1537,7 @@ export default function App() {
             <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
               <div className="stat-label" style={{ marginBottom: '0.5rem', color: 'var(--text-muted)' }}>COR DO PERSONAGEM (DADOS)</div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <HexColorPicker color={accentColor} onChange={setAccentColor} />
+                <HexColorPicker color={accentColor} onChange={(c) => updateActiveSheet({ accentColor: c })} />
                 <div style={{ marginTop: '0.5rem', color: accentColor, fontWeight: 'bold' }}>{accentColor.toUpperCase()}</div>
               </div>
             </div>
@@ -1383,7 +1554,7 @@ export default function App() {
               </button>
             </div>
 
-            {/* Abas de Formas no Modo Edição */}
+            {/* Abas de Formas */}
             <div className="form-tabs-container" style={{ marginBottom: '1.5rem' }}>
               {forms.map((form, idx) => (
                 <button
@@ -1405,15 +1576,58 @@ export default function App() {
               ))}
             </div>
 
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.3rem' }}>NOME DA FORMA ATIVA</label>
-              <input
-                type="text"
-                className="input-number"
-                value={currentForm.name}
-                onChange={(e) => updateCurrentForm({ name: e.target.value })}
-                placeholder="Ex: Humano, Lobo, Urso..."
-              />
+            {/* Avatar & Nome da Forma Ativa */}
+            <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', marginBottom: '1.5rem', background: 'var(--surface-hover)', padding: '1rem', borderRadius: 'var(--radius)', border: '1px solid var(--border-color)' }}>
+              
+              {/* Avatar Box with Upload trigger */}
+              <div 
+                className="avatar-preview-box"
+                onClick={() => fileInputRef.current?.click()}
+                title="Clique para alterar a imagem desta forma"
+                style={{ borderColor: accentColor }}
+              >
+                {currentForm.avatarUrl ? (
+                  <img src={currentForm.avatarUrl} alt={currentForm.name} className="avatar-img" />
+                ) : (
+                  <div className="avatar-placeholder" style={{ color: accentColor }}>
+                    {characterName ? characterName.charAt(0).toUpperCase() : '?'}
+                  </div>
+                )}
+                <div className="avatar-overlay-badge">
+                  <CameraIcon />
+                </div>
+              </div>
+
+              <div style={{ flex: 1 }}>
+                <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.3rem' }}>NOME DESTA FORMA</label>
+                <input
+                  type="text"
+                  className="input-number"
+                  value={currentForm.name}
+                  onChange={(e) => updateCurrentForm({ name: e.target.value })}
+                  placeholder="Ex: Humano, Lobo, Urso..."
+                  style={{ marginBottom: '0.5rem' }}
+                />
+
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button
+                    className="control-btn"
+                    style={{ width: 'auto', padding: '0.2rem 0.6rem', fontSize: '0.75rem', borderColor: 'var(--border-color)', color: 'var(--text-main)' }}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <CameraIcon /> Upload Imagem
+                  </button>
+                  {currentForm.avatarUrl && (
+                    <button
+                      className="control-btn"
+                      style={{ width: 'auto', padding: '0.2rem 0.6rem', fontSize: '0.75rem', borderColor: 'var(--danger-color)', color: 'var(--danger-color)' }}
+                      onClick={removeAvatar}
+                    >
+                      Remover Imagem
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="stats-grid">
@@ -1534,8 +1748,8 @@ export default function App() {
               </button>
             </div>
 
-            <button className="btn-roll" onClick={handleSave} style={{ marginTop: '2rem' }}>
-              Salvar Ficha e Jogar
+            <button className="btn-roll" onClick={() => setMode('play')} style={{ marginTop: '2rem' }}>
+              Salvar e Jogar
             </button>
           </div>
         )}
@@ -1576,7 +1790,14 @@ export default function App() {
               animationDelay: '0.05s',
               zIndex: 20
             }}>
-              <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '0.5rem' }}>
+              <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '0.4rem' }}>
+                <button 
+                  onClick={() => setIsSheetsModalOpen(true)} 
+                  style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border-color)', color: 'var(--text-main)', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', cursor: 'pointer', zIndex: 10 }}
+                  title="Trocar de Personagem (Fichas)"
+                >
+                  <UsersIcon />
+                </button>
                 <button 
                   onClick={handleResetScene} 
                   style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border-color)', color: 'var(--accent-color)', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', cursor: 'pointer', zIndex: 10 }}
@@ -1585,7 +1806,7 @@ export default function App() {
                   <ResetIcon />
                 </button>
                 <button 
-                  onClick={() => setSoundOn(!soundOn)} 
+                  onClick={() => updateActiveSheet({ soundOn: !soundOn })} 
                   style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border-color)', color: soundOn ? 'var(--accent-color)' : 'var(--text-muted)', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', cursor: 'pointer', zIndex: 10 }}
                   title={soundOn ? "Desativar Som" : "Ativar Som"}
                 >
@@ -1600,21 +1821,41 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Portrait Area */}
-              <div style={{ 
-                width: '90px', 
-                height: '110px', 
-                backgroundColor: 'var(--surface-hover)', 
-                border: '3px solid var(--accent-color)', 
-                transform: 'skewX(-10deg)', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                boxShadow: '0 0 15px var(--accent-transparent)'
-              }}>
-                <div style={{ transform: 'skewX(10deg)', fontSize: '3.5rem', fontWeight: 'bold', color: 'var(--accent-color)', fontFamily: 'Bebas Neue, sans-serif' }}>
-                  {characterName ? characterName.charAt(0).toUpperCase() : '?'}
-                </div>
+              {/* Portrait Area (Supports custom form image with camera click) */}
+              <div 
+                style={{ 
+                  width: '90px', 
+                  height: '110px', 
+                  backgroundColor: 'var(--surface-hover)', 
+                  border: '3px solid var(--accent-color)', 
+                  transform: 'skewX(-10deg)', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  boxShadow: '0 0 15px var(--accent-transparent)',
+                  overflow: 'hidden',
+                  position: 'relative',
+                  cursor: 'pointer'
+                }}
+                onClick={() => fileInputRef.current?.click()}
+                title="Clique para carregar/alterar a foto desta forma"
+              >
+                {currentForm.avatarUrl ? (
+                  <img 
+                    src={currentForm.avatarUrl} 
+                    alt={currentForm.name} 
+                    style={{ 
+                      width: '100%', 
+                      height: '100%', 
+                      objectFit: 'cover', 
+                      transform: 'skewX(10deg) scale(1.15)' 
+                    }} 
+                  />
+                ) : (
+                  <div style={{ transform: 'skewX(10deg)', fontSize: '3.5rem', fontWeight: 'bold', color: 'var(--accent-color)', fontFamily: 'Bebas Neue, sans-serif' }}>
+                    {characterName ? characterName.charAt(0).toUpperCase() : '?'}
+                  </div>
+                )}
               </div>
 
               {/* Bars Area */}
@@ -1657,7 +1898,7 @@ export default function App() {
                       style={{ width: 'auto', padding: '1px 6px', fontSize: '0.75rem', borderColor: '#5EB05D', color: '#5EB05D' }}
                       onClick={() => setIsWildShapeModalOpen(true)}
                     >
-                      🌿 Trocar Vantagens Fera
+                      🌿 Vantagens Fera ({currentForm.wildShapeAdvantages?.length || 0}/2)
                     </button>
                   )}
                 </div>
@@ -1810,6 +2051,107 @@ export default function App() {
         )}
       </div>
 
+      {/* Modal de Gerenciamento de Múltiplas Fichas */}
+      {isSheetsModalOpen && (
+        <div className="modal-overlay pop-in" style={{ zIndex: 380, alignItems: 'center' }} onClick={(e) => {
+          if (e.target === e.currentTarget) setIsSheetsModalOpen(false);
+        }}>
+          <div className="modal-content" style={{ 
+            borderRadius: '4px',
+            borderTop: '2px solid var(--accent-color)',
+            borderBottom: '2px solid var(--accent-color)',
+            background: 'rgba(15, 18, 26, 0.95)',
+            boxShadow: '0 0 25px var(--accent-transparent)',
+            maxWidth: '500px',
+            width: '90%',
+            maxHeight: '85vh',
+            overflowY: 'auto'
+          }}>
+            <button className="modal-close" onClick={() => setIsSheetsModalOpen(false)}>✕</button>
+            <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', marginBottom: '0.3rem', color: '#fff', letterSpacing: '1px' }}>
+              MEUS PERSONAGENS (FICHAS)
+            </h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.2rem' }}>
+              Selecione uma ficha salva para jogar, crie novas ou duplique:
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+              {characterSheets.map((sheet) => {
+                const isActive = sheet.id === activeCharacterId;
+                const mainForm = sheet.forms[0] || {};
+                const kit = KITS_CATALOG.find(k => k.id === sheet.selectedKitId);
+
+                return (
+                  <div 
+                    key={sheet.id}
+                    className={`character-sheet-card ${isActive ? 'active-sheet' : ''}`}
+                    onClick={() => {
+                      saveAllSheets(characterSheets, sheet.id);
+                      setActiveFormIndex(0);
+                      setIsSheetsModalOpen(false);
+                    }}
+                  >
+                    {/* Thumbnail */}
+                    <div className="sheet-card-avatar" style={{ borderColor: sheet.accentColor }}>
+                      {mainForm.avatarUrl ? (
+                        <img src={mainForm.avatarUrl} alt={sheet.characterName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        <span style={{ color: sheet.accentColor, fontWeight: 'bold', fontSize: '1.2rem', fontFamily: 'Bebas Neue, sans-serif' }}>
+                          {sheet.characterName ? sheet.characterName.charAt(0).toUpperCase() : '?'}
+                        </span>
+                      )}
+                    </div>
+
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span style={{ fontWeight: 'bold', color: '#fff', fontSize: '1.1rem', fontFamily: 'Bebas Neue, sans-serif', letterSpacing: '0.5px' }}>
+                          {sheet.characterName || 'Sem nome'}
+                        </span>
+                        {isActive && (
+                          <span style={{ fontSize: '0.65rem', background: 'var(--accent-color)', color: '#fff', padding: '1px 5px', borderRadius: '3px' }}>
+                            ATIVA
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                        Kit: <strong style={{ color: '#fff' }}>{kit ? kit.name : 'Personalizado'}</strong> • {sheet.forms.length} {sheet.forms.length === 1 ? 'forma' : 'formas'}
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '0.4rem' }} onClick={(e) => e.stopPropagation()}>
+                      <button
+                        className="bonus-remove-btn"
+                        onClick={() => duplicateCurrentCharacter()}
+                        title="Duplicar ficha"
+                      >
+                        <CopyIcon />
+                      </button>
+                      {characterSheets.length > 1 && (
+                        <button
+                          className="bonus-remove-btn"
+                          onClick={() => deleteCharacter(sheet.id)}
+                          title="Excluir ficha"
+                        >
+                          <TrashIcon />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <button
+              className="btn-roll"
+              style={{ marginTop: '1.2rem' }}
+              onClick={createNewCharacter}
+            >
+              <PlusIcon /> Criar Nova Ficha
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Modal de Resultado */}
       {(isModalOpen || isClosing) && result && !rolling && (
         <div className={`modal-overlay ${isClosing ? 'overlay-out' : 'overlay-in'}`}>
@@ -1934,7 +2276,7 @@ export default function App() {
             overflowY: 'auto'
           }}>
             <button className="modal-close" onClick={() => setIsWildShapeModalOpen(false)}>✕</button>
-            <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', marginBottom: '0.3rem', color: '#5EB05D', textShadow: '2px 2px 0px #000', letterSpacing: '1px' }}>
+            <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', marginBottom: '0.3rem', color: '#5EB05D', letterSpacing: '1px' }}>
               🌿 FORMA SELVAGEM: ESCOLHA 2 VANTAGENS
             </h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.2rem' }}>
@@ -1955,7 +2297,6 @@ export default function App() {
                         updateCurrentForm({ wildShapeAdvantages: currentSelected.filter(n => n !== opt.name) });
                       } else {
                         if (currentSelected.length >= 2) {
-                          // Replace the oldest selection
                           updateCurrentForm({ wildShapeAdvantages: [currentSelected[1], opt.name] });
                         } else {
                           updateCurrentForm({ wildShapeAdvantages: [...currentSelected, opt.name] });
