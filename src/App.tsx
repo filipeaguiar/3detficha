@@ -51,6 +51,12 @@ export type KitPower = {
   maxUsesPerScene?: number;
   costPM?: number;
   repeatCostPM?: number;
+  bonusType?: 'attr_mod' | 'flat' | 'none';
+  attribute?: 'any' | 'poder' | 'habilidade' | 'resistencia';
+  value?: number;
+  extraDice?: number;
+  critThresholdMod?: number;
+  autoCrit?: boolean;
 };
 
 export type CharacterKit = {
@@ -765,27 +771,108 @@ export default function App() {
     return rollBonuses.filter(b => activeBonuses.has(b.id));
   }, [rollBonuses, activeBonuses]);
 
-  // Derived Critical Threshold from active bonuses
+  // Kit Power Active Buffs (e.g. Frenesi de Combate P+3)
+  const [activeKitBuffs, setActiveKitBuffs] = useState<Set<string>>(new Set());
+
+  // Helper to extract or parse modifiers from Kit Power
+  const getKitPowerModifier = (power: KitPower): {
+    bonusType: 'attr_mod' | 'flat' | 'none';
+    attribute: 'poder' | 'habilidade' | 'resistencia' | 'any';
+    value: number;
+    extraDice: number;
+    critThresholdMod: number;
+    autoCrit: boolean;
+    duration: 'instant' | 'scene';
+  } => {
+    if (power.bonusType || power.value || power.extraDice || power.critThresholdMod) {
+      return {
+        bonusType: power.bonusType || 'attr_mod',
+        attribute: power.attribute || 'any',
+        value: power.value || 0,
+        extraDice: power.extraDice || 0,
+        critThresholdMod: power.critThresholdMod || 0,
+        autoCrit: !!power.autoCrit,
+        duration: power.type === 'buff' || power.type === 'per_scene' ? 'scene' : 'instant'
+      };
+    }
+
+    const desc = power.desc || '';
+    let attr: 'poder' | 'habilidade' | 'resistencia' | 'any' = 'any';
+    let val = 0;
+    let bType: 'attr_mod' | 'flat' | 'none' = 'none';
+    let extraDice = 0;
+    let critMod = 0;
+    let autoCrit = false;
+
+    if (/P\+(\d+)/i.test(desc)) {
+      attr = 'poder';
+      val = parseInt(desc.match(/P\+(\d+)/i)![1]);
+      bType = 'attr_mod';
+    } else if (/H\+(\d+)/i.test(desc)) {
+      attr = 'habilidade';
+      val = parseInt(desc.match(/H\+(\d+)/i)![1]);
+      bType = 'attr_mod';
+    } else if (/R\+(\d+)/i.test(desc)) {
+      attr = 'resistencia';
+      val = parseInt(desc.match(/R\+(\d+)/i)![1]);
+      bType = 'attr_mod';
+    }
+
+    if (/Ganho/i.test(desc) || /\+1D/i.test(desc)) {
+      extraDice = 1;
+    }
+    if (/Crítico 5\+/i.test(desc)) {
+      critMod = -1;
+    }
+
+    return {
+      bonusType: bType,
+      attribute: attr,
+      value: val,
+      extraDice,
+      critThresholdMod: critMod,
+      autoCrit,
+      duration: power.type === 'buff' || power.type === 'per_scene' ? 'scene' : 'instant'
+    };
+  };
+
+  const activeKitBuffsList = useMemo(() => {
+    if (!currentKit) return [];
+    return currentKit.powers
+      .filter(p => activeKitBuffs.has(p.id))
+      .map(p => ({
+        power: p,
+        mod: getKitPowerModifier(p)
+      }));
+  }, [currentKit, activeKitBuffs]);
+
+  // Derived Critical Threshold from active bonuses & active kit buffs
   const calculatedCritRange = useMemo(() => {
     let totalCritMod = 0;
     activeBonusesList.forEach(b => {
       if (b.critThresholdMod) totalCritMod += b.critThresholdMod;
     });
+    activeKitBuffsList.forEach(k => {
+      if (k.mod.critThresholdMod) totalCritMod += k.mod.critThresholdMod;
+    });
     const range = manualCritRange + totalCritMod;
     return Math.max(4, Math.min(6, range));
-  }, [activeBonusesList, manualCritRange]);
+  }, [activeBonusesList, activeKitBuffsList, manualCritRange]);
 
-  // Derived Extra Dice from active bonuses + Druid Wild Shape Ágil
+  // Derived Extra Dice from active bonuses + active kit buffs + Druid Wild Shape Ágil
   const calculatedTotalExtraDice = useMemo(() => {
     let extra = manualBonusDice;
     activeBonusesList.forEach(b => {
       if (b.extraDice) extra += b.extraDice;
     });
+    activeKitBuffsList.forEach(k => {
+      if (k.mod.extraDice) extra += k.mod.extraDice;
+    });
     if (currentForm.wildShapeAdvantages?.includes('Ágil')) {
       extra += 1;
     }
     return Math.max(0, Math.min(2, extra));
-  }, [activeBonusesList, manualBonusDice, currentForm.wildShapeAdvantages]);
+  }, [activeBonusesList, activeKitBuffsList, manualBonusDice, currentForm.wildShapeAdvantages]);
 
   // Restricted Attribute
   const allowedAttributes = useMemo(() => {
@@ -1041,13 +1128,33 @@ export default function App() {
 
   // Kit power usage
   const handleUseKitPower = (power: KitPower) => {
+    const mod = getKitPowerModifier(power);
+    const isBuff = power.type === 'buff' || mod.bonusType !== 'none' || mod.extraDice !== 0 || mod.critThresholdMod !== 0;
+
+    if (isBuff) {
+      setActiveKitBuffs(prev => {
+        const next = new Set(prev);
+        if (next.has(power.id)) {
+          next.delete(power.id);
+        } else {
+          next.add(power.id);
+          const cost = power.costPM || 0;
+          if (cost > 0) {
+            setCurrentPM(p => Math.max(0, p - cost));
+          }
+          setUsedKitPowers(u => ({ ...u, [power.id]: (u[power.id] || 0) + 1 }));
+        }
+        return next;
+      });
+      return;
+    }
+
     const count = usedKitPowers[power.id] || 0;
     const isFirstUse = count === 0;
+    const cost = isFirstUse ? (power.costPM || 0) : (power.repeatCostPM || power.costPM || 0);
 
-    if (isFirstUse && power.costPM) {
-      setCurrentPM(p => Math.max(0, p - power.costPM!));
-    } else if (!isFirstUse && power.repeatCostPM) {
-      setCurrentPM(p => Math.max(0, p - power.repeatCostPM!));
+    if (cost > 0) {
+      setCurrentPM(p => Math.max(0, p - cost));
     }
 
     setUsedKitPowers(prev => ({
@@ -1058,6 +1165,7 @@ export default function App() {
 
   const handleResetScene = () => {
     setUsedKitPowers({});
+    setActiveKitBuffs(new Set());
     setActiveBonuses(prev => {
       const next = new Set<string>();
       rollBonuses.forEach(b => {
@@ -1178,6 +1286,34 @@ export default function App() {
         alias: bonus.alias,
         desc,
         cost: costStr
+      });
+    });
+
+    // Apply Active Kit Buffs (e.g. Frenesi de Combate P+3)
+    activeKitBuffsList.forEach(k => {
+      const mod = k.mod;
+      let desc = '';
+      if (mod.bonusType === 'attr_mod' && (mod.attribute === attrName || mod.attribute === 'any')) {
+        attrModValue += mod.value;
+        desc = `+${mod.value} no Atributo`;
+      } else if (mod.bonusType === 'flat') {
+        flatBonusTotal += mod.value;
+        desc = `+${mod.value} Total`;
+      }
+
+      if (mod.critThresholdMod) desc += desc ? ' | Crítico 5+' : 'Crítico 5+';
+      if (mod.autoCrit) {
+        hasAutoCrit = true;
+        desc += desc ? ' | Crítico Automático' : 'Crítico Automático';
+      }
+      if (mod.extraDice) {
+        desc += desc ? ` | ${mod.extraDice > 0 ? '+' : ''}${mod.extraDice}D` : `${mod.extraDice > 0 ? '+' : ''}${mod.extraDice}D`;
+      }
+
+      appliedBonuses.push({
+        name: k.power.name,
+        desc: desc || 'Poder de Kit Ativo',
+        cost: 'Buff de Cena'
       });
     });
 
@@ -1735,22 +1871,35 @@ export default function App() {
             {activeKitActionPowers.length > 0 && (
               <div className="kit-actions-compact-row slide-up">
                 {activeKitActionPowers.map((power) => {
+                  const isActiveBuff = activeKitBuffs.has(power.id);
                   const useCount = usedKitPowers[power.id] || 0;
                   const isAvailable = useCount === 0;
+                  const mod = getKitPowerModifier(power);
+
+                  let statusTag = '';
+                  if (isActiveBuff) {
+                    const attrLetter = mod.attribute === 'poder' ? 'P' : mod.attribute === 'habilidade' ? 'H' : mod.attribute === 'resistencia' ? 'R' : '';
+                    statusTag = `✓ ATIVO ${mod.value ? `(+${mod.value}${attrLetter})` : ''}`;
+                  } else if (mod.bonusType !== 'none') {
+                    const attrLetter = mod.attribute === 'poder' ? 'P' : mod.attribute === 'habilidade' ? 'H' : mod.attribute === 'resistencia' ? 'R' : '';
+                    statusTag = `${mod.value ? `+${mod.value}${attrLetter}` : ''} [${power.costPM || 3}PM]`;
+                  } else if (power.type === 'per_scene') {
+                    statusTag = isAvailable ? '1/1 Cena' : `-${power.repeatCostPM || 3}PM`;
+                  } else if (power.type === 'per_session') {
+                    statusTag = isAvailable ? `-${power.costPM || 3}PM` : 'Usado';
+                  } else {
+                    statusTag = `-${power.costPM || 2}PM`;
+                  }
 
                   return (
                     <button
                       key={power.id}
-                      className={`kit-compact-power-btn ${isAvailable ? 'available' : 'used'}`}
+                      className={`kit-compact-power-btn ${isActiveBuff ? 'active-buff' : isAvailable ? 'available' : 'used'}`}
                       onClick={() => handleUseKitPower(power)}
                       title={`${power.name}: ${power.desc}`}
                     >
                       <span className="power-btn-name">{power.name}</span>
-                      <span className="power-btn-tag">
-                        {power.type === 'per_scene' ? (isAvailable ? '1/1 Cena' : `-${power.repeatCostPM || 3}PM`) :
-                         power.type === 'per_session' ? (isAvailable ? `-${power.costPM || 3}PM` : 'Usado') :
-                         `-${power.costPM || 2}PM`}
-                      </span>
+                      <span className="power-btn-tag">{statusTag}</span>
                     </button>
                   );
                 })}

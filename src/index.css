@@ -1323,6 +1323,19 @@ input.stat-input:focus {
   box-shadow: 0 0 8px var(--accent-glow);
 }
 
+.kit-compact-power-btn.active-buff {
+  background: var(--accent-color);
+  color: var(--accent-text-color);
+  border-color: var(--accent-color);
+  box-shadow: 0 0 12px var(--accent-glow);
+  font-weight: bold;
+}
+
+.kit-compact-power-btn.active-buff:hover {
+  opacity: 0.9;
+  box-shadow: 0 0 16px var(--accent-glow);
+}
+
 .kit-compact-power-btn.used {
   background: transparent;
   border-color: var(--border-color);
