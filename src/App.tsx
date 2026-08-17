@@ -618,17 +618,17 @@ export default function App() {
               <div className="panel slide-up" style={{ animationDelay: '0.15s', width: '100%' }}>
                 <div className="stats-grid">
                 <button className="stat-box roll-btn" style={{ '--btn-color': 'var(--success-color)' } as React.CSSProperties} onClick={() => handleRoll('poder')} disabled={rolling}>
-                  <div className="stat-title" style={{ color: 'var(--success-color)' }}>Poder</div>
+                  <div className="stat-title">Poder</div>
                   <div className="stat-value">{poder}</div>
                   <div className="roll-hint">Rolar</div>
                 </button>
                 <button className="stat-box roll-btn" style={{ '--btn-color': '#4fc3f7' } as React.CSSProperties} onClick={() => handleRoll('habilidade')} disabled={rolling}>
-                  <div className="stat-title" style={{ color: '#4fc3f7' }}>Habilidade</div>
+                  <div className="stat-title">Habilidade</div>
                   <div className="stat-value">{habilidade}</div>
                   <div className="roll-hint">Rolar</div>
                 </button>
                 <button className="stat-box roll-btn" style={{ '--btn-color': 'var(--danger-color)' } as React.CSSProperties} onClick={() => handleRoll('resistencia')} disabled={rolling}>
-                  <div className="stat-title" style={{ color: 'var(--danger-color)' }}>Resistência</div>
+                  <div className="stat-title">Resistência</div>
                   <div className="stat-value">{resistencia}</div>
                   <div className="roll-hint">Rolar</div>
                 </button>
