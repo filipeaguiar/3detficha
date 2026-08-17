@@ -106,7 +106,7 @@ h1, h2, h3, h4, h5, h6 {
 /* Character Sheet Grid */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   gap: 1rem;
   margin-bottom: 1.5rem;
 }

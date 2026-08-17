@@ -185,6 +185,7 @@ export default function App() {
   // Bônus customizados de rolagem
   const [rollBonuses, setRollBonuses] = useState<RollBonus[]>(initData.rollBonuses ?? []);
   const [activeBonuses, setActiveBonuses] = useState<Set<string>>(new Set());
+  const [editingBonusId, setEditingBonusId] = useState<string | null>(null);
 
   const [rolling, setRolling] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -284,8 +285,9 @@ export default function App() {
 
 
   const addRollBonus = () => {
+    const newId = Date.now().toString();
     const newBonus: RollBonus = {
-      id: Date.now().toString(),
+      id: newId,
       label: '',
       type: 'fixed',
       value: 1,
@@ -293,6 +295,7 @@ export default function App() {
       costResource: 'none'
     };
     setRollBonuses(prev => [...prev, newBonus]);
+    setEditingBonusId(newId);
   };
 
   const removeRollBonus = (id: string) => {
@@ -384,6 +387,8 @@ export default function App() {
       });
 
       diceBoxRef.current.clear();
+      window.dispatchEvent(new Event('resize'));
+      
       const diceResults = await diceBoxRef.current.roll(`${diceCount}d6`);
       
       // Sumir com os dados 3 segundos após pararem de rolar
@@ -461,7 +466,7 @@ export default function App() {
 
   return (
     <>
-      <div id="dice-box" style={{ display: mode === 'play' ? 'block' : 'none' }}></div>
+      <div id="dice-box" style={{ visibility: mode === 'play' ? 'visible' : 'hidden' }}></div>
       
       <div className="app-container">
         
@@ -522,7 +527,7 @@ export default function App() {
               </div>
             </div>
 
-            <div className="stats-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+            <div className="stats-grid">
               <div className="stat-box edit-stat-box" style={{ '--btn-color': '#5EB05D', borderColor: '#5EB05D' } as React.CSSProperties}>
                 <div className="stat-title" style={{ color: '#5EB05D' }}>+Vida (Níveis)</div>
                 <input type="number" className="stat-input stat-value" style={{ color: '#5EB05D' }} min="0" max="10" value={maisVida} onChange={(e) => setMaisVida(Number(e.target.value))} />
@@ -540,63 +545,30 @@ export default function App() {
 
             <div className="bonus-editor-list">
               {rollBonuses.map((bonus) => (
-                <div key={bonus.id} className="bonus-editor-row">
-                  <input
-                    type="text"
-                    className="bonus-name-input"
-                    placeholder="Nome (ex: Ataque Especial)"
-                    value={bonus.label}
-                    onChange={(e) => updateRollBonus(bonus.id, { label: e.target.value })}
-                  />
-                  <select
-                    className="bonus-type-select"
-                    value={bonus.type}
-                    onChange={(e) => updateRollBonus(bonus.id, { type: e.target.value as RollBonus['type'] })}
-                  >
-                    <option value="fixed">Fixo</option>
-                    <option value="poder">+Poder</option>
-                    <option value="habilidade">+Habilidade</option>
-                    <option value="resistencia">+Resistência</option>
-                  </select>
-                  {bonus.type === 'fixed' && (
-                    <input
-                      type="number"
-                      className="bonus-value-input"
-                      min={-10}
-                      max={20}
-                      value={bonus.value}
-                      onChange={(e) => updateRollBonus(bonus.id, { value: Number(e.target.value) })}
-                    />
-                  )}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', marginLeft: 'auto', borderLeft: '1px solid var(--border-color)', paddingLeft: '0.5rem' }}>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Custo:</span>
-                    <input
-                      type="number"
-                      className="bonus-value-input"
-                      style={{ width: '40px' }}
-                      min={0}
-                      max={20}
-                      value={bonus.costValue || 0}
-                      onChange={(e) => updateRollBonus(bonus.id, { costValue: Number(e.target.value) })}
-                    />
-                    <select
-                      className="bonus-type-select"
-                      value={bonus.costResource || 'none'}
-                      onChange={(e) => updateRollBonus(bonus.id, { costResource: e.target.value as any })}
-                    >
-                      <option value="none">-</option>
-                      <option value="PV">PV</option>
-                      <option value="PM">PM</option>
-                      <option value="PA">PA</option>
-                    </select>
+                <div key={bonus.id} className="bonus-editor-row" style={{ justifyContent: 'space-between', padding: '1rem', cursor: 'pointer' }} onClick={(e) => {
+                  if ((e.target as HTMLElement).closest('button')) return;
+                  setEditingBonusId(bonus.id);
+                }}>
+                  <div style={{ flex: 1, color: 'var(--text-main)', fontSize: '1.2rem', fontFamily: 'Bebas Neue, sans-serif', letterSpacing: '1px' }}>
+                    {bonus.label || 'Bônus sem nome'} <span style={{ color: 'var(--accent-color)', fontSize: '1rem', marginLeft: '0.5rem' }}>{getBonusDisplayValue(bonus)}</span>
                   </div>
-                  <button
-                    className="bonus-remove-btn"
-                    onClick={() => removeRollBonus(bonus.id)}
-                    title="Remover bônus"
-                  >
-                    <TrashIcon />
-                  </button>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                      className="bonus-remove-btn"
+                      style={{ color: 'var(--text-muted)' }}
+                      onClick={() => setEditingBonusId(bonus.id)}
+                      title="Editar bônus"
+                    >
+                      <PencilIcon />
+                    </button>
+                    <button
+                      className="bonus-remove-btn"
+                      onClick={() => removeRollBonus(bonus.id)}
+                      title="Remover bônus"
+                    >
+                      <TrashIcon />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -878,6 +850,113 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* Modal para Editar Bônus */}
+      {editingBonusId && (() => {
+        const bonus = rollBonuses.find(b => b.id === editingBonusId);
+        if (!bonus) return null;
+        return (
+          <div className="modal-overlay pop-in" style={{ zIndex: 350, alignItems: 'center' }} onClick={(e) => {
+            if (e.target === e.currentTarget) setEditingBonusId(null);
+          }}>
+            <div className="modal-content" style={{ 
+              borderRadius: '4px',
+              borderTop: '2px solid var(--accent-color)',
+              borderBottom: '2px solid var(--accent-color)',
+              background: 'rgba(0,0,0,0.85)',
+              boxShadow: '0 0 20px var(--accent-transparent)',
+              maxWidth: '400px',
+              width: '90%'
+            }}>
+              <button className="modal-close" onClick={() => setEditingBonusId(null)}>✕</button>
+              <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', marginBottom: '1.5rem', color: '#fff', textShadow: '2px 2px 0px #000', letterSpacing: '1px' }}>CONFIGURAR BÔNUS</h2>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', textAlign: 'left' }}>
+                <div>
+                  <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.3rem' }}>NOME DO BÔNUS</label>
+                  <input
+                    type="text"
+                    className="bonus-name-input"
+                    style={{ width: '100%', fontSize: '1.2rem', background: 'var(--surface-hover)', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)' }}
+                    placeholder="Ex: Ataque Especial"
+                    value={bonus.label}
+                    onChange={(e) => updateRollBonus(bonus.id, { label: e.target.value })}
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div>
+                    <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.3rem' }}>TIPO</label>
+                    <select
+                      className="bonus-type-select"
+                      style={{ width: '100%', fontSize: '1.1rem', background: 'var(--surface-hover)', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)' }}
+                      value={bonus.type}
+                      onChange={(e) => updateRollBonus(bonus.id, { type: e.target.value as RollBonus['type'] })}
+                    >
+                      <option value="fixed">Fixo (+2)</option>
+                      <option value="poder">+Poder</option>
+                      <option value="habilidade">+Habilidade</option>
+                      <option value="resistencia">+Resistência</option>
+                    </select>
+                  </div>
+
+                  {bonus.type === 'fixed' && (
+                    <div>
+                      <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.3rem' }}>VALOR</label>
+                      <input
+                        type="number"
+                        className="bonus-value-input"
+                        style={{ width: '100%', fontSize: '1.2rem', background: 'var(--surface-hover)', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', color: 'var(--accent-color)', textAlign: 'center' }}
+                        min={-10}
+                        max={20}
+                        value={bonus.value}
+                        onChange={(e) => updateRollBonus(bonus.id, { value: Number(e.target.value) })}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem', marginTop: '0.5rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div>
+                    <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.3rem' }}>CUSTO (QUANTIDADE)</label>
+                    <input
+                      type="number"
+                      className="bonus-value-input"
+                      style={{ width: '100%', fontSize: '1.2rem', background: 'var(--surface-hover)', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', textAlign: 'center' }}
+                      min={0}
+                      max={20}
+                      value={bonus.costValue || 0}
+                      onChange={(e) => updateRollBonus(bonus.id, { costValue: Number(e.target.value) })}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.3rem' }}>RECURSO</label>
+                    <select
+                      className="bonus-type-select"
+                      style={{ width: '100%', fontSize: '1.1rem', background: 'var(--surface-hover)', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)' }}
+                      value={bonus.costResource || 'none'}
+                      onChange={(e) => updateRollBonus(bonus.id, { costResource: e.target.value as any })}
+                    >
+                      <option value="none">Nenhum</option>
+                      <option value="PV">PV</option>
+                      <option value="PM">PM</option>
+                      <option value="PA">PA</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button 
+                  className="btn-roll" 
+                  style={{ marginTop: '1rem', padding: '0.8rem' }}
+                  onClick={() => setEditingBonusId(null)}
+                >
+                  Concluir
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </>
   );
 }
