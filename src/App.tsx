@@ -70,34 +70,39 @@ const SegmentedBar = ({ current, max, color, label, onClick }: { current: number
   const segments = [];
   const maxSafe = Math.max(1, max); // Evita barra vazia se max for 0
   
+  // Para quantidades muito grandes, reduzimos as bordas e sombras pra evitar poluição
+  const isHighVolume = maxSafe > 20;
+
   for (let i = 0; i < maxSafe; i++) {
     const isFilled = i < current;
     segments.push(
       <div 
         key={i} 
         style={{
-          width: '14px', 
-          height: '20px', 
+          flex: 1,
+          height: isHighVolume ? '16px' : '20px',
+          minWidth: '2px',
           backgroundColor: isFilled ? color : 'transparent',
-          border: `1.5px solid ${isFilled ? color : 'var(--border-color)'}`,
+          border: isHighVolume ? 'none' : `1px solid ${isFilled ? color : 'var(--border-color)'}`,
           transform: 'skewX(-20deg)',
-          boxShadow: isFilled ? `0 0 8px ${color}80` : 'none',
+          boxShadow: isFilled && !isHighVolume ? `0 0 5px ${color}80` : 'none',
           transition: 'all 0.2s ease',
-          opacity: isFilled ? 1 : 0.3
+          opacity: isFilled ? 1 : 0.2,
+          marginRight: '1px' // Em vez de gap fixo, usamos margem para acomodar até as barras adjacentes
         }}
       />
     );
   }
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.4rem', cursor: 'pointer' }} onClick={onClick}>
+    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.6rem', cursor: 'pointer', width: '100%' }} onClick={onClick}>
       <div style={{ width: '30px', fontWeight: 'bold', color: color, fontSize: '1.2rem', fontFamily: 'Bebas Neue, sans-serif', textShadow: `0 0 5px ${color}80` }}>
         {label}
       </div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px', flex: 1, paddingRight: '10px' }}>
+      <div style={{ display: 'flex', flexWrap: 'nowrap', flex: 1, paddingRight: '10px' }}>
         {segments}
       </div>
-      <div style={{ width: '20px', textAlign: 'right', fontWeight: 'bold', color: '#fff', fontSize: '1.2rem', fontFamily: 'Bebas Neue, sans-serif' }}>
+      <div style={{ width: '25px', textAlign: 'right', fontWeight: 'bold', color: '#fff', fontSize: '1.2rem', fontFamily: 'Bebas Neue, sans-serif' }}>
         {current}
       </div>
     </div>
