@@ -963,14 +963,23 @@ input.stat-input:focus {
 }
 
 .bonus-toggle.active .bonus-toggle-label,
-.bonus-toggle.active .bonus-toggle-value {
+.bonus-toggle.active .bonus-toggle-value,
+.bonus-toggle.active .bonus-toggle-raw-name {
   color: var(--accent-text-color);
 }
 
+.bonus-toggle-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  width: 100%;
+}
+
 .bonus-toggle-label {
-  font-size: 0.7rem;
+  font-size: 0.85rem;
   font-weight: 700;
-  text-transform: uppercase;
+  font-family: 'Bebas Neue', sans-serif;
   letter-spacing: 0.5px;
   color: inherit;
   white-space: nowrap;
@@ -979,8 +988,66 @@ input.stat-input:focus {
   max-width: 100%;
 }
 
-.bonus-toggle-value {
-  font-size: 1.2rem;
-  font-family: 'Bebas Neue', sans-serif;
-  color: inherit;
+.bonus-toggle-raw-name {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
+
+.bonus-toggle-value {
+  font-size: 0.85rem;
+  color: inherit;
+  font-weight: 600;
+}
+
+.bonus-attr-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid;
+  letter-spacing: 0.5px;
+}
+
+.bonus-attr-micro {
+  font-size: 0.65rem;
+  font-weight: 800;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 0 4px;
+  border-radius: 2px;
+}
+
+.preset-card-item {
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.preset-card-item:hover {
+  border-color: var(--accent-color);
+  background: var(--surface-hover);
+  transform: translateX(4px);
+  box-shadow: 0 0 10px var(--accent-transparent);
+}
+
+.disabled-attribute {
+  opacity: 0.25 !important;
+  cursor: not-allowed !important;
+  filter: grayscale(80%) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.disabled-attribute:hover {
+  background-color: var(--btn-color) !important;
+  border-color: var(--border-color) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+

@@ -1,17 +1,223 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { useDiceSound } from './useDiceSound';
 // @ts-ignore
 import DiceBox from '@3d-dice/dice-box';
 import { HexColorPicker } from "react-colorful";
 
-type RollBonus = {
+export type RollBonus = {
   id: string;
-  label: string;
-  type: 'fixed' | 'poder' | 'habilidade' | 'resistencia';
-  value: number; // used only when type === 'fixed'
+  name: string;
+  alias?: string;
+  attribute: 'any' | 'poder' | 'habilidade' | 'resistencia';
+  bonusType: 'attr_mod' | 'flat' | 'full_attr' | 'none';
+  value: number; // For attr_mod (+2, +4) or flat (+1, +2)
+  attrSource?: 'poder' | 'habilidade' | 'resistencia'; // For full_attr
+  critThresholdMod?: number; // 0, -1, -2 (e.g. -1 reduces 6 to 5+)
+  autoCrit?: boolean; // For Titânico (guarantees critical hit)
+  extraDice?: number; // 0, 1 (+1D Ganho), -1 (-1D Perda)
   costValue?: number;
   costResource?: 'none' | 'PV' | 'PM' | 'PA';
 };
+
+export const BONUS_PRESETS: Array<Omit<RollBonus, 'id'>> = [
+  {
+    name: 'Ataque Especial (Potente)',
+    alias: '',
+    attribute: 'poder',
+    bonusType: 'attr_mod',
+    value: 2,
+    critThresholdMod: 0,
+    autoCrit: false,
+    extraDice: 0,
+    costValue: 1,
+    costResource: 'PM',
+  },
+  {
+    name: 'Ataque Especial (Potente II)',
+    alias: '',
+    attribute: 'poder',
+    bonusType: 'attr_mod',
+    value: 4,
+    critThresholdMod: 0,
+    autoCrit: false,
+    extraDice: 0,
+    costValue: 2,
+    costResource: 'PM',
+  },
+  {
+    name: 'Ataque Especial (Perigoso)',
+    alias: '',
+    attribute: 'poder',
+    bonusType: 'none',
+    value: 0,
+    critThresholdMod: -1,
+    autoCrit: false,
+    extraDice: 0,
+    costValue: 1,
+    costResource: 'PM',
+  },
+  {
+    name: 'Ataque Especial (Preciso)',
+    alias: '',
+    attribute: 'habilidade',
+    bonusType: 'none',
+    value: 0,
+    critThresholdMod: 0,
+    autoCrit: false,
+    extraDice: 0,
+    costValue: 1,
+    costResource: 'PM',
+  },
+  {
+    name: 'Ataque Especial (Choque)',
+    alias: '',
+    attribute: 'resistencia',
+    bonusType: 'none',
+    value: 0,
+    critThresholdMod: 0,
+    autoCrit: false,
+    extraDice: 0,
+    costValue: 1,
+    costResource: 'PM',
+  },
+  {
+    name: 'Ataque Especial (Titânico)',
+    alias: '',
+    attribute: 'poder',
+    bonusType: 'none',
+    value: 0,
+    critThresholdMod: 0,
+    autoCrit: true,
+    extraDice: 0,
+    costValue: 3,
+    costResource: 'PM',
+  },
+  {
+    name: 'Defesa Especial (Tenaz)',
+    alias: '',
+    attribute: 'resistencia',
+    bonusType: 'attr_mod',
+    value: 2,
+    critThresholdMod: 0,
+    autoCrit: false,
+    extraDice: 0,
+    costValue: 1,
+    costResource: 'PM',
+  },
+  {
+    name: 'Defesa Especial (Tenaz II)',
+    alias: '',
+    attribute: 'resistencia',
+    bonusType: 'attr_mod',
+    value: 4,
+    critThresholdMod: 0,
+    autoCrit: false,
+    extraDice: 0,
+    costValue: 2,
+    costResource: 'PM',
+  },
+  {
+    name: 'Defesa Especial (Blindada)',
+    alias: '',
+    attribute: 'resistencia',
+    bonusType: 'none',
+    value: 0,
+    critThresholdMod: -1,
+    autoCrit: false,
+    extraDice: 0,
+    costValue: 1,
+    costResource: 'PM',
+  },
+  {
+    name: 'Defesa Especial (Esquiva)',
+    alias: '',
+    attribute: 'habilidade',
+    bonusType: 'none',
+    value: 0,
+    critThresholdMod: 0,
+    autoCrit: false,
+    extraDice: 0,
+    costValue: 1,
+    costResource: 'PM',
+  },
+  {
+    name: 'Defesa Especial (Bloqueio)',
+    alias: '',
+    attribute: 'poder',
+    bonusType: 'none',
+    value: 0,
+    critThresholdMod: 0,
+    autoCrit: false,
+    extraDice: 0,
+    costValue: 1,
+    costResource: 'PM',
+  },
+  {
+    name: 'Defesa Especial (Titânica)',
+    alias: '',
+    attribute: 'resistencia',
+    bonusType: 'none',
+    value: 0,
+    critThresholdMod: 0,
+    autoCrit: true,
+    extraDice: 0,
+    costValue: 3,
+    costResource: 'PM',
+  },
+  {
+    name: 'Ajudante (Ganho)',
+    alias: '',
+    attribute: 'any',
+    bonusType: 'none',
+    value: 0,
+    critThresholdMod: 0,
+    autoCrit: false,
+    extraDice: 1,
+    costValue: 2,
+    costResource: 'PM',
+  },
+  {
+    name: 'Carismático (Social)',
+    alias: '',
+    attribute: 'poder',
+    bonusType: 'attr_mod',
+    value: 2,
+    critThresholdMod: 0,
+    autoCrit: false,
+    extraDice: 0,
+    costValue: 0,
+    costResource: 'none',
+  }
+];
+
+function normalizeRollBonus(raw: any): RollBonus {
+  const name = raw.name || raw.label || 'Bônus';
+  let bonusType: RollBonus['bonusType'] = raw.bonusType || 'flat';
+  let attrSource: RollBonus['attrSource'] = raw.attrSource;
+  
+  if (!raw.bonusType && raw.type) {
+    if (raw.type === 'fixed') bonusType = 'flat';
+    else if (['poder', 'habilidade', 'resistencia'].includes(raw.type)) {
+      bonusType = 'full_attr';
+      attrSource = raw.type;
+    }
+  }
+
+  return {
+    id: raw.id || Date.now().toString() + Math.random().toString().slice(2, 6),
+    name: name,
+    alias: raw.alias || '',
+    attribute: raw.attribute || 'any',
+    bonusType: bonusType,
+    value: typeof raw.value === 'number' ? raw.value : 0,
+    attrSource: attrSource || 'poder',
+    critThresholdMod: typeof raw.critThresholdMod === 'number' ? raw.critThresholdMod : 0,
+    autoCrit: !!raw.autoCrit,
+    extraDice: typeof raw.extraDice === 'number' ? raw.extraDice : 0,
+    costValue: typeof raw.costValue === 'number' ? raw.costValue : 1,
+    costResource: raw.costResource || 'none',
+  };
+}
 
 const PlusIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -53,7 +259,6 @@ const ResistenciaIcon = () => (
   </svg>
 );
 
-
 const ChevronUpIcon = () => (
   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="18 15 12 9 6 15"></polyline>
@@ -87,13 +292,23 @@ const VolumeXIcon = () => (
   </svg>
 );
 
+const LockIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+  </svg>
+);
 
+const BookIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+  </svg>
+);
 
 const SegmentedBar = ({ current, max, color, onClick, halfWidth, pulseCount = 0 }: { current: number, max: number, color: string, onClick: () => void, halfWidth?: boolean, pulseCount?: number }) => {
   const segments = [];
-  const maxSafe = Math.max(1, max); // Evita barra vazia se max for 0
-  
-  // Para quantidades muito grandes, reduzimos as bordas e sombras pra evitar poluição
+  const maxSafe = Math.max(1, max);
   const isHighVolume = maxSafe > 20;
 
   for (let i = 0; i < maxSafe; i++) {
@@ -113,7 +328,7 @@ const SegmentedBar = ({ current, max, color, onClick, halfWidth, pulseCount = 0 
           boxShadow: isFilled && !isHighVolume ? `0 0 5px ${color}80` : 'none',
           transition: 'all 0.2s ease',
           opacity: isFilled ? 1 : 0.2,
-          marginRight: '1px' // Em vez de gap fixo, usamos margem para acomodar até as barras adjacentes
+          marginRight: '1px'
         }}
       />
     );
@@ -132,7 +347,11 @@ const loadInitialData = () => {
   const saved = localStorage.getItem('3det_ficha');
   if (saved) {
     try {
-      return JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed.rollBonuses)) {
+        parsed.rollBonuses = parsed.rollBonuses.map(normalizeRollBonus);
+      }
+      return parsed;
     } catch (e) {
       console.error('Failed to parse saved data', e);
     }
@@ -178,14 +397,17 @@ export default function App() {
 
   const [isEditingStats, setIsEditingStats] = useState(false);
 
-  // Modificadores de rolagem
-  const [bonusDice, setBonusDice] = useState<0 | 1 | 2>(0);
-  const [critRange, setCritRange] = useState(6);
+  // Modificadores manuais de rolagem
+  const [manualBonusDice, setManualBonusDice] = useState<0 | 1 | 2>(0);
+  const [manualCritRange, setManualCritRange] = useState(6);
 
-  // Bônus customizados de rolagem
-  const [rollBonuses, setRollBonuses] = useState<RollBonus[]>(initData.rollBonuses ?? []);
+  // Bônus e Técnicas
+  const [rollBonuses, setRollBonuses] = useState<RollBonus[]>(
+    Array.isArray(initData.rollBonuses) ? initData.rollBonuses.map(normalizeRollBonus) : []
+  );
   const [activeBonuses, setActiveBonuses] = useState<Set<string>>(new Set());
   const [editingBonusId, setEditingBonusId] = useState<string | null>(null);
+  const [isPresetModalOpen, setIsPresetModalOpen] = useState(false);
 
   const [rolling, setRolling] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -197,19 +419,66 @@ export default function App() {
     isCriticalFail: boolean;
     finalTotal: number;
     usedAttributeName: string;
-    usedAttributeValue: number;
-    bonusTotal: number;
-    bonusDetails: { label: string; value: number }[];
+    baseAttributeValue: number;
+    attrBonusValue: number;
+    totalEffectiveAttribute: number;
+    flatBonusTotal: number;
+    critRangeUsed: number;
+    appliedBonuses: { name: string; alias?: string; desc: string; cost?: string }[];
   } | null>(null);
 
   const diceBoxRef = useRef<any>(null);
   const clearDiceTimeoutRef = useRef<any>(null);
 
+  // Active bonuses list
+  const activeBonusesList = useMemo(() => {
+    return rollBonuses.filter(b => activeBonuses.has(b.id));
+  }, [rollBonuses, activeBonuses]);
+
+  // Derived Critical Threshold from active bonuses
+  const calculatedCritRange = useMemo(() => {
+    let totalCritMod = 0;
+    activeBonusesList.forEach(b => {
+      if (b.critThresholdMod) totalCritMod += b.critThresholdMod;
+    });
+    // 3DeT Victory limits criticals to 4+ (50% chance max)
+    const range = manualCritRange + totalCritMod;
+    return Math.max(4, Math.min(6, range));
+  }, [activeBonusesList, manualCritRange]);
+
+  // Derived Extra Dice from active bonuses
+  const calculatedTotalExtraDice = useMemo(() => {
+    let extra = manualBonusDice;
+    activeBonusesList.forEach(b => {
+      if (b.extraDice) extra += b.extraDice;
+    });
+    return Math.max(0, Math.min(2, extra)); // Cap extra dice to 0..2 so total dice is 1..3
+  }, [activeBonusesList, manualBonusDice]);
+
+  // Restricted Attribute: check if active bonuses require a specific attribute
+  const allowedAttributes = useMemo(() => {
+    const required = new Set<'poder' | 'habilidade' | 'resistencia'>();
+    activeBonusesList.forEach(b => {
+      if (b.attribute && b.attribute !== 'any') {
+        required.add(b.attribute);
+      }
+    });
+
+    if (required.size === 0) {
+      return { poder: true, habilidade: true, resistencia: true, restrictedTo: null };
+    }
+    return {
+      poder: required.has('poder'),
+      habilidade: required.has('habilidade'),
+      resistencia: required.has('resistencia'),
+      restrictedTo: Array.from(required).join(' / ')
+    };
+  }, [activeBonusesList]);
+
   // Apply accent color to CSS variables and DiceBox
   useEffect(() => {
     document.documentElement.style.setProperty('--accent-color', accentColor);
     
-    // Parse hex to RGB to generate derived colors
     const hex = accentColor.replace('#', '');
     const r = parseInt(hex.length === 3 ? hex[0] + hex[0] : hex.substring(0, 2), 16) || 255;
     const g = parseInt(hex.length === 3 ? hex[1] + hex[1] : hex.substring(2, 4), 16) || 0;
@@ -223,7 +492,6 @@ export default function App() {
     const lb = Math.min(255, b + 50);
     document.documentElement.style.setProperty('--accent-hover', `rgb(${lr}, ${lg}, ${lb})`);
 
-    // Calculate luminance for text color adjustment
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
     const textColor = luminance > 0.5 ? '#000000' : '#ffffff';
     document.documentElement.style.setProperty('--accent-text-color', textColor);
@@ -241,7 +509,6 @@ export default function App() {
     setMode('play');
   };
 
-  // Auto-save core attributes when changing mode
   useEffect(() => {
     if (mode === 'play') {
       localStorage.setItem('3det_ficha', JSON.stringify({
@@ -262,7 +529,6 @@ export default function App() {
     setIsClosing(false);
   };
 
-  // Inicializar o DiceBox apenas no modo 'play'
   useEffect(() => {
     if (mode === 'play' && !diceBoxRef.current) {
       const diceBox = new DiceBox("#dice-box", {
@@ -283,18 +549,33 @@ export default function App() {
     }
   }, [mode]);
 
-
-  const addRollBonus = () => {
+  const addCustomBonus = () => {
     const newId = Date.now().toString();
     const newBonus: RollBonus = {
       id: newId,
-      label: '',
-      type: 'fixed',
-      value: 1,
+      name: 'Técnica / Bônus Custom',
+      alias: '',
+      attribute: 'any',
+      bonusType: 'attr_mod',
+      value: 2,
+      critThresholdMod: 0,
+      autoCrit: false,
+      extraDice: 0,
       costValue: 1,
-      costResource: 'none'
+      costResource: 'PM'
     };
     setRollBonuses(prev => [...prev, newBonus]);
+    setEditingBonusId(newId);
+  };
+
+  const addPresetBonus = (preset: Omit<RollBonus, 'id'>) => {
+    const newId = Date.now().toString();
+    const newBonus: RollBonus = {
+      ...preset,
+      id: newId
+    };
+    setRollBonuses(prev => [...prev, newBonus]);
+    setIsPresetModalOpen(false);
     setEditingBonusId(newId);
   };
 
@@ -320,27 +601,38 @@ export default function App() {
     });
   };
 
-  const resolveBonusValue = (bonus: RollBonus): number => {
-    switch (bonus.type) {
-      case 'poder': return poder;
-      case 'habilidade': return habilidade;
-      case 'resistencia': return resistencia;
-      default: return bonus.value;
+  const getBonusSubtitle = (bonus: RollBonus): string => {
+    const parts: string[] = [];
+    
+    if (bonus.bonusType === 'attr_mod' && bonus.value) {
+      const attrLetter = bonus.attribute === 'poder' ? 'P' : bonus.attribute === 'habilidade' ? 'H' : bonus.attribute === 'resistencia' ? 'R' : 'Atributo';
+      parts.push(`+${bonus.value} ${attrLetter}`);
+    } else if (bonus.bonusType === 'flat' && bonus.value) {
+      parts.push(`+${bonus.value} Fixo`);
+    } else if (bonus.bonusType === 'full_attr') {
+      const srcLetter = bonus.attrSource === 'poder' ? 'P' : bonus.attrSource === 'habilidade' ? 'H' : 'R';
+      parts.push(`+${srcLetter}`);
     }
-  };
 
-  const getBonusDisplayValue = (bonus: RollBonus): string => {
-    let text = '';
-    switch (bonus.type) {
-      case 'poder': text = `+P (${poder})`; break;
-      case 'habilidade': text = `+H (${habilidade})`; break;
-      case 'resistencia': text = `+R (${resistencia})`; break;
-      default: text = `+${bonus.value}`; break;
+    if (bonus.critThresholdMod && bonus.critThresholdMod < 0) {
+      parts.push('Crítico 5+');
     }
-    if (bonus.costResource && bonus.costResource !== 'none') {
-      text += ` [-${bonus.costValue || 0} ${bonus.costResource}]`;
+    if (bonus.autoCrit) {
+      parts.push('Crítico Auto');
     }
-    return text;
+    if (bonus.extraDice && bonus.extraDice > 0) {
+      parts.push(`+${bonus.extraDice}D Ganho`);
+    } else if (bonus.extraDice && bonus.extraDice < 0) {
+      parts.push(`${bonus.extraDice}D Perda`);
+    }
+
+    let text = parts.join(' • ');
+    if (!text && bonus.name) text = bonus.name;
+
+    if (bonus.costResource && bonus.costResource !== 'none' && bonus.costValue) {
+      text += ` [-${bonus.costValue} ${bonus.costResource}]`;
+    }
+    return text || 'Sem bônus direto';
   };
 
   const handleStatChange = (stat: 'PA' | 'PM' | 'PV', delta: number) => {
@@ -351,6 +643,8 @@ export default function App() {
 
   const handleRoll = async (attrName: 'poder' | 'habilidade' | 'resistencia') => {
     if (!diceBoxRef.current || rolling) return;
+    if (!allowedAttributes[attrName]) return;
+
     setRolling(true);
     setIsModalOpen(false);
     setIsClosing(false);
@@ -360,25 +654,68 @@ export default function App() {
       clearDiceTimeoutRef.current = null;
     }
 
-    let attrValue = 0;
+    let baseAttrValue = 0;
     let label = '';
-    if (attrName === 'poder') { attrValue = poder; label = 'Poder'; }
-    else if (attrName === 'habilidade') { attrValue = habilidade; label = 'Habilidade'; }
-    else if (attrName === 'resistencia') { attrValue = resistencia; label = 'Resistência'; }
+    if (attrName === 'poder') { baseAttrValue = poder; label = 'Poder'; }
+    else if (attrName === 'habilidade') { baseAttrValue = habilidade; label = 'Habilidade'; }
+    else if (attrName === 'resistencia') { baseAttrValue = resistencia; label = 'Resistência'; }
 
-    const base = 1;
-    const calculatedDice = base + bonusDice;
-    const diceCount = Math.max(1, Math.min(3, calculatedDice));
-    
+    // Calculate attribute modifications and flat bonuses
+    let attrModValue = 0;
+    let flatBonusTotal = 0;
+    let hasAutoCrit = false;
+    const appliedBonuses: { name: string; alias?: string; desc: string; cost?: string }[] = [];
+
+    activeBonusesList.forEach(bonus => {
+      let desc = '';
+      if (bonus.bonusType === 'attr_mod') {
+        attrModValue += bonus.value;
+        desc = `+${bonus.value} no Atributo`;
+      } else if (bonus.bonusType === 'flat') {
+        flatBonusTotal += bonus.value;
+        desc = `+${bonus.value} Total`;
+      } else if (bonus.bonusType === 'full_attr') {
+        const val = bonus.attrSource === 'poder' ? poder : bonus.attrSource === 'habilidade' ? habilidade : resistencia;
+        flatBonusTotal += val;
+        desc = `+${val} (${bonus.attrSource})`;
+      }
+
+      if (bonus.critThresholdMod) {
+        desc += desc ? ' | Crítico 5+' : 'Crítico 5+';
+      }
+      if (bonus.autoCrit) {
+        hasAutoCrit = true;
+        desc += desc ? ' | Crítico Automático' : 'Crítico Automático';
+      }
+      if (bonus.extraDice) {
+        desc += desc ? ` | ${bonus.extraDice > 0 ? '+' : ''}${bonus.extraDice}D` : `${bonus.extraDice > 0 ? '+' : ''}${bonus.extraDice}D`;
+      }
+
+      let costStr = '';
+      if (bonus.costResource && bonus.costResource !== 'none' && bonus.costValue) {
+        costStr = `-${bonus.costValue} ${bonus.costResource}`;
+      }
+
+      appliedBonuses.push({
+        name: bonus.name,
+        alias: bonus.alias,
+        desc,
+        cost: costStr
+      });
+    });
+
+    const totalEffectiveAttribute = Math.max(0, baseAttrValue + attrModValue);
+    const diceCount = Math.max(1, Math.min(3, 1 + calculatedTotalExtraDice));
+    const effectiveCritRange = calculatedCritRange;
+
     try {
       if (soundOn) {
         playDiceSound(diceCount);
       }
 
-      // Microajustes de força: cria entropia extra na simulação 3D a cada rolagem
-      const randomSpin = 4 + (Math.random() * 3); // 4 a 7
-      const randomThrow = 4 + (Math.random() * 3); // 4 a 7
-      const randomHeight = 7 + (Math.random() * 3); // 7 a 10
+      const randomSpin = 4 + (Math.random() * 3);
+      const randomThrow = 4 + (Math.random() * 3);
+      const randomHeight = 7 + (Math.random() * 3);
       
       diceBoxRef.current.updateConfig({
         spinForce: randomSpin,
@@ -391,7 +728,6 @@ export default function App() {
       
       const diceResults = await diceBoxRef.current.roll(`${diceCount}d6`);
       
-      // Sumir com os dados 3 segundos após pararem de rolar
       clearDiceTimeoutRef.current = setTimeout(() => {
         if (diceBoxRef.current) {
           diceBoxRef.current.clear();
@@ -409,22 +745,20 @@ export default function App() {
 
       const diceSum = rolls.reduce((a, b) => a + b, 0);
       const isCriticalFail = rolls.length > 0 && rolls.every((r) => r === 1);
-      const criticals = rolls.filter((r) => r >= critRange).length;
       
-      // Calculate active bonuses
-      const bonusDetails: { label: string; value: number }[] = [];
-      rollBonuses.filter(b => activeBonuses.has(b.id)).forEach(b => {
-        const val = resolveBonusValue(b);
-        bonusDetails.push({ label: b.label || getBonusDisplayValue(b), value: val });
-      });
-      const bonusTotal = bonusDetails.reduce((sum, d) => sum + d.value, 0);
+      let rolledCrits = rolls.filter((r) => r >= effectiveCritRange).length;
+      if (hasAutoCrit && rolledCrits === 0) {
+        rolledCrits = 1; // Titânico guarantees at least 1 critical
+      }
+      const criticals = rolledCrits;
 
-      const finalTotal = diceSum + attrValue + (attrValue * criticals) + bonusTotal;
+      // In 3DeT Victory: Final = DiceSum + Attribute + (Attribute * Criticals) + FlatBonus
+      const finalTotal = diceSum + totalEffectiveAttribute + (totalEffectiveAttribute * criticals) + flatBonusTotal;
 
       // Deduct resource costs
-      const costPV = rollBonuses.filter(b => activeBonuses.has(b.id) && b.costResource === 'PV').reduce((sum, b) => sum + (b.costValue || 0), 0);
-      const costPM = rollBonuses.filter(b => activeBonuses.has(b.id) && b.costResource === 'PM').reduce((sum, b) => sum + (b.costValue || 0), 0);
-      const costPA = rollBonuses.filter(b => activeBonuses.has(b.id) && b.costResource === 'PA').reduce((sum, b) => sum + (b.costValue || 0), 0);
+      const costPV = activeBonusesList.filter(b => b.costResource === 'PV').reduce((sum, b) => sum + (b.costValue || 0), 0);
+      const costPM = activeBonusesList.filter(b => b.costResource === 'PM').reduce((sum, b) => sum + (b.costValue || 0), 0);
+      const costPA = activeBonusesList.filter(b => b.costResource === 'PA').reduce((sum, b) => sum + (b.costValue || 0), 0);
       
       if (costPV > 0) setCurrentPV(prev => Math.max(0, prev - costPV));
       if (costPM > 0) setCurrentPM(prev => Math.max(0, prev - costPM));
@@ -437,9 +771,12 @@ export default function App() {
         isCriticalFail,
         finalTotal,
         usedAttributeName: label,
-        usedAttributeValue: attrValue,
-        bonusTotal,
-        bonusDetails
+        baseAttributeValue: baseAttrValue,
+        attrBonusValue: attrModValue,
+        totalEffectiveAttribute,
+        flatBonusTotal,
+        critRangeUsed: effectiveCritRange,
+        appliedBonuses
       });
       setRolling(false);
       setIsModalOpen(true);
@@ -455,11 +792,10 @@ export default function App() {
     setTimeout(() => {
       setIsModalOpen(false);
       setIsClosing(false);
-    }, 400); // 400ms is the CSS animation duration
+    }, 400);
   };
 
-  // Calculate current active costs to pulse the bars
-  const activeBonusesList = rollBonuses.filter(b => activeBonuses.has(b.id));
+  // Calculate current active costs for pulsing
   const totalCostPV = activeBonusesList.filter(b => b.costResource === 'PV').reduce((sum, b) => sum + (b.costValue || 0), 0);
   const totalCostPM = activeBonusesList.filter(b => b.costResource === 'PM').reduce((sum, b) => sum + (b.costValue || 0), 0);
   const totalCostPA = activeBonusesList.filter(b => b.costResource === 'PA').reduce((sum, b) => sum + (b.costValue || 0), 0);
@@ -472,42 +808,42 @@ export default function App() {
         
         {mode === 'edit' && (
           <div className="panel slide-up" style={{ animationDelay: '0.1s', gridColumn: '1 / -1', maxWidth: '600px', margin: '0 auto', width: '100%' }}>
-              <h1 className="panel-title">Cadastro da Ficha</h1>
-              
-              <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
-                <div className="stat-label" style={{ marginBottom: '0.5rem', color: 'var(--text-muted)' }}>NOME DO PERSONAGEM</div>
-                <input 
-                  type="text" 
-                  value={characterName}
-                  onChange={(e) => setCharacterName(e.target.value)}
-                  placeholder="Seu Nome Aqui"
-                  style={{ 
-                    width: '100%', 
-                    background: 'var(--surface-hover)', 
-                    border: '1px solid var(--border-color)', 
-                    borderRadius: 'var(--radius)', 
-                    color: 'var(--accent-color)', 
-                    fontSize: '2rem', 
-                    fontFamily: 'Bebas Neue, sans-serif', 
-                    textAlign: 'center', 
-                    outline: 'none', 
-                    padding: '0.5rem',
-                    transition: 'var(--transition)'
-                  }}
-                  onFocus={(e) => e.target.style.borderColor = 'var(--accent-color)'}
-                  onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
-                />
-              </div>
+            <h1 className="panel-title">Cadastro da Ficha</h1>
+            
+            <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
+              <div className="stat-label" style={{ marginBottom: '0.5rem', color: 'var(--text-muted)' }}>NOME DO PERSONAGEM</div>
+              <input 
+                type="text" 
+                value={characterName}
+                onChange={(e) => setCharacterName(e.target.value)}
+                placeholder="Seu Nome Aqui"
+                style={{ 
+                  width: '100%', 
+                  background: 'var(--surface-hover)', 
+                  border: '1px solid var(--border-color)', 
+                  borderRadius: 'var(--radius)', 
+                  color: 'var(--accent-color)', 
+                  fontSize: '2rem', 
+                  fontFamily: 'Bebas Neue, sans-serif', 
+                  textAlign: 'center', 
+                  outline: 'none', 
+                  padding: '0.5rem',
+                  transition: 'var(--transition)'
+                }}
+                onFocus={(e) => e.target.style.borderColor = 'var(--accent-color)'}
+                onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+              />
+            </div>
 
-              <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
-                <div className="stat-label" style={{ marginBottom: '0.5rem', color: 'var(--text-muted)' }}>COR DO PERSONAGEM (DADOS)</div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <HexColorPicker color={accentColor} onChange={setAccentColor} />
-                  <div style={{ marginTop: '1rem', color: accentColor, fontWeight: 'bold' }}>{accentColor.toUpperCase()}</div>
-                </div>
+            <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
+              <div className="stat-label" style={{ marginBottom: '0.5rem', color: 'var(--text-muted)' }}>COR DO PERSONAGEM (DADOS)</div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <HexColorPicker color={accentColor} onChange={setAccentColor} />
+                <div style={{ marginTop: '1rem', color: accentColor, fontWeight: 'bold' }}>{accentColor.toUpperCase()}</div>
               </div>
+            </div>
 
-              <h2 className="panel-title">Atributos</h2>
+            <h2 className="panel-title">Atributos</h2>
             <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>
               Defina seus atributos e vantagens. Os dados ficarão salvos automaticamente.
             </p>
@@ -538,33 +874,53 @@ export default function App() {
               </div>
             </div>
 
-            <h2 className="panel-title" style={{ marginTop: '2rem' }}>Bônus de Rolagem</h2>
+            <h2 className="panel-title" style={{ marginTop: '2rem' }}>Vantagens, Técnicas & Bônus</h2>
             <p style={{ color: 'var(--text-muted)', marginBottom: '1rem', fontSize: '0.9rem' }}>
-              Cadastre bônus que podem ser ativados antes de rolar. Use valores fixos (+2, +3) ou baseados em atributos (+P, +H, +R).
+              Configure técnicas especiais com Aliases personalizados (ex: "Kamehameha"), bônus de atributo que multiplicam em críticos, reduções de margem de crítico e restrições de atributo.
             </p>
 
             <div className="bonus-editor-list">
               {rollBonuses.map((bonus) => (
-                <div key={bonus.id} className="bonus-editor-row" style={{ justifyContent: 'space-between', padding: '1rem', cursor: 'pointer' }} onClick={(e) => {
+                <div key={bonus.id} className="bonus-editor-row" style={{ justifyContent: 'space-between', padding: '0.8rem 1rem', cursor: 'pointer' }} onClick={(e) => {
                   if ((e.target as HTMLElement).closest('button')) return;
                   setEditingBonusId(bonus.id);
                 }}>
-                  <div style={{ flex: 1, color: 'var(--text-main)', fontSize: '1.2rem', fontFamily: 'Bebas Neue, sans-serif', letterSpacing: '1px' }}>
-                    {bonus.label || 'Bônus sem nome'} <span style={{ color: 'var(--accent-color)', fontSize: '1rem', marginLeft: '0.5rem' }}>{getBonusDisplayValue(bonus)}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      <span style={{ color: 'var(--text-main)', fontSize: '1.2rem', fontFamily: 'Bebas Neue, sans-serif', letterSpacing: '1px' }}>
+                        {bonus.alias ? bonus.alias.toUpperCase() : bonus.name || 'Técnica sem nome'}
+                      </span>
+                      {bonus.alias && (
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', background: 'var(--surface-hover)', padding: '2px 6px', borderRadius: '4px' }}>
+                          {bonus.name}
+                        </span>
+                      )}
+                      {bonus.attribute !== 'any' && (
+                        <span className="bonus-attr-badge" style={{ 
+                          color: bonus.attribute === 'poder' ? '#FF9E00' : bonus.attribute === 'habilidade' ? '#894EC6' : '#5EB05D',
+                          borderColor: bonus.attribute === 'poder' ? '#FF9E00' : bonus.attribute === 'habilidade' ? '#894EC6' : '#5EB05D'
+                        }}>
+                          {bonus.attribute.toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ color: 'var(--accent-color)', fontSize: '0.85rem', marginTop: '2px' }}>
+                      {getBonusSubtitle(bonus)}
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                     <button
                       className="bonus-remove-btn"
                       style={{ color: 'var(--text-muted)' }}
                       onClick={() => setEditingBonusId(bonus.id)}
-                      title="Editar bônus"
+                      title="Editar técnica"
                     >
                       <PencilIcon />
                     </button>
                     <button
                       className="bonus-remove-btn"
                       onClick={() => removeRollBonus(bonus.id)}
-                      title="Remover bônus"
+                      title="Remover técnica"
                     >
                       <TrashIcon />
                     </button>
@@ -573,9 +929,14 @@ export default function App() {
               ))}
             </div>
 
-            <button className="bonus-add-btn" onClick={addRollBonus}>
-              <PlusIcon /> Adicionar Bônus
-            </button>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
+              <button className="bonus-add-btn" onClick={() => setIsPresetModalOpen(true)} style={{ borderColor: 'var(--accent-color)', color: 'var(--accent-color)' }}>
+                <BookIcon /> Preset do Livro
+              </button>
+              <button className="bonus-add-btn" onClick={addCustomBonus}>
+                <PlusIcon /> Técnica Custom
+              </button>
+            </div>
 
             <button className="btn-roll" onClick={handleSave} style={{ marginTop: '2rem' }}>
               Salvar Ficha e Jogar
@@ -585,133 +946,186 @@ export default function App() {
 
         {mode === 'play' && (
           <div style={{ gridColumn: '1 / -1', maxWidth: '600px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column' }}>
-              {/* FIGHTING GAME HUD */}
-              <div className="slide-up" style={{ 
+            {/* FIGHTING GAME HUD */}
+            <div className="slide-up" style={{ 
+              display: 'flex', 
+              gap: '1rem', 
+              marginBottom: '1rem', 
+              padding: '0.8rem', 
+              background: 'rgba(0,0,0,0.5)', 
+              borderTop: '2px solid var(--accent-color)', 
+              borderBottom: '2px solid var(--accent-color)',
+              position: 'relative',
+              animationDelay: '0.05s',
+              zIndex: 20
+            }}>
+              <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '0.5rem' }}>
+                <button 
+                  onClick={() => setSoundOn(!soundOn)} 
+                  style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border-color)', color: soundOn ? 'var(--accent-color)' : 'var(--text-muted)', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', cursor: 'pointer', zIndex: 10 }}
+                  title={soundOn ? "Desativar Som" : "Ativar Som"}
+                >
+                  {soundOn ? <VolumeIcon /> : <VolumeXIcon />}
+                </button>
+                <button 
+                  onClick={handleEdit} 
+                  style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border-color)', color: 'var(--text-muted)', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', cursor: 'pointer', zIndex: 10 }}
+                  title="Editar Ficha"
+                >
+                  <PencilIcon />
+                </button>
+              </div>
+
+              {/* Portrait Area */}
+              <div style={{ 
+                width: '90px', 
+                height: '110px', 
+                backgroundColor: 'var(--surface-hover)', 
+                border: '3px solid var(--accent-color)', 
+                transform: 'skewX(-10deg)', 
                 display: 'flex', 
-                gap: '1rem', 
-                marginBottom: '1rem', 
-                padding: '0.8rem', 
-                background: 'rgba(0,0,0,0.5)', 
-                borderTop: '2px solid var(--accent-color)', 
-                borderBottom: '2px solid var(--accent-color)',
-                position: 'relative',
-                animationDelay: '0.05s',
-                zIndex: 20
+                alignItems: 'center', 
+                justifyContent: 'center',
+                boxShadow: '0 0 15px var(--accent-transparent)'
               }}>
-                {/* Botoes Flutuantes no Canto Superior Direito do HUD */}
-                <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '0.5rem' }}>
-                  <button 
-                    onClick={() => setSoundOn(!soundOn)} 
-                    style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border-color)', color: soundOn ? 'var(--accent-color)' : 'var(--text-muted)', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', cursor: 'pointer', zIndex: 10 }}
-                    title={soundOn ? "Desativar Som" : "Ativar Som"}
-                  >
-                    {soundOn ? <VolumeIcon /> : <VolumeXIcon />}
-                  </button>
-                  <button 
-                    onClick={handleEdit} 
-                    style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border-color)', color: 'var(--text-muted)', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', cursor: 'pointer', zIndex: 10 }}
-                    title="Editar Ficha"
-                  >
-                    <PencilIcon />
-                  </button>
-                </div>
-
-                {/* Portrait Area */}
-                <div style={{ 
-                  width: '90px', 
-                  height: '110px', 
-                  backgroundColor: 'var(--surface-hover)', 
-                  border: '3px solid var(--accent-color)', 
-                  transform: 'skewX(-10deg)', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  boxShadow: '0 0 15px var(--accent-transparent)'
-                }}>
-                  <div style={{ transform: 'skewX(10deg)', fontSize: '3.5rem', fontWeight: 'bold', color: 'var(--accent-color)', fontFamily: 'Bebas Neue, sans-serif' }}>
-                    {characterName ? characterName.charAt(0).toUpperCase() : '?'}
-                  </div>
-                </div>
-
-                {/* Bars Area */}
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  <h1 style={{ 
-                    fontFamily: 'Bebas Neue, sans-serif', 
-                    fontSize: '1.8rem', 
-                    margin: '0 0 0.5rem 0', 
-                    color: '#fff', 
-                    letterSpacing: '1px',
-                    textTransform: 'uppercase',
-                    textShadow: '2px 2px 0px #000'
-                  }}>
-                    {characterName || 'HERÓI DESCONHECIDO'}
-                  </h1>
-                  
-                  <SegmentedBar current={currentPV} max={maxPV} color="#5EB05D" onClick={() => setIsEditingStats(true)} pulseCount={totalCostPV} />
-                  <SegmentedBar current={currentPM} max={maxPM} color="#894EC6" onClick={() => setIsEditingStats(true)} pulseCount={totalCostPM} />
-                  <SegmentedBar current={currentPA} max={maxPA} color="#FF9E00" onClick={() => setIsEditingStats(true)} halfWidth={true} pulseCount={totalCostPA} />
+                <div style={{ transform: 'skewX(10deg)', fontSize: '3.5rem', fontWeight: 'bold', color: 'var(--accent-color)', fontFamily: 'Bebas Neue, sans-serif' }}>
+                  {characterName ? characterName.charAt(0).toUpperCase() : '?'}
                 </div>
               </div>
-              
-              <div className="panel slide-up" style={{ animationDelay: '0.15s', width: '100%' }}>
-                <div className="stats-grid">
-                <button className="stat-box roll-btn" style={{ '--btn-color': '#FF9E00', '--btn-text-color': '#ffffff' } as React.CSSProperties} onClick={() => handleRoll('poder')} disabled={rolling}>
+
+              {/* Bars Area */}
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                <h1 style={{ 
+                  fontFamily: 'Bebas Neue, sans-serif', 
+                  fontSize: '1.8rem', 
+                  margin: '0 0 0.5rem 0', 
+                  color: '#fff', 
+                  letterSpacing: '1px',
+                  textTransform: 'uppercase',
+                  textShadow: '2px 2px 0px #000'
+                }}>
+                  {characterName || 'HERÓI DESCONHECIDO'}
+                </h1>
+                
+                <SegmentedBar current={currentPV} max={maxPV} color="#5EB05D" onClick={() => setIsEditingStats(true)} pulseCount={totalCostPV} />
+                <SegmentedBar current={currentPM} max={maxPM} color="#894EC6" onClick={() => setIsEditingStats(true)} pulseCount={totalCostPM} />
+                <SegmentedBar current={currentPA} max={maxPA} color="#FF9E00" onClick={() => setIsEditingStats(true)} halfWidth={true} pulseCount={totalCostPA} />
+              </div>
+            </div>
+            
+            <div className="panel slide-up" style={{ animationDelay: '0.15s', width: '100%' }}>
+              {allowedAttributes.restrictedTo && (
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  gap: '0.5rem', 
+                  marginBottom: '1rem', 
+                  padding: '0.4rem 0.8rem', 
+                  background: 'rgba(255, 0, 102, 0.15)', 
+                  border: '1px solid var(--accent-color)', 
+                  borderRadius: '4px',
+                  fontSize: '0.85rem',
+                  color: '#fff'
+                }}>
+                  <LockIcon />
+                  <span>Técnica ativa exige: <strong style={{ textTransform: 'uppercase', color: 'var(--accent-color)' }}>{allowedAttributes.restrictedTo}</strong></span>
+                </div>
+              )}
+
+              <div className="stats-grid">
+                <button 
+                  className={`stat-box roll-btn ${!allowedAttributes.poder ? 'disabled-attribute' : ''}`}
+                  style={{ '--btn-color': '#FF9E00', '--btn-text-color': '#ffffff' } as React.CSSProperties} 
+                  onClick={() => handleRoll('poder')} 
+                  disabled={rolling || !allowedAttributes.poder}
+                  title={!allowedAttributes.poder ? "Desabilitado pela técnica selecionada" : "Rolar Poder"}
+                >
                   <div className="stat-icon-container"><PoderIcon /></div>
                   <div className="stat-value corner">{poder}</div>
                 </button>
-                <button className="stat-box roll-btn" style={{ '--btn-color': '#894EC6', '--btn-text-color': '#ffffff' } as React.CSSProperties} onClick={() => handleRoll('habilidade')} disabled={rolling}>
+                <button 
+                  className={`stat-box roll-btn ${!allowedAttributes.habilidade ? 'disabled-attribute' : ''}`}
+                  style={{ '--btn-color': '#894EC6', '--btn-text-color': '#ffffff' } as React.CSSProperties} 
+                  onClick={() => handleRoll('habilidade')} 
+                  disabled={rolling || !allowedAttributes.habilidade}
+                  title={!allowedAttributes.habilidade ? "Desabilitado pela técnica selecionada" : "Rolar Habilidade"}
+                >
                   <div className="stat-icon-container"><HabilidadeIcon /></div>
                   <div className="stat-value corner">{habilidade}</div>
                 </button>
-                <button className="stat-box roll-btn" style={{ '--btn-color': '#5EB05D', '--btn-text-color': '#ffffff' } as React.CSSProperties} onClick={() => handleRoll('resistencia')} disabled={rolling}>
+                <button 
+                  className={`stat-box roll-btn ${!allowedAttributes.resistencia ? 'disabled-attribute' : ''}`}
+                  style={{ '--btn-color': '#5EB05D', '--btn-text-color': '#ffffff' } as React.CSSProperties} 
+                  onClick={() => handleRoll('resistencia')} 
+                  disabled={rolling || !allowedAttributes.resistencia}
+                  title={!allowedAttributes.resistencia ? "Desabilitado pela técnica selecionada" : "Rolar Resistência"}
+                >
                   <div className="stat-icon-container"><ResistenciaIcon /></div>
                   <div className="stat-value corner">{resistencia}</div>
                 </button>
               </div>
-              
+            
               <hr style={{ border: 'none', borderTop: '1px solid var(--border-color)', margin: '2rem 0' }} />
-              
-              <h2 className="panel-title" style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Modificadores</h2>
-              
+            
+              <h2 className="panel-title" style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Modificadores de Rolagem</h2>
+            
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
                 <button 
-                  className={`toggle-btn ${bonusDice > 0 ? 'active' : ''}`}
-                  onClick={() => setBonusDice(prev => (prev >= 2 ? 0 : prev + 1) as 0 | 1 | 2)}
-                  title={bonusDice === 0 ? "Rolagem Normal (1D)" : bonusDice === 1 ? "Ganho (+1D)" : "Ganho Duplo (+2D)"}
+                  className={`toggle-btn ${calculatedTotalExtraDice > 0 ? 'active' : ''}`}
+                  onClick={() => setManualBonusDice(prev => (prev >= 2 ? 0 : prev + 1) as 0 | 1 | 2)}
+                  title={`Dados na rolagem: ${1 + calculatedTotalExtraDice}D (Base: 1D + Modificadores: ${calculatedTotalExtraDice}D)`}
                 >
                   <div style={{ display: 'flex', gap: '0.2rem', justifyContent: 'center' }}>
                     <CubeIcon />
-                    {bonusDice >= 1 && <CubeIcon />}
-                    {bonusDice >= 2 && <CubeIcon />}
+                    {calculatedTotalExtraDice >= 1 && <CubeIcon />}
+                    {calculatedTotalExtraDice >= 2 && <CubeIcon />}
                   </div>
                 </button>
 
                 <button 
-                  className={`toggle-btn ${critRange < 6 ? 'active' : ''}`}
-                  onClick={() => setCritRange(prev => prev <= 4 ? 6 : prev - 1)}
-                  title="Intervalo de Acerto Crítico"
+                  className={`toggle-btn ${calculatedCritRange < 6 ? 'active' : ''}`}
+                  onClick={() => setManualCritRange(prev => prev <= 4 ? 6 : prev - 1)}
+                  title={`Intervalo de Acerto Crítico: ${calculatedCritRange === 6 ? '6' : `${calculatedCritRange}+`}`}
                 >
                   <span style={{ fontSize: '1.5rem', fontWeight: 'bold', fontFamily: "'Bebas Neue', sans-serif", letterSpacing: '2px' }}>
-                    {critRange === 6 ? '6' : `${critRange}+`}
+                    {calculatedCritRange === 6 ? '6' : `${calculatedCritRange}+`}
                   </span>
                 </button>
               </div>
 
               {rollBonuses.length > 0 && (
                 <div className="form-group">
-                  <h2 className="panel-title" style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Bônus de Rolagem</h2>
+                  <h2 className="panel-title" style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Técnicas & Bônus Disponíveis</h2>
                   <div className="bonus-toggles-grid">
-                    {rollBonuses.map((bonus) => (
-                      <button
-                        key={bonus.id}
-                        className={`bonus-toggle ${activeBonuses.has(bonus.id) ? 'active' : ''}`}
-                        onClick={() => toggleActiveBonus(bonus.id)}
-                        title={`${bonus.label || 'Bônus'}: ${getBonusDisplayValue(bonus)}`}
-                      >
-                        <span className="bonus-toggle-label">{bonus.label || 'Bônus'}</span>
-                        <span className="bonus-toggle-value">{getBonusDisplayValue(bonus)}</span>
-                      </button>
-                    ))}
+                    {rollBonuses.map((bonus) => {
+                      const isActive = activeBonuses.has(bonus.id);
+                      return (
+                        <button
+                          key={bonus.id}
+                          className={`bonus-toggle ${isActive ? 'active' : ''}`}
+                          onClick={() => toggleActiveBonus(bonus.id)}
+                          title={`${bonus.alias || bonus.name}: ${getBonusSubtitle(bonus)}`}
+                        >
+                          <div className="bonus-toggle-header">
+                            <span className="bonus-toggle-label">
+                              {bonus.alias ? bonus.alias : bonus.name}
+                            </span>
+                            {bonus.attribute !== 'any' && (
+                              <span className="bonus-attr-micro" style={{
+                                color: bonus.attribute === 'poder' ? '#FF9E00' : bonus.attribute === 'habilidade' ? '#894EC6' : '#5EB05D'
+                              }}>
+                                {bonus.attribute.charAt(0).toUpperCase()}
+                              </span>
+                            )}
+                          </div>
+                          {bonus.alias && (
+                            <span className="bonus-toggle-raw-name">{bonus.name}</span>
+                          )}
+                          <span className="bonus-toggle-value">{getBonusSubtitle(bonus)}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -745,7 +1159,9 @@ export default function App() {
             </div>
             
             <div className={`total-score-container ${result?.isCriticalFail ? 'critical-fail' : ''}`}>
-              <div className="total-label">Resultado ({result?.usedAttributeName})</div>
+              <div className="total-label">
+                Resultado ({result?.usedAttributeName}) {result?.critRangeUsed < 6 && `[Crítico ${result.critRangeUsed}+]`}
+              </div>
               <div className="total-score">{result?.finalTotal}</div>
             </div>
 
@@ -755,38 +1171,64 @@ export default function App() {
                 <div className="sum-parts">
                   {result?.rolls.map((roll, i) => (
                     <span key={i} className="sum-bonus-part">
-                      <div className={`sum-dice-face ${roll >= critRange ? 'crit' : ''} ${roll === 1 ? 'fail' : ''}`}>
+                      <div className={`sum-dice-face ${roll >= (result?.critRangeUsed ?? 6) ? 'crit' : ''} ${roll === 1 ? 'fail' : ''}`}>
                         {roll}
                       </div>
                       <span className="sum-operator">+</span>
                     </span>
                   ))}
+
                   <span className="sum-attr">
-                    {result?.usedAttributeValue}
+                    {result?.totalEffectiveAttribute}
                     <span className="sum-attr-label" style={{ 
-                      color: result?.usedAttributeName === 'Poder' ? '#ffcc00' : 
-                             result?.usedAttributeName === 'Habilidade' ? '#4fc3f7' : 
-                             result?.usedAttributeName === 'Resistência' ? 'var(--danger-color)' : 'var(--accent-color)' 
+                      color: result?.usedAttributeName === 'Poder' ? '#FF9E00' : 
+                             result?.usedAttributeName === 'Habilidade' ? '#894EC6' : 
+                             result?.usedAttributeName === 'Resistência' ? '#5EB05D' : 'var(--accent-color)' 
                     }}>
-                      {result?.usedAttributeName?.charAt(0)}
+                      {result?.usedAttributeName?.charAt(0)}{result?.attrBonusValue ? `(+${result.attrBonusValue})` : ''}
                     </span>
                   </span>
                   
                   {result && result.criticals > 0 && (
                     <span className="sum-bonus-part">
                       <span className="sum-operator">+</span>
-                      <span className="sum-crit">{result.criticals * result.usedAttributeValue}<span className="sum-attr-label">crit</span></span>
+                      <span className="sum-crit">
+                        {result.criticals * result.totalEffectiveAttribute}
+                        <span className="sum-attr-label">{result.criticals}x crit</span>
+                      </span>
                     </span>
                   )}
-                  {result && result.bonusDetails.map((bd, i) => (
-                    <span key={`bonus-${i}`} className="sum-bonus-part">
+
+                  {result && result.flatBonusTotal > 0 && (
+                    <span className="sum-bonus-part">
                       <span className="sum-operator">+</span>
-                      <span className="sum-bonus-val">{bd.value}<span className="sum-attr-label">{bd.label}</span></span>
+                      <span className="sum-bonus-val">
+                        {result.flatBonusTotal}
+                        <span className="sum-attr-label">fixo</span>
+                      </span>
                     </span>
-                  ))}
+                  )}
                 </div>
                 <span className="sum-equals">= {result?.finalTotal}</span>
               </div>
+
+              {/* Applied Techniques / Bonuses Breakdown */}
+              {result?.appliedBonuses && result.appliedBonuses.length > 0 && (
+                <div style={{ width: '100%', marginTop: '0.5rem', textAlign: 'left' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Técnicas Ativadas:</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                    {result.appliedBonuses.map((b, idx) => (
+                      <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', background: 'var(--bg-color)', padding: '0.3rem 0.6rem', borderRadius: '4px' }}>
+                        <span>
+                          <strong style={{ color: 'var(--accent-color)' }}>{b.alias ? `${b.alias} (${b.name})` : b.name}</strong>
+                          <span style={{ color: 'var(--text-muted)', marginLeft: '0.5rem' }}>{b.desc}</span>
+                        </span>
+                        {b.cost && <span style={{ color: '#ff3366', fontWeight: 'bold' }}>{b.cost}</span>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -818,34 +1260,87 @@ export default function App() {
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', margin: '1rem 0' }}>
               {/* PV */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.8rem', background: 'rgba(255,51,102,0.1)', borderLeft: '4px solid #ff3366' }}>
-                <span style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.5rem', color: '#ff3366', width: '50px', textAlign: 'left', textShadow: '0 0 5px rgba(255,51,102,0.5)' }}>PV</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.8rem', background: 'rgba(94,176,93,0.1)', borderLeft: '4px solid #5EB05D' }}>
+                <span style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.5rem', color: '#5EB05D', width: '50px', textAlign: 'left', textShadow: '0 0 5px rgba(94,176,93,0.5)' }}>PV</span>
                 <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-                  <button className="control-btn" style={{ width: '45px', height: '45px', fontSize: '1.8rem', borderColor: '#ff3366', color: '#ff3366', background: 'rgba(0,0,0,0.5)' }} onClick={() => handleStatChange('PV', -1)}>-</button>
-                  <span style={{ fontSize: '3rem', fontWeight: 'bold', color: '#fff', fontFamily: 'Bebas Neue, sans-serif', width: '50px', textShadow: '0 0 10px #ff3366' }}>{currentPV}</span>
-                  <button className="control-btn" style={{ width: '45px', height: '45px', fontSize: '1.8rem', borderColor: '#ff3366', color: '#ff3366', background: 'rgba(0,0,0,0.5)' }} onClick={() => handleStatChange('PV', 1)}>+</button>
+                  <button className="control-btn" style={{ width: '45px', height: '45px', fontSize: '1.8rem', borderColor: '#5EB05D', color: '#5EB05D', background: 'rgba(0,0,0,0.5)' }} onClick={() => handleStatChange('PV', -1)}>-</button>
+                  <span style={{ fontSize: '3rem', fontWeight: 'bold', color: '#fff', fontFamily: 'Bebas Neue, sans-serif', width: '50px', textShadow: '0 0 10px #5EB05D' }}>{currentPV}</span>
+                  <button className="control-btn" style={{ width: '45px', height: '45px', fontSize: '1.8rem', borderColor: '#5EB05D', color: '#5EB05D', background: 'rgba(0,0,0,0.5)' }} onClick={() => handleStatChange('PV', 1)}>+</button>
                 </div>
               </div>
               
               {/* PM */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.8rem', background: 'rgba(51,204,255,0.1)', borderLeft: '4px solid #33ccff' }}>
-                <span style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.5rem', color: '#33ccff', width: '50px', textAlign: 'left', textShadow: '0 0 5px rgba(51,204,255,0.5)' }}>PM</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.8rem', background: 'rgba(137,78,198,0.1)', borderLeft: '4px solid #894EC6' }}>
+                <span style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.5rem', color: '#894EC6', width: '50px', textAlign: 'left', textShadow: '0 0 5px rgba(137,78,198,0.5)' }}>PM</span>
                 <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-                  <button className="control-btn" style={{ width: '45px', height: '45px', fontSize: '1.8rem', borderColor: '#33ccff', color: '#33ccff', background: 'rgba(0,0,0,0.5)' }} onClick={() => handleStatChange('PM', -1)}>-</button>
-                  <span style={{ fontSize: '3rem', fontWeight: 'bold', color: '#fff', fontFamily: 'Bebas Neue, sans-serif', width: '50px', textShadow: '0 0 10px #33ccff' }}>{currentPM}</span>
-                  <button className="control-btn" style={{ width: '45px', height: '45px', fontSize: '1.8rem', borderColor: '#33ccff', color: '#33ccff', background: 'rgba(0,0,0,0.5)' }} onClick={() => handleStatChange('PM', 1)}>+</button>
+                  <button className="control-btn" style={{ width: '45px', height: '45px', fontSize: '1.8rem', borderColor: '#894EC6', color: '#894EC6', background: 'rgba(0,0,0,0.5)' }} onClick={() => handleStatChange('PM', -1)}>-</button>
+                  <span style={{ fontSize: '3rem', fontWeight: 'bold', color: '#fff', fontFamily: 'Bebas Neue, sans-serif', width: '50px', textShadow: '0 0 10px #894EC6' }}>{currentPM}</span>
+                  <button className="control-btn" style={{ width: '45px', height: '45px', fontSize: '1.8rem', borderColor: '#894EC6', color: '#894EC6', background: 'rgba(0,0,0,0.5)' }} onClick={() => handleStatChange('PM', 1)}>+</button>
                 </div>
               </div>
 
               {/* PA */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.8rem', background: 'rgba(255,204,0,0.1)', borderLeft: '4px solid #ffcc00' }}>
-                <span style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.5rem', color: '#ffcc00', width: '50px', textAlign: 'left', textShadow: '0 0 5px rgba(255,204,0,0.5)' }}>PA</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.8rem', background: 'rgba(255,158,0,0.1)', borderLeft: '4px solid #FF9E00' }}>
+                <span style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.5rem', color: '#FF9E00', width: '50px', textAlign: 'left', textShadow: '0 0 5px rgba(255,158,0,0.5)' }}>PA</span>
                 <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-                  <button className="control-btn" style={{ width: '45px', height: '45px', fontSize: '1.8rem', borderColor: '#ffcc00', color: '#ffcc00', background: 'rgba(0,0,0,0.5)' }} onClick={() => handleStatChange('PA', -1)}>-</button>
-                  <span style={{ fontSize: '3rem', fontWeight: 'bold', color: '#fff', fontFamily: 'Bebas Neue, sans-serif', width: '50px', textShadow: '0 0 10px #ffcc00' }}>{currentPA}</span>
-                  <button className="control-btn" style={{ width: '45px', height: '45px', fontSize: '1.8rem', borderColor: '#ffcc00', color: '#ffcc00', background: 'rgba(0,0,0,0.5)' }} onClick={() => handleStatChange('PA', 1)}>+</button>
+                  <button className="control-btn" style={{ width: '45px', height: '45px', fontSize: '1.8rem', borderColor: '#FF9E00', color: '#FF9E00', background: 'rgba(0,0,0,0.5)' }} onClick={() => handleStatChange('PA', -1)}>-</button>
+                  <span style={{ fontSize: '3rem', fontWeight: 'bold', color: '#fff', fontFamily: 'Bebas Neue, sans-serif', width: '50px', textShadow: '0 0 10px #FF9E00' }}>{currentPA}</span>
+                  <button className="control-btn" style={{ width: '45px', height: '45px', fontSize: '1.8rem', borderColor: '#FF9E00', color: '#FF9E00', background: 'rgba(0,0,0,0.5)' }} onClick={() => handleStatChange('PA', 1)}>+</button>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Presets do Livro */}
+      {isPresetModalOpen && (
+        <div className="modal-overlay pop-in" style={{ zIndex: 360, alignItems: 'center' }} onClick={(e) => {
+          if (e.target === e.currentTarget) setIsPresetModalOpen(false);
+        }}>
+          <div className="modal-content" style={{ 
+            borderRadius: '4px',
+            borderTop: '2px solid var(--accent-color)',
+            borderBottom: '2px solid var(--accent-color)',
+            background: 'rgba(15, 18, 26, 0.95)',
+            boxShadow: '0 0 25px var(--accent-transparent)',
+            maxWidth: '500px',
+            width: '90%',
+            maxHeight: '85vh',
+            overflowY: 'auto'
+          }}>
+            <button className="modal-close" onClick={() => setIsPresetModalOpen(false)}>✕</button>
+            <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', marginBottom: '0.5rem', color: '#fff', textShadow: '2px 2px 0px #000', letterSpacing: '1px' }}>VANTAGENS DO LIVRO BÁSICO</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
+              Selecione uma vantagem ou técnica oficial para adicionar à sua ficha:
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+              {BONUS_PRESETS.map((preset, i) => (
+                <div 
+                  key={i} 
+                  className="preset-card-item"
+                  onClick={() => addPresetBonus(preset)}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontWeight: 'bold', color: 'var(--text-main)', fontSize: '1.1rem', fontFamily: 'Bebas Neue, sans-serif', letterSpacing: '0.5px' }}>
+                      {preset.name}
+                    </span>
+                    {preset.costResource !== 'none' && (
+                      <span style={{ fontSize: '0.75rem', color: '#ff3366', fontWeight: 'bold' }}>
+                        -{preset.costValue} {preset.costResource}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', gap: '0.5rem', marginTop: '2px' }}>
+                    <span>Atributo: <strong style={{ textTransform: 'uppercase', color: preset.attribute === 'poder' ? '#FF9E00' : preset.attribute === 'habilidade' ? '#894EC6' : preset.attribute === 'resistencia' ? '#5EB05D' : 'var(--text-main)' }}>{preset.attribute}</strong></span>
+                    {preset.bonusType === 'attr_mod' && <span>• <strong>+{preset.value} Atributo</strong></span>}
+                    {preset.critThresholdMod ? <span>• <strong>Crítico 5+</strong></span> : null}
+                    {preset.autoCrit ? <span>• <strong>Crítico Automático</strong></span> : null}
+                    {preset.extraDice ? <span>• <strong>+{preset.extraDice}D Ganho</strong></span> : null}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -863,60 +1358,158 @@ export default function App() {
               borderRadius: '4px',
               borderTop: '2px solid var(--accent-color)',
               borderBottom: '2px solid var(--accent-color)',
-              background: 'rgba(0,0,0,0.85)',
+              background: 'rgba(15, 18, 26, 0.95)',
               boxShadow: '0 0 20px var(--accent-transparent)',
-              maxWidth: '400px',
-              width: '90%'
+              maxWidth: '450px',
+              width: '90%',
+              maxHeight: '90vh',
+              overflowY: 'auto'
             }}>
               <button className="modal-close" onClick={() => setEditingBonusId(null)}>✕</button>
-              <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', marginBottom: '1.5rem', color: '#fff', textShadow: '2px 2px 0px #000', letterSpacing: '1px' }}>CONFIGURAR BÔNUS</h2>
+              <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', marginBottom: '1.5rem', color: '#fff', textShadow: '2px 2px 0px #000', letterSpacing: '1px' }}>CONFIGURAR TÉCNICA</h2>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', textAlign: 'left' }}>
                 <div>
-                  <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.3rem' }}>NOME DO BÔNUS</label>
+                  <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.3rem' }}>NOME DA TÉCNICA / VANTAGEM</label>
                   <input
                     type="text"
                     className="bonus-name-input"
-                    style={{ width: '100%', fontSize: '1.2rem', background: 'var(--surface-hover)', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)' }}
-                    placeholder="Ex: Ataque Especial"
-                    value={bonus.label}
-                    onChange={(e) => updateRollBonus(bonus.id, { label: e.target.value })}
+                    style={{ width: '100%', fontSize: '1.1rem', background: 'var(--surface-hover)', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)' }}
+                    placeholder="Ex: Ataque Especial (Potente)"
+                    value={bonus.name}
+                    onChange={(e) => updateRollBonus(bonus.id, { name: e.target.value })}
                   />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', color: 'var(--accent-color)', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '0.3rem' }}>
+                    ALIAS / NOME DO GOLPE (OPCIONAL)
+                  </label>
+                  <input
+                    type="text"
+                    className="bonus-name-input"
+                    style={{ width: '100%', fontSize: '1.1rem', background: 'var(--surface-hover)', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--accent-color)', color: '#fff' }}
+                    placeholder="Ex: Meteoro de Pégaso, Kamehameha..."
+                    value={bonus.alias || ''}
+                    onChange={(e) => updateRollBonus(bonus.id, { alias: e.target.value })}
+                  />
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px', display: 'block' }}>
+                    Se definido, o golpe aparecerá com este nome personalizado na ficha e no resultado.
+                  </span>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <div>
-                    <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.3rem' }}>TIPO</label>
+                    <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.3rem' }}>ATRIBUTO EXIGIDO</label>
                     <select
                       className="bonus-type-select"
-                      style={{ width: '100%', fontSize: '1.1rem', background: 'var(--surface-hover)', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)' }}
-                      value={bonus.type}
-                      onChange={(e) => updateRollBonus(bonus.id, { type: e.target.value as RollBonus['type'] })}
+                      style={{ width: '100%', fontSize: '1rem', background: 'var(--surface-hover)', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)' }}
+                      value={bonus.attribute}
+                      onChange={(e) => updateRollBonus(bonus.id, { attribute: e.target.value as any })}
                     >
-                      <option value="fixed">Fixo (+2)</option>
-                      <option value="poder">+Poder</option>
-                      <option value="habilidade">+Habilidade</option>
-                      <option value="resistencia">+Resistência</option>
+                      <option value="any">Qualquer Atributo</option>
+                      <option value="poder">Apenas Poder</option>
+                      <option value="habilidade">Apenas Habilidade</option>
+                      <option value="resistencia">Apenas Resistência</option>
                     </select>
                   </div>
 
-                  {bonus.type === 'fixed' && (
-                    <div>
-                      <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.3rem' }}>VALOR</label>
-                      <input
-                        type="number"
-                        className="bonus-value-input"
-                        style={{ width: '100%', fontSize: '1.2rem', background: 'var(--surface-hover)', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', color: 'var(--accent-color)', textAlign: 'center' }}
-                        min={-10}
-                        max={20}
-                        value={bonus.value}
-                        onChange={(e) => updateRollBonus(bonus.id, { value: Number(e.target.value) })}
-                      />
-                    </div>
-                  )}
+                  <div>
+                    <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.3rem' }}>TIPO DE BÔNUS</label>
+                    <select
+                      className="bonus-type-select"
+                      style={{ width: '100%', fontSize: '1rem', background: 'var(--surface-hover)', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)' }}
+                      value={bonus.bonusType}
+                      onChange={(e) => updateRollBonus(bonus.id, { bonusType: e.target.value as any })}
+                    >
+                      <option value="attr_mod">Bônus no Atributo (+2 P, etc)</option>
+                      <option value="flat">Bônus Fixo no Total (+1, +2)</option>
+                      <option value="full_attr">Soma Outro Atributo (+P, +H, +R)</option>
+                      <option value="none">Nenhum Bônus Numérico</option>
+                    </select>
+                  </div>
                 </div>
 
-                <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem', marginTop: '0.5rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                {(bonus.bonusType === 'attr_mod' || bonus.bonusType === 'flat') && (
+                  <div>
+                    <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.3rem' }}>
+                      VALOR DO BÔNUS {bonus.bonusType === 'attr_mod' && '(Multiplica em Críticos!)'}
+                    </label>
+                    <input
+                      type="number"
+                      className="bonus-value-input"
+                      style={{ width: '100%', fontSize: '1.2rem', background: 'var(--surface-hover)', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)', color: 'var(--accent-color)', textAlign: 'center' }}
+                      min={-10}
+                      max={20}
+                      value={bonus.value}
+                      onChange={(e) => updateRollBonus(bonus.id, { value: Number(e.target.value) })}
+                    />
+                  </div>
+                )}
+
+                {bonus.bonusType === 'full_attr' && (
+                  <div>
+                    <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.3rem' }}>QUAL ATRIBUTO SOMAR</label>
+                    <select
+                      className="bonus-type-select"
+                      style={{ width: '100%', fontSize: '1rem', background: 'var(--surface-hover)', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)' }}
+                      value={bonus.attrSource || 'poder'}
+                      onChange={(e) => updateRollBonus(bonus.id, { attrSource: e.target.value as any })}
+                    >
+                      <option value="poder">+Poder ({poder})</option>
+                      <option value="habilidade">+Habilidade ({habilidade})</option>
+                      <option value="resistencia">+Resistência ({resistencia})</option>
+                    </select>
+                  </div>
+                )}
+
+                <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '0.8rem', marginTop: '0.2rem' }}>
+                  <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.5rem' }}>EFEITOS ESPECIAIS</label>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem' }}>
+                    <div>
+                      <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.2rem' }}>MARGEM DE CRÍTICO</label>
+                      <select
+                        className="bonus-type-select"
+                        style={{ width: '100%', fontSize: '0.9rem', background: 'var(--surface-hover)', padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--border-color)' }}
+                        value={bonus.critThresholdMod || 0}
+                        onChange={(e) => updateRollBonus(bonus.id, { critThresholdMod: Number(e.target.value) })}
+                      >
+                        <option value={0}>Padrão (6)</option>
+                        <option value={-1}>Perigoso/Blindada (Crítico 5+)</option>
+                        <option value={-2}>Extremo (Crítico 4+)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.2rem' }}>DADOS EXTRAS</label>
+                      <select
+                        className="bonus-type-select"
+                        style={{ width: '100%', fontSize: '0.9rem', background: 'var(--surface-hover)', padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--border-color)' }}
+                        value={bonus.extraDice || 0}
+                        onChange={(e) => updateRollBonus(bonus.id, { extraDice: Number(e.target.value) })}
+                      >
+                        <option value={0}>Nenhum</option>
+                        <option value={1}>+1D (Ganho)</option>
+                        <option value={-1}>-1D (Perda)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: '0.8rem' }}>
+                    <label className="checkbox-label" style={{ padding: '0.5rem 0.8rem' }}>
+                      <input
+                        type="checkbox"
+                        className="checkbox-input"
+                        checked={!!bonus.autoCrit}
+                        onChange={(e) => updateRollBonus(bonus.id, { autoCrit: e.target.checked })}
+                      />
+                      <span style={{ fontSize: '0.85rem' }}>Crítico Automático (Titânico)</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '0.8rem', marginTop: '0.2rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <div>
                     <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.3rem' }}>CUSTO (QUANTIDADE)</label>
                     <input
@@ -933,14 +1526,14 @@ export default function App() {
                     <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.3rem' }}>RECURSO</label>
                     <select
                       className="bonus-type-select"
-                      style={{ width: '100%', fontSize: '1.1rem', background: 'var(--surface-hover)', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)' }}
+                      style={{ width: '100%', fontSize: '1rem', background: 'var(--surface-hover)', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)' }}
                       value={bonus.costResource || 'none'}
                       onChange={(e) => updateRollBonus(bonus.id, { costResource: e.target.value as any })}
                     >
                       <option value="none">Nenhum</option>
-                      <option value="PV">PV</option>
-                      <option value="PM">PM</option>
-                      <option value="PA">PA</option>
+                      <option value="PM">PM (Pontos de Mana)</option>
+                      <option value="PV">PV (Pontos de Vida)</option>
+                      <option value="PA">PA (Pontos de Ação)</option>
                     </select>
                   </div>
                 </div>
