@@ -137,6 +137,19 @@ h1, h2, h3, h4, h5, h6 {
   transition: var(--transition);
 }
 
+@keyframes pulse-segment {
+  0% { opacity: 1; transform: skewX(-20deg) scale(1); filter: brightness(1); }
+  50% { opacity: 0.5; transform: skewX(-20deg) scale(0.9); filter: brightness(2); box-shadow: 0 0 10px #fff; }
+  100% { opacity: 1; transform: skewX(-20deg) scale(1); filter: brightness(1); }
+}
+
+.segment-pulse {
+  animation: pulse-segment 1s infinite alternate ease-in-out;
+  border-color: #fff !important;
+  z-index: 5;
+  position: relative;
+}
+
 .edit-stat-box {
   background-color: transparent !important;
   box-shadow: inset 0 0 10px rgba(0,0,0,0.5);

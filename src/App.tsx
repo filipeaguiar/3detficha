@@ -9,6 +9,8 @@ type RollBonus = {
   label: string;
   type: 'fixed' | 'poder' | 'habilidade' | 'resistencia';
   value: number; // used only when type === 'fixed'
+  costValue?: number;
+  costResource?: 'none' | 'PV' | 'PM' | 'PA';
 };
 
 const PlusIcon = () => (
@@ -87,7 +89,7 @@ const VolumeXIcon = () => (
 
 
 
-const SegmentedBar = ({ current, max, color, onClick, halfWidth }: { current: number, max: number, color: string, onClick: () => void, halfWidth?: boolean }) => {
+const SegmentedBar = ({ current, max, color, onClick, halfWidth, pulseCount = 0 }: { current: number, max: number, color: string, onClick: () => void, halfWidth?: boolean, pulseCount?: number }) => {
   const segments = [];
   const maxSafe = Math.max(1, max); // Evita barra vazia se max for 0
   
@@ -96,9 +98,11 @@ const SegmentedBar = ({ current, max, color, onClick, halfWidth }: { current: nu
 
   for (let i = 0; i < maxSafe; i++) {
     const isFilled = i < current;
+    const isPulsing = isFilled && i >= current - pulseCount;
     segments.push(
       <div 
         key={i} 
+        className={isPulsing ? 'segment-pulse' : ''}
         style={{
           flex: 1,
           height: '16px',
@@ -285,6 +289,8 @@ export default function App() {
       label: '',
       type: 'fixed',
       value: 1,
+      costValue: 1,
+      costResource: 'none'
     };
     setRollBonuses(prev => [...prev, newBonus]);
   };
@@ -321,12 +327,17 @@ export default function App() {
   };
 
   const getBonusDisplayValue = (bonus: RollBonus): string => {
+    let text = '';
     switch (bonus.type) {
-      case 'poder': return `+P (${poder})`;
-      case 'habilidade': return `+H (${habilidade})`;
-      case 'resistencia': return `+R (${resistencia})`;
-      default: return `+${bonus.value}`;
+      case 'poder': text = `+P (${poder})`; break;
+      case 'habilidade': text = `+H (${habilidade})`; break;
+      case 'resistencia': text = `+R (${resistencia})`; break;
+      default: text = `+${bonus.value}`; break;
     }
+    if (bonus.costResource && bonus.costResource !== 'none') {
+      text += ` [-${bonus.costValue || 0} ${bonus.costResource}]`;
+    }
+    return text;
   };
 
   const handleStatChange = (stat: 'PA' | 'PM' | 'PV', delta: number) => {
@@ -405,6 +416,15 @@ export default function App() {
 
       const finalTotal = diceSum + attrValue + (attrValue * criticals) + bonusTotal;
 
+      // Deduct resource costs
+      const costPV = rollBonuses.filter(b => activeBonuses.has(b.id) && b.costResource === 'PV').reduce((sum, b) => sum + (b.costValue || 0), 0);
+      const costPM = rollBonuses.filter(b => activeBonuses.has(b.id) && b.costResource === 'PM').reduce((sum, b) => sum + (b.costValue || 0), 0);
+      const costPA = rollBonuses.filter(b => activeBonuses.has(b.id) && b.costResource === 'PA').reduce((sum, b) => sum + (b.costValue || 0), 0);
+      
+      if (costPV > 0) setCurrentPV(prev => Math.max(0, prev - costPV));
+      if (costPM > 0) setCurrentPM(prev => Math.max(0, prev - costPM));
+      if (costPA > 0) setCurrentPA(prev => Math.max(0, prev - costPA));
+
       setResult({
         rolls,
         diceSum,
@@ -432,6 +452,12 @@ export default function App() {
       setIsClosing(false);
     }, 400); // 400ms is the CSS animation duration
   };
+
+  // Calculate current active costs to pulse the bars
+  const activeBonusesList = rollBonuses.filter(b => activeBonuses.has(b.id));
+  const totalCostPV = activeBonusesList.filter(b => b.costResource === 'PV').reduce((sum, b) => sum + (b.costValue || 0), 0);
+  const totalCostPM = activeBonusesList.filter(b => b.costResource === 'PM').reduce((sum, b) => sum + (b.costValue || 0), 0);
+  const totalCostPA = activeBonusesList.filter(b => b.costResource === 'PA').reduce((sum, b) => sum + (b.costValue || 0), 0);
 
   return (
     <>
@@ -542,6 +568,28 @@ export default function App() {
                       onChange={(e) => updateRollBonus(bonus.id, { value: Number(e.target.value) })}
                     />
                   )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', marginLeft: 'auto', borderLeft: '1px solid var(--border-color)', paddingLeft: '0.5rem' }}>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Custo:</span>
+                    <input
+                      type="number"
+                      className="bonus-value-input"
+                      style={{ width: '40px' }}
+                      min={0}
+                      max={20}
+                      value={bonus.costValue || 0}
+                      onChange={(e) => updateRollBonus(bonus.id, { costValue: Number(e.target.value) })}
+                    />
+                    <select
+                      className="bonus-type-select"
+                      value={bonus.costResource || 'none'}
+                      onChange={(e) => updateRollBonus(bonus.id, { costResource: e.target.value as any })}
+                    >
+                      <option value="none">-</option>
+                      <option value="PV">PV</option>
+                      <option value="PM">PM</option>
+                      <option value="PA">PA</option>
+                    </select>
+                  </div>
                   <button
                     className="bonus-remove-btn"
                     onClick={() => removeRollBonus(bonus.id)}
@@ -627,9 +675,9 @@ export default function App() {
                     {characterName || 'HERÓI DESCONHECIDO'}
                   </h1>
                   
-                  <SegmentedBar current={currentPV} max={maxPV} color="#5EB05D" onClick={() => setIsEditingStats(true)} />
-                  <SegmentedBar current={currentPM} max={maxPM} color="#894EC6" onClick={() => setIsEditingStats(true)} />
-                  <SegmentedBar current={currentPA} max={maxPA} color="#FF9E00" onClick={() => setIsEditingStats(true)} halfWidth={true} />
+                  <SegmentedBar current={currentPV} max={maxPV} color="#5EB05D" onClick={() => setIsEditingStats(true)} pulseCount={totalCostPV} />
+                  <SegmentedBar current={currentPM} max={maxPM} color="#894EC6" onClick={() => setIsEditingStats(true)} pulseCount={totalCostPM} />
+                  <SegmentedBar current={currentPA} max={maxPA} color="#FF9E00" onClick={() => setIsEditingStats(true)} halfWidth={true} pulseCount={totalCostPA} />
                 </div>
               </div>
               
