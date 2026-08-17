@@ -131,16 +131,15 @@ h1, h2, h3, h4, h5, h6 {
 .stat-value {
   font-size: 3.5rem;
   font-family: 'Bebas Neue', sans-serif;
-  color: #fff;
+  color: var(--btn-text-color, #fff);
   line-height: 1;
-  text-shadow: 0 0 5px rgba(0,0,0,0.6);
   transform: skewX(5deg);
   transition: var(--transition);
 }
 
 .stat-icon-container {
-  color: #000;
-  opacity: 0.2;
+  color: var(--btn-text-color, #fff);
+  opacity: 1;
   transition: var(--transition);
   display: flex;
   align-items: center;
@@ -153,7 +152,8 @@ h1, h2, h3, h4, h5, h6 {
   bottom: 2px;
   right: 8px;
   font-size: 2.5rem;
-  opacity: 0.9;
+  opacity: 1;
+  text-shadow: none;
 }
 
 .roll-btn {
@@ -169,14 +169,12 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .roll-btn:hover:not(:disabled) .stat-icon-container {
-  opacity: 0.4;
   transform: skewX(5deg) scale(1.1);
-  filter: drop-shadow(0 0 5px #fff);
+  filter: drop-shadow(0 0 5px var(--btn-text-color, #fff));
 }
 
 .roll-btn:hover:not(:disabled) .stat-value {
-  color: #fff;
-  text-shadow: 0 0 10px #fff;
+  text-shadow: 0 0 10px var(--btn-text-color, #fff);
   transform: skewX(5deg) scale(1.1);
 }
 

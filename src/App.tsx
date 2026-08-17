@@ -616,15 +616,15 @@ export default function App() {
               
               <div className="panel slide-up" style={{ animationDelay: '0.15s', width: '100%' }}>
                 <div className="stats-grid">
-                <button className="stat-box roll-btn" style={{ '--btn-color': '#ffcc00' } as React.CSSProperties} onClick={() => handleRoll('poder')} disabled={rolling}>
+                <button className="stat-box roll-btn" style={{ '--btn-color': '#ffcc00', '--btn-text-color': '#000000' } as React.CSSProperties} onClick={() => handleRoll('poder')} disabled={rolling}>
                   <div className="stat-icon-container"><i className="ra ra-hand ra-3x"></i></div>
                   <div className="stat-value corner">{poder}</div>
                 </button>
-                <button className="stat-box roll-btn" style={{ '--btn-color': '#4fc3f7' } as React.CSSProperties} onClick={() => handleRoll('habilidade')} disabled={rolling}>
+                <button className="stat-box roll-btn" style={{ '--btn-color': '#4fc3f7', '--btn-text-color': '#000000' } as React.CSSProperties} onClick={() => handleRoll('habilidade')} disabled={rolling}>
                   <div className="stat-icon-container"><i className="ra ra-lightning ra-3x"></i></div>
                   <div className="stat-value corner">{habilidade}</div>
                 </button>
-                <button className="stat-box roll-btn" style={{ '--btn-color': 'var(--danger-color)' } as React.CSSProperties} onClick={() => handleRoll('resistencia')} disabled={rolling}>
+                <button className="stat-box roll-btn" style={{ '--btn-color': 'var(--danger-color)', '--btn-text-color': '#ffffff' } as React.CSSProperties} onClick={() => handleRoll('resistencia')} disabled={rolling}>
                   <div className="stat-icon-container"><i className="ra ra-shield ra-3x"></i></div>
                   <div className="stat-value corner">{resistencia}</div>
                 </button>
