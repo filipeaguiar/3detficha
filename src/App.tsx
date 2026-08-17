@@ -66,6 +66,44 @@ const VolumeXIcon = () => (
   </svg>
 );
 
+const SegmentedBar = ({ current, max, color, label, onClick }: { current: number, max: number, color: string, label: string, onClick: () => void }) => {
+  const segments = [];
+  const maxSafe = Math.max(1, max); // Evita barra vazia se max for 0
+  
+  for (let i = 0; i < maxSafe; i++) {
+    const isFilled = i < current;
+    segments.push(
+      <div 
+        key={i} 
+        style={{
+          width: '14px', 
+          height: '20px', 
+          backgroundColor: isFilled ? color : 'transparent',
+          border: `1.5px solid ${isFilled ? color : 'var(--border-color)'}`,
+          transform: 'skewX(-20deg)',
+          boxShadow: isFilled ? `0 0 8px ${color}80` : 'none',
+          transition: 'all 0.2s ease',
+          opacity: isFilled ? 1 : 0.3
+        }}
+      />
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.4rem', cursor: 'pointer' }} onClick={onClick}>
+      <div style={{ width: '30px', fontWeight: 'bold', color: color, fontSize: '1.2rem', fontFamily: 'Bebas Neue, sans-serif', textShadow: `0 0 5px ${color}80` }}>
+        {label}
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px', flex: 1, paddingRight: '10px' }}>
+        {segments}
+      </div>
+      <div style={{ width: '20px', textAlign: 'right', fontWeight: 'bold', color: '#fff', fontSize: '1.2rem', fontFamily: 'Bebas Neue, sans-serif' }}>
+        {current}
+      </div>
+    </div>
+  );
+};
+
 const loadInitialData = () => {
   const saved = localStorage.getItem('3det_ficha');
   if (saved) {
@@ -504,41 +542,70 @@ export default function App() {
 
         {mode === 'play' && (
           <div className="panel slide-up" style={{ animationDelay: '0.1s', gridColumn: '1 / -1', maxWidth: '600px', margin: '0 auto', width: '100%' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                <h1 className="panel-title" style={{ borderBottom: 'none', margin: 0, padding: 0 }}>{characterName || 'HERÓI DESCONHECIDO'}</h1>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
+              {/* FIGHTING GAME HUD */}
+              <div style={{ 
+                display: 'flex', 
+                gap: '1rem', 
+                marginBottom: '2rem', 
+                padding: '1rem', 
+                background: 'rgba(0,0,0,0.3)', 
+                borderTop: '2px solid var(--accent-color)', 
+                borderBottom: '2px solid var(--accent-color)',
+                borderRadius: '4px',
+                position: 'relative'
+              }}>
+                {/* Botoes Flutuantes no Canto Superior Direito do HUD */}
+                <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '0.5rem' }}>
                   <button 
                     onClick={() => setSoundOn(!soundOn)} 
-                    style={{ background: 'transparent', border: '1px solid var(--border-color)', color: soundOn ? 'var(--accent-color)' : 'var(--text-muted)', width: '38px', height: '38px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', cursor: 'pointer' }}
+                    style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border-color)', color: soundOn ? 'var(--accent-color)' : 'var(--text-muted)', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', cursor: 'pointer', zIndex: 10 }}
                     title={soundOn ? "Desativar Som" : "Ativar Som"}
                   >
                     {soundOn ? <VolumeIcon /> : <VolumeXIcon />}
                   </button>
                   <button 
                     onClick={handleEdit} 
-                    style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)', width: '38px', height: '38px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', cursor: 'pointer' }}
+                    style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border-color)', color: 'var(--text-muted)', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', cursor: 'pointer', zIndex: 10 }}
                     title="Editar Ficha"
                   >
                     <PencilIcon />
                   </button>
                 </div>
-              </div>
-              
-              <div className="derived-stats">
-                <div className="derived-stat" onClick={() => setEditStat('PA')} style={{ cursor: 'pointer', position: 'relative', color: 'var(--success-color)' }}>
-                  <div className="derived-title" style={{ color: 'inherit' }}>PA</div>
-                  <div className="derived-value" style={{ color: 'inherit' }}>{currentPA}</div>
-                  <div style={{ position: 'absolute', bottom: '0.2rem', right: '0.4rem', fontSize: '0.8rem', opacity: 0.7, fontWeight: 'bold' }}>{maxPA}</div>
+
+                {/* Portrait Area */}
+                <div style={{ 
+                  width: '90px', 
+                  height: '110px', 
+                  backgroundColor: 'var(--surface-hover)', 
+                  border: '3px solid var(--accent-color)', 
+                  transform: 'skewX(-10deg)', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  boxShadow: '0 0 15px var(--accent-transparent)'
+                }}>
+                  <div style={{ transform: 'skewX(10deg)', fontSize: '3.5rem', fontWeight: 'bold', color: 'var(--accent-color)', fontFamily: 'Bebas Neue, sans-serif' }}>
+                    {characterName ? characterName.charAt(0).toUpperCase() : '?'}
+                  </div>
                 </div>
-                <div className="derived-stat" onClick={() => setEditStat('PM')} style={{ cursor: 'pointer', position: 'relative', color: '#4fc3f7' }}>
-                  <div className="derived-title" style={{ color: 'inherit' }}>PM</div>
-                  <div className="derived-value" style={{ color: 'inherit' }}>{currentPM}</div>
-                  <div style={{ position: 'absolute', bottom: '0.2rem', right: '0.4rem', fontSize: '0.8rem', opacity: 0.7, fontWeight: 'bold' }}>{maxPM}</div>
-                </div>
-                <div className="derived-stat" onClick={() => setEditStat('PV')} style={{ cursor: 'pointer', position: 'relative', color: 'var(--danger-color)' }}>
-                  <div className="derived-title" style={{ color: 'inherit' }}>PV</div>
-                  <div className="derived-value" style={{ color: 'inherit' }}>{currentPV}</div>
-                  <div style={{ position: 'absolute', bottom: '0.2rem', right: '0.4rem', fontSize: '0.8rem', opacity: 0.7, fontWeight: 'bold' }}>{maxPV}</div>
+
+                {/* Bars Area */}
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                  <h1 style={{ 
+                    fontFamily: 'Bebas Neue, sans-serif', 
+                    fontSize: '1.8rem', 
+                    margin: '0 0 0.5rem 0', 
+                    color: '#fff', 
+                    letterSpacing: '1px',
+                    textTransform: 'uppercase',
+                    textShadow: '2px 2px 0px #000'
+                  }}>
+                    {characterName || 'HERÓI DESCONHECIDO'}
+                  </h1>
+                  
+                  <SegmentedBar current={currentPV} max={maxPV} color="#ff3366" label="PV" onClick={() => setEditStat('PV')} />
+                  <SegmentedBar current={currentPM} max={maxPM} color="#33ccff" label="PM" onClick={() => setEditStat('PM')} />
+                  <SegmentedBar current={currentPA} max={maxPA} color="#ffcc00" label="PA" onClick={() => setEditStat('PA')} />
                 </div>
               </div>
               
