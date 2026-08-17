@@ -259,9 +259,6 @@ export default function App() {
     }
   }, [mode]);
 
-  const toggleBonus = (val: 1 | 2) => {
-    setBonusDice(prev => prev === val ? 0 : val);
-  };
 
   const addRollBonus = () => {
     const newBonus: RollBonus = {
@@ -635,53 +632,28 @@ export default function App() {
               
               <hr style={{ border: 'none', borderTop: '1px solid var(--border-color)', margin: '2rem 0' }} />
               
-              <h2 className="panel-title" style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Vantagens & Perícias Extras</h2>
-
-              <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+              <h2 className="panel-title" style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Modificadores</h2>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
                 <button 
-                  className={`toggle-btn ${bonusDice === 1 ? 'active' : ''}`}
-                  onClick={() => toggleBonus(1)}
-                  title="Ganho (+1D)"
+                  className={`toggle-btn ${bonusDice > 0 ? 'active' : ''}`}
+                  onClick={() => setBonusDice(prev => (prev >= 2 ? 0 : prev + 1) as 0 | 1 | 2)}
+                  title={bonusDice === 0 ? "Rolagem Normal (1D)" : bonusDice === 1 ? "Ganho (+1D)" : "Ganho Duplo (+2D)"}
+                  style={{ display: 'flex', gap: '0.2rem', justifyContent: 'center' }}
                 >
-                  <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>+</span>
                   <CubeIcon />
+                  {bonusDice >= 1 && <CubeIcon />}
+                  {bonusDice >= 2 && <CubeIcon />}
                 </button>
-                <button 
-                  className={`toggle-btn ${bonusDice === 2 ? 'active' : ''}`}
-                  onClick={() => toggleBonus(2)}
-                  title="Ganho Duplo (+2D)"
-                >
-                  <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>+</span>
-                  <CubeIcon />
-                  <CubeIcon />
-                </button>
-              </div>
 
-              <div className="form-group">
-                <h2 className="panel-title" style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Acerto Crítico</h2>
-                <div style={{ display: 'flex', gap: '1rem' }}>
-                  <button 
-                    className={`toggle-btn ${critRange === 6 ? 'active' : ''}`}
-                    onClick={() => setCritRange(6)}
-                    title="Crítico apenas no 6 (Normal)"
-                  >
-                    <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>6</span>
-                  </button>
-                  <button 
-                    className={`toggle-btn ${critRange === 5 ? 'active' : ''}`}
-                    onClick={() => setCritRange(5)}
-                    title="Crítico no 5 e 6 (Aprimorado)"
-                  >
-                    <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>5+</span>
-                  </button>
-                  <button 
-                    className={`toggle-btn ${critRange === 4 ? 'active' : ''}`}
-                    onClick={() => setCritRange(4)}
-                    title="Crítico no 4, 5 e 6 (Maestria)"
-                  >
-                    <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>4+</span>
-                  </button>
-                </div>
+                <button 
+                  className={`toggle-btn ${critRange < 6 ? 'active' : ''}`}
+                  onClick={() => setCritRange(prev => prev <= 4 ? 6 : prev - 1)}
+                  title="Intervalo de Acerto Crítico"
+                  style={{ fontSize: '1.5rem', fontWeight: 'bold', fontFamily: "'Bebas Neue', sans-serif", letterSpacing: '2px' }}
+                >
+                  {critRange === 6 ? '6' : `${critRange}+`}
+                </button>
               </div>
 
               {rollBonuses.length > 0 && (
