@@ -66,23 +66,6 @@ const VolumeXIcon = () => (
   </svg>
 );
 
-const FistIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M11 21h-2a3 3 0 0 1-3-3v-6.5l-3.2-3.2a1.4 1.4 0 0 1 2-2l3.2 3.2V5a2 2 0 0 1 4 0v4h2V6a2 2 0 0 1 4 0v4h2a2 2 0 0 1 4 0v10a4 4 0 0 1-4 4h-6z" />
-  </svg>
-);
-
-const ZapIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-  </svg>
-);
-
-const ShieldIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-  </svg>
-);
 
 
 const SegmentedBar = ({ current, max, color, onClick, halfWidth }: { current: number, max: number, color: string, onClick: () => void, halfWidth?: boolean }) => {
@@ -637,15 +620,15 @@ export default function App() {
               <div className="panel slide-up" style={{ animationDelay: '0.15s', width: '100%' }}>
                 <div className="stats-grid">
                 <button className="stat-box roll-btn" style={{ '--btn-color': '#ffcc00' } as React.CSSProperties} onClick={() => handleRoll('poder')} disabled={rolling}>
-                  <div className="stat-icon-container"><FistIcon /></div>
+                  <div className="stat-icon-container"><i className="ra ra-hand ra-3x"></i></div>
                   <div className="stat-value corner">{poder}</div>
                 </button>
                 <button className="stat-box roll-btn" style={{ '--btn-color': '#4fc3f7' } as React.CSSProperties} onClick={() => handleRoll('habilidade')} disabled={rolling}>
-                  <div className="stat-icon-container"><ZapIcon /></div>
+                  <div className="stat-icon-container"><i className="ra ra-lightning ra-3x"></i></div>
                   <div className="stat-value corner">{habilidade}</div>
                 </button>
                 <button className="stat-box roll-btn" style={{ '--btn-color': 'var(--danger-color)' } as React.CSSProperties} onClick={() => handleRoll('resistencia')} disabled={rolling}>
-                  <div className="stat-icon-container"><ShieldIcon /></div>
+                  <div className="stat-icon-container"><i className="ra ra-shield ra-3x"></i></div>
                   <div className="stat-value corner">{resistencia}</div>
                 </button>
               </div>
