@@ -1261,5 +1261,201 @@ input.stat-input:focus {
   flex-shrink: 0;
 }
 
+/* ==================================== */
+/* Compact Gameplay Kit Badges & Rows   */
+/* ==================================== */
+.kit-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: var(--surface-hover);
+  border: 1px solid var(--border-color);
+  color: var(--accent-color);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.kit-pill-badge:hover {
+  border-color: var(--accent-color);
+  background: var(--accent-transparent);
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+.kit-actions-compact-row {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0 0 0.8rem 0;
+  margin-bottom: 0.2rem;
+}
+
+.kit-compact-power-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.kit-compact-power-btn.available {
+  background: var(--surface-hover);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.kit-compact-power-btn.available:hover {
+  background: var(--accent-color);
+  color: var(--accent-text-color);
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+.kit-compact-power-btn.used {
+  background: transparent;
+  border-color: var(--border-color);
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.kit-compact-power-btn.used:hover {
+  opacity: 1;
+  border-color: var(--text-muted);
+}
+
+.power-btn-tag {
+  font-size: 0.7rem;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+/* Kit Selection Card (Edit Mode) */
+.kit-selected-preview {
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 0.8rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.kit-selected-preview:hover {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+
+/* ==================================== */
+/* Kit Selection Modal (Mobile Friendly)*/
+/* ==================================== */
+.kit-search-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--surface-hover);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 0.5rem 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.6rem;
+}
+
+.kit-search-container:focus-within {
+  border-color: var(--accent-color);
+}
+
+.kit-search-input {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 0.95rem;
+  outline: none;
+  width: 100%;
+}
+
+.kit-search-clear {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.kit-nucleo-chips {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.kit-chip-btn {
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  padding: 3px 10px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.kit-chip-btn:hover {
+  color: #fff;
+  border-color: var(--text-main);
+}
+
+.kit-chip-btn.active {
+  background: var(--accent-color);
+  color: var(--accent-text-color);
+  border-color: var(--accent-color);
+}
+
+.kit-cards-scroll-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  overflow-y: auto;
+  flex: 1;
+  padding-right: 2px;
+}
+
+.kit-card-option {
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: left;
+}
+
+.kit-card-option:hover {
+  border-color: var(--accent-color);
+  background: var(--surface-hover);
+  transform: translateX(4px);
+}
+
+.kit-card-option.selected {
+  border-color: var(--accent-color);
+  background: var(--accent-transparent);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+
 
 

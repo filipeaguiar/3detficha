@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { useDiceSound } from './useDiceSound';
+import { ALL_KITS } from './kitsData';
 // @ts-ignore
 import DiceBox from '@3d-dice/dice-box';
 import { HexColorPicker } from "react-colorful";
@@ -57,13 +58,14 @@ export type CharacterKit = {
   name: string;
   exigencias: string;
   nucleos: string;
-  description: string;
   powers: KitPower[];
 };
 
+export const KITS_CATALOG: CharacterKit[] = ALL_KITS as CharacterKit[];
+
 export const DRUID_WILD_SHAPE_OPTIONS = [
   { name: 'Aceleração', desc: 'Movimento extra por 1PM / Ganho em fugas' },
-  { name: 'Ágil', desc: 'Ganho em iniciativa e testes de agilidade/acrobacia' },
+  { name: 'Ágil', desc: 'Ganho em iniciativa e testes de agilidade/acrobacia (+1D)' },
   { name: 'Alcance 1', desc: 'Ataques alcançam até Perto' },
   { name: 'Forte', desc: 'P+1 no atributo de Poder para esforço e dano' },
   { name: 'Imune (Anfíbio)', desc: 'Respira e age na água sem penalidades' },
@@ -75,239 +77,6 @@ export const DRUID_WILD_SHAPE_OPTIONS = [
   { name: 'Sentido (Infravisão/Radar)', desc: 'Enxerga no escuro ou detecta por vibração' },
   { name: 'Vigoroso', desc: 'R+2 no atributo de Resistência' },
   { name: 'Voo', desc: 'Capaz de voar em velocidade normal' }
-];
-
-export const KITS_CATALOG: CharacterKit[] = [
-  {
-    id: 'druida',
-    name: 'Druida',
-    exigencias: 'Animais; Ajudante, Transformação; Código Dahllan',
-    nucleos: 'Era das Arcas, Guerra da Galáxia, Operação ARSENAL',
-    description: 'Protetor da natureza que canaliza a força primeva das feras.',
-    powers: [
-      {
-        id: 'druida_forma_selvagem',
-        name: 'Forma Selvagem',
-        desc: 'Sua Transformação permite virar feras. Ao mudar para a 2ª forma, escolha 2 vantagens extras sem custo.',
-        type: 'transformation'
-      },
-      {
-        id: 'druida_irmaos_selvagens',
-        name: 'Irmãos Selvagens',
-        desc: 'Você pode mudar o tipo do seu Ajudante (Lutador, Defensor, etc.) no início de cada cena.',
-        type: 'passive'
-      },
-      {
-        id: 'druida_dadiva_natureza',
-        name: 'Dádiva da Natureza',
-        desc: '1x por cena gratuito (ou 3 PM p/ repetir), use Animais para substituir qualquer perícia.',
-        type: 'per_scene',
-        maxUsesPerScene: 1,
-        repeatCostPM: 3
-      }
-    ]
-  },
-  {
-    id: 'guerreiro',
-    name: 'Guerreiro',
-    exigencias: 'Luta',
-    nucleos: 'Era das Arcas, Operação ARSENAL, Tormenta ALPHA',
-    description: 'Mestre no combate marcial e táticas de confronto direto.',
-    powers: [
-      {
-        id: 'guerreiro_estilo',
-        name: 'Estilo de Combate',
-        desc: 'Especialização em ataques corpo-a-corpo ou à distância.',
-        type: 'passive'
-      },
-      {
-        id: 'guerreiro_ataque_gratuito',
-        name: 'Ataque Gratuito',
-        desc: '1x por cena, você pode usar um Ataque Especial sem gastar nenhum PM.',
-        type: 'per_scene',
-        maxUsesPerScene: 1
-      },
-      {
-        id: 'guerreiro_ultimo_recurso',
-        name: 'Último Recurso',
-        desc: 'Quando seus PVs estiverem perto da derrota (metade ou menos), seus ataques ganham Ganho (+1D).',
-        type: 'passive'
-      }
-    ]
-  },
-  {
-    id: 'cientista',
-    name: 'Cientista',
-    exigencias: 'Saber',
-    nucleos: 'Era das Arcas, Guerra da Galáxia, UniPotência',
-    description: 'Usa a lógica, inventos e descobertas para desvendar e vencer qualquer desafio.',
-    powers: [
-      {
-        id: 'cientista_eureka',
-        name: 'Eureka!',
-        desc: '1x por sessão, com 1 movimento e 3 PM, adquira qualquer vantagem de 1pt até o fim da cena.',
-        type: 'per_session',
-        costPM: 3
-      },
-      {
-        id: 'cientista_metodo',
-        name: 'Método Científico',
-        desc: '1x por cena gratuito (ou 3 PM p/ repetir), use Saber para substituir qualquer outra perícia.',
-        type: 'per_scene',
-        maxUsesPerScene: 1,
-        repeatCostPM: 3
-      },
-      {
-        id: 'cientista_pesquisa',
-        name: 'Pesquisa',
-        desc: 'Gaste 1 movimento e 1 PM para fazer teste de Saber (9) e descobrir segredos de um alvo.',
-        type: 'buff',
-        costPM: 1
-      }
-    ]
-  },
-  {
-    id: 'clerigo',
-    name: 'Clérigo',
-    exigencias: 'Devoto',
-    nucleos: 'Era das Arcas, Tormenta ALPHA, UniPotência',
-    description: 'Canalizador do poder divino de entidades e patronos sagrados.',
-    powers: [
-      {
-        id: 'clerigo_devoto',
-        name: 'Devoto Fervoroso',
-        desc: 'Pode usar o benefício da vantagem Devoto até 3 vezes por cena (em vez de 2).',
-        type: 'passive'
-      },
-      {
-        id: 'clerigo_dom_divino',
-        name: 'Dom Divino',
-        desc: '1x por cena, com 1 movimento e 3 PM, adquira uma vantagem ou perícia de 1pt até o fim da cena.',
-        type: 'per_scene',
-        costPM: 3
-      },
-      {
-        id: 'clerigo_poder_concedido',
-        name: 'Poder Concedido',
-        desc: '1x por cena, use sua vantagem concedida (Cura, Magia, Paralisia, etc.) sem gastar PM.',
-        type: 'per_scene',
-        maxUsesPerScene: 1
-      }
-    ]
-  },
-  {
-    id: 'barbaro',
-    name: 'Bárbaro',
-    exigencias: 'Sobrevivência; Vigoroso',
-    nucleos: 'Era das Arcas, Operação ARSENAL, Tormenta ALPHA',
-    description: 'Guerreiro bravio que canaliza uma fúria primitiva devastadora.',
-    powers: [
-      {
-        id: 'barbaro_espirito_livre',
-        name: 'Espírito Livre',
-        desc: 'Se estiver consciente, você nunca é considerado indefeso.',
-        type: 'passive'
-      },
-      {
-        id: 'barbaro_frenesi',
-        name: 'Frenesi de Combate',
-        desc: 'Gaste 3 PM para invocar frenesi que oferece P+3 até o fim da cena.',
-        type: 'buff',
-        costPM: 3
-      },
-      {
-        id: 'barbaro_resistencia',
-        name: 'Resistência Superior',
-        desc: 'A vantagem Vigoroso concede R+3 em vez de R+2.',
-        type: 'passive'
-      }
-    ]
-  },
-  {
-    id: 'agente_secreto',
-    name: 'Agente Secreto',
-    exigencias: 'Manha ou Percepção; Patrono',
-    nucleos: 'Guerra da Galáxia, Operação ARSENAL',
-    description: 'Especialista em espionagem, infiltração e táticas sigilosas.',
-    powers: [
-      {
-        id: 'agente_identidade',
-        name: 'Identidade Secreta',
-        desc: 'Ganho em testes para ocultar atividades e Perda para quem tentar descobrir sobre você.',
-        type: 'passive'
-      },
-      {
-        id: 'agente_olho_clinico',
-        name: 'Olho Clínico',
-        desc: '1 ação e 1 PM para teste de Percepção (9) e descobrir atributos/vantagens de um alvo.',
-        type: 'buff',
-        costPM: 1
-      },
-      {
-        id: 'agente_plano_acao',
-        name: 'Plano de Ação',
-        desc: 'Gaste 1 movimento e 2 PM para receber H+2 até o fim da cena.',
-        type: 'buff',
-        costPM: 2
-      }
-    ]
-  },
-  {
-    id: 'elementalista',
-    name: 'Elementalista',
-    exigencias: 'Magia, Ambiente, Fraqueza',
-    nucleos: 'Era das Arcas, Tormenta ALPHA, UniPotência',
-    description: 'Mago especializado em dobrar um elemento fundamental da natureza.',
-    powers: [
-      {
-        id: 'elementalista_ambiente',
-        name: 'Ambiente Elemental',
-        desc: 'Se rolar 6 na verificação de Ambiente, ganha 1 uso de Magia gratuito sem gastar PM.',
-        type: 'passive'
-      },
-      {
-        id: 'elementalista_primordial',
-        name: 'Elemento Primordial',
-        desc: '1x por sessão, com 1 movimento e 3 PM, ganhe 1 perícia ou vantagem de 1pt até o fim da cena.',
-        type: 'per_session',
-        costPM: 3
-      },
-      {
-        id: 'elementalista_moldar',
-        name: 'Moldar Essência',
-        desc: 'Na primeira rodada de cada cena, pode redistribuir seus atributos e perícias livremente.',
-        type: 'transformation'
-      }
-    ]
-  },
-  {
-    id: 'abastado',
-    name: 'Abastado',
-    exigencias: 'Influência ou Manha; Riqueza',
-    nucleos: 'Era das Arcas, Guerra da Galáxia',
-    description: 'Magnata ou financista que resolve desafios com recursos abundantes.',
-    powers: [
-      {
-        id: 'abastado_meritocracia',
-        name: 'Meritocracia',
-        desc: '1x por cena, faça um teste de compra (9) para usar uma vantagem temporária de 1pt.',
-        type: 'per_scene',
-        maxUsesPerScene: 1
-      },
-      {
-        id: 'abastado_poder_aquisitivo',
-        name: 'Poder Aquisitivo',
-        desc: '+3 no resultado final de todos os testes de compra.',
-        type: 'passive'
-      },
-      {
-        id: 'abastado_tempo_dinheiro',
-        name: 'Tempo é Dinheiro',
-        desc: 'Primeiro teste de compra de cada sessão tem Ganho (+1D).',
-        type: 'passive'
-      }
-    ]
-  }
 ];
 
 export const BONUS_PRESETS: Array<Omit<RollBonus, 'id'>> = [
@@ -646,6 +415,21 @@ const CopyIcon = () => (
   </svg>
 );
 
+const InfoIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <line x1="12" y1="16" x2="12" y2="12"/>
+    <line x1="12" y1="8" x2="12.01" y2="8"/>
+  </svg>
+);
+
+const SearchIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8"/>
+    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+  </svg>
+);
+
 const PoderIcon = () => (
   <svg width="3em" height="3.4em" viewBox="0 0 35 40" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
     <path d="M23.1214 4.07208C24.3978 3.47769 26.1245 3.66085 27.0872 4.77362C27.6835 5.46349 28.3695 6.08322 28.9034 6.81597C29.3906 7.48051 29.4277 8.30486 29.1958 9.09413C29.0983 9.42932 29.2114 9.49359 29.4744 9.60857C30.7938 10.1893 31.8539 11.0507 32.4698 12.4012C32.9492 13.4477 32.5925 14.3461 32.0469 15.2367C32.6588 15.7375 33.2863 16.2209 33.8807 16.7431C34.9798 17.7078 35.5274 19.793 34.2276 20.9272C30.9653 23.7744 28.0479 26.9705 24.9259 29.958C23.8229 31.0142 22.4997 31.6943 20.9173 31.8054C19.7597 31.8873 18.567 31.899 17.5302 32.546C17.119 32.8032 16.6981 33.0683 16.3551 33.4054C14.4648 35.2665 12.5959 37.1491 10.7211 39.0238C10.2339 39.511 10.0371 39.511 9.54212 39.016C6.51953 35.9934 3.49499 32.9708 0.474351 29.9463C0.355474 29.8293 0.275576 29.6754 0.158648 29.5546C-0.0693619 29.3188 -0.00310189 29.1394 0.211266 28.929C1.10187 28.0559 1.97493 27.1634 2.86553 26.2884C3.61777 25.5478 4.25502 24.7254 4.36415 23.6458C4.4421 22.8604 4.40703 22.0634 4.40118 21.2722C4.39534 20.67 4.31934 20.0659 4.33882 19.4656C4.36026 18.8381 4.46549 18.2145 4.52006 17.587C4.6974 15.5388 5.21384 13.5997 6.4104 11.8907C6.60528 11.6159 6.83329 11.3586 7.07299 11.1208C10.269 7.91701 13.4709 4.71909 16.6689 1.51916C17.2944 0.891642 18.0525 0.566182 18.9256 0.618799C19.594 0.659724 20.2332 0.848766 20.7497 1.33402C21.3616 1.90696 22.0222 2.43116 22.5971 3.03529C22.8524 3.30423 22.9518 3.72324 23.1214 4.07208ZM25.3118 20.3698C25.8438 20.2003 26.3505 20.0951 26.8104 19.8866C28.7514 19.0077 30.1721 17.4934 31.5499 15.9305C31.6103 15.8623 31.6415 15.7707 31.7039 15.7064C31.9085 15.494 31.9631 15.2543 31.7292 15.0575C31.4992 14.8645 31.2362 14.845 30.9945 15.0984C30.1974 15.9364 29.4218 16.7977 28.5799 17.5909C27.8316 18.2963 26.9878 18.8791 25.9783 19.1909C24.6999 19.5865 23.6651 19.224 23.1759 18.043C22.9265 17.4427 22.8388 16.7529 22.7979 16.0961C22.7706 15.646 22.8816 15.2173 23.3903 14.8996C25.1754 13.7829 26.7091 12.3564 28.1473 10.8247C28.3363 10.6239 28.5078 10.4056 28.6676 10.1815C28.8391 9.93793 28.8333 9.68849 28.5741 9.51115C28.3285 9.33966 28.1161 9.38449 27.9096 9.63004C27.5315 10.0822 27.1456 10.5284 26.7227 10.9357C26.0329 11.5983 25.3235 12.2414 24.5985 12.8689C24.1932 13.2197 23.743 13.5179 23.2344 13.8979C23.3533 12.4032 22.7063 11.4736 21.5292 10.8207C20.8802 10.4622 20.28 10.014 19.748 9.66513C20.5002 8.94797 21.2758 8.30095 21.9404 7.55456C22.5913 6.82181 23.0493 5.95653 23.059 4.92367C23.0629 4.65668 23.0824 4.44038 22.6926 4.43843C22.3223 4.43453 22.1918 4.58653 22.1119 4.92367C22.0066 5.37384 21.8878 5.83378 21.6851 6.24497C21.1433 7.34799 20.2274 8.09439 19.2043 8.7414C18.8691 8.95187 18.6333 8.98109 18.3039 8.74919C17.4796 8.1665 16.6007 7.62861 15.5503 7.74749C14.8409 7.82544 14.1413 8.06123 13.4592 8.29119C12.0483 8.76864 10.6549 9.29677 9.24785 9.78591C8.9146 9.90089 8.83275 10.1367 8.94773 10.39C9.04907 10.6141 9.23421 10.8071 9.57915 10.6804C11.2746 10.0568 12.9818 9.46634 14.6772 8.84077C15.6165 8.49194 16.4623 8.6868 17.2691 9.19934C18.6079 10.049 19.9351 10.9201 21.2856 11.7542C22.1177 12.2687 22.4159 13.0014 22.3068 13.9369C22.2191 14.693 21.7436 15.1588 21.0868 15.4453C20.1416 15.8584 19.1419 15.7941 18.1967 15.5349C17.0957 15.2348 16.0355 14.7749 14.9617 14.3754C14.7025 14.2799 14.4706 14.2058 14.2796 14.5001C14.0965 14.7807 14.268 14.9483 14.4239 15.1646C15.102 16.1 15.8328 17.0102 16.4116 18.006C17.4581 19.8008 18.074 21.7574 18.2844 23.8348C18.3117 24.1018 18.4053 24.3298 18.7697 24.3103C19.1127 24.2908 19.2393 24.1252 19.216 23.8095C19.1906 23.4743 19.1809 23.1333 19.1166 22.8039C18.7463 20.9448 18.1831 19.1518 17.2321 17.4973C16.9631 17.0316 16.6806 16.5716 16.3473 16.0104C18.2084 16.5911 19.9877 16.9946 21.7981 16.217C21.8507 16.5152 21.8975 16.7529 21.9326 16.9945C22.1275 18.3587 22.6361 19.5046 23.9964 20.1009C24.1562 20.1691 24.3082 20.3738 24.3588 20.5472C24.507 21.0519 24.5518 21.5917 24.7272 22.0828C25.4891 24.207 27.2626 24.9008 29.2425 24.2947C29.5251 24.209 29.6908 23.9966 29.5933 23.7023C29.4939 23.4081 29.2776 23.3496 28.9463 23.4061C28.426 23.4938 27.8706 23.5757 27.3619 23.4841C26.0329 23.2502 25.3021 21.621 25.3118 20.3698Z" />
@@ -701,16 +485,6 @@ const BookIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
     <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-  </svg>
-);
-
-const SparklesIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
-    <path d="M5 3v4"/>
-    <path d="M19 17v4"/>
-    <path d="M3 5h4"/>
-    <path d="M17 19h4"/>
   </svg>
 );
 
@@ -848,11 +622,19 @@ export default function App() {
 
   const [mode, setMode] = useState<'edit' | 'play'>('play');
   const [activeFormIndex, setActiveFormIndex] = useState<number>(0);
+  
+  // Modals state
   const [isSheetsModalOpen, setIsSheetsModalOpen] = useState(false);
+  const [isKitSelectModalOpen, setIsKitSelectModalOpen] = useState(false);
+  const [isKitInfoModalOpen, setIsKitInfoModalOpen] = useState(false);
   const [isPresetModalOpen, setIsPresetModalOpen] = useState(false);
   const [isWildShapeModalOpen, setIsWildShapeModalOpen] = useState(false);
   const [isEditingStats, setIsEditingStats] = useState(false);
   const [editingBonusId, setEditingBonusId] = useState<string | null>(null);
+
+  // Search & Filter in Kit Modal
+  const [kitSearchQuery, setKitSearchQuery] = useState('');
+  const [selectedNucleoFilter, setSelectedNucleoFilter] = useState('all');
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const playDiceSound = useDiceSound();
@@ -868,8 +650,23 @@ export default function App() {
 
   // Selected Kit Info
   const currentKit = useMemo(() => {
-    return KITS_CATALOG.find(k => k.id === selectedKitId) || null;
+    return KITS_CATALOG.find(k => k.id === selectedKitId) || KITS_CATALOG[0] || null;
   }, [selectedKitId]);
+
+  // Filtered kits for modal
+  const filteredKits = useMemo(() => {
+    return KITS_CATALOG.filter(kit => {
+      const matchesSearch = kitSearchQuery === '' || 
+        kit.name.toLowerCase().includes(kitSearchQuery.toLowerCase()) ||
+        kit.exigencias.toLowerCase().includes(kitSearchQuery.toLowerCase()) ||
+        kit.powers.some(p => p.name.toLowerCase().includes(kitSearchQuery.toLowerCase()));
+      
+      const matchesNucleo = selectedNucleoFilter === 'all' || 
+        kit.nucleos.toLowerCase().includes(selectedNucleoFilter.toLowerCase());
+
+      return matchesSearch && matchesNucleo;
+    });
+  }, [kitSearchQuery, selectedNucleoFilter]);
 
   // Kit Power Uses in Current Scene
   const [usedKitPowers, setUsedKitPowers] = useState<Record<string, number>>({});
@@ -1450,6 +1247,12 @@ export default function App() {
   const totalCostPM = instantActiveBonuses.filter(b => b.costResource === 'PM').reduce((sum, b) => sum + (b.costValue || 0), 0);
   const totalCostPA = instantActiveBonuses.filter(b => b.costResource === 'PA').reduce((sum, b) => sum + (b.costValue || 0), 0);
 
+  // Active actionable kit powers (powers that can be tapped in gameplay)
+  const activeKitActionPowers = useMemo(() => {
+    if (!currentKit) return [];
+    return currentKit.powers.filter(p => p.type === 'per_scene' || p.type === 'per_session' || p.type === 'buff');
+  }, [currentKit]);
+
   return (
     <>
       <div id="dice-box" style={{ visibility: mode === 'play' ? 'visible' : 'hidden' }}></div>
@@ -1502,34 +1305,47 @@ export default function App() {
               />
             </div>
 
-            {/* Seleção do Kit de Personagem */}
+            {/* Seleção do Kit de Personagem (Card Otimizado para Mobile / Android) */}
             <div style={{ marginBottom: '1.5rem', background: 'var(--surface-hover)', padding: '1rem', borderRadius: 'var(--radius)', border: '1px solid var(--border-color)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                <span className="stat-label" style={{ color: 'var(--accent-color)', fontWeight: 'bold' }}>KIT DE PERSONAGEM (ARCANAUTA)</span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Manual do Arcanauta</span>
+                <span className="stat-label" style={{ color: 'var(--accent-color)', fontWeight: 'bold' }}>KIT DE PERSONAGEM</span>
+                <button
+                  className="control-btn"
+                  style={{ width: 'auto', padding: '0.2rem 0.6rem', fontSize: '0.75rem', borderColor: 'var(--accent-color)', color: 'var(--accent-color)' }}
+                  onClick={() => setIsKitSelectModalOpen(true)}
+                >
+                  Alterar Kit (60 Opções)
+                </button>
               </div>
-              <select
-                className="select-box"
-                value={selectedKitId}
-                onChange={(e) => updateActiveSheet({ selectedKitId: e.target.value })}
-                style={{ fontSize: '1.1rem', fontWeight: 'bold', background: 'var(--bg-color)', color: '#fff' }}
-              >
-                {KITS_CATALOG.map((kit) => (
-                  <option key={kit.id} value={kit.id}>
-                    {kit.name} — {kit.nucleos}
-                  </option>
-                ))}
-              </select>
 
-              {currentKit && (
-                <div style={{ marginTop: '0.8rem', fontSize: '0.85rem' }}>
-                  <div style={{ color: 'var(--text-muted)', marginBottom: '0.3rem' }}>
-                    <strong style={{ color: '#fff' }}>Exigências:</strong> {currentKit.exigencias}
+              {currentKit ? (
+                <div 
+                  className="kit-selected-preview"
+                  onClick={() => setIsKitSelectModalOpen(true)}
+                  title="Clique para trocar de kit"
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '1.4rem', fontFamily: 'Bebas Neue, sans-serif', color: '#fff', letterSpacing: '1px' }}>
+                      {currentKit.name}
+                    </span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--accent-color)', background: 'var(--bg-color)', padding: '2px 8px', borderRadius: '3px' }}>
+                      {currentKit.nucleos}
+                    </span>
                   </div>
-                  <div style={{ color: 'var(--text-main)', opacity: 0.9 }}>
-                    {currentKit.description}
-                  </div>
+                  {currentKit.exigencias && (
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                      <strong style={{ color: 'var(--text-main)' }}>Exigências:</strong> {currentKit.exigencias}
+                    </div>
+                  )}
                 </div>
+              ) : (
+                <button 
+                  className="control-btn" 
+                  style={{ width: '100%', padding: '0.6rem' }}
+                  onClick={() => setIsKitSelectModalOpen(true)}
+                >
+                  Selecionar Kit
+                </button>
               )}
             </div>
 
@@ -1821,7 +1637,7 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Portrait Area (Supports custom form image with camera click) */}
+              {/* Portrait Area */}
               <div 
                 style={{ 
                   width: '90px', 
@@ -1860,7 +1676,7 @@ export default function App() {
 
               {/* Bars Area */}
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                   <h1 style={{ 
                     fontFamily: 'Bebas Neue, sans-serif', 
                     fontSize: '1.8rem', 
@@ -1872,10 +1688,17 @@ export default function App() {
                   }}>
                     {characterName || 'HERÓI DESCONHECIDO'}
                   </h1>
+                  
+                  {/* Clean Kit Badge with Info Trigger */}
                   {currentKit && (
-                    <span style={{ fontSize: '0.75rem', color: 'var(--accent-color)', fontWeight: 'bold', background: 'var(--surface-hover)', padding: '1px 6px', borderRadius: '3px', textTransform: 'uppercase' }}>
-                      {currentKit.name}
-                    </span>
+                    <button
+                      className="kit-pill-badge"
+                      onClick={() => setIsKitInfoModalOpen(true)}
+                      title="Ver detalhes dos poderes do Kit"
+                    >
+                      <span>{currentKit.name}</span>
+                      <InfoIcon />
+                    </button>
                   )}
                 </div>
                 
@@ -1885,58 +1708,41 @@ export default function App() {
               </div>
             </div>
 
-            {/* Painel de Poderes do Kit */}
-            {currentKit && currentKit.powers.length > 0 && (
-              <div className="panel slide-up" style={{ animationDelay: '0.1s', padding: '0.8rem', marginBottom: '1rem', width: '100%' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                  <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--accent-color)', textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                    <SparklesIcon /> PODERES DO KIT: {currentKit.name.toUpperCase()}
-                  </span>
-                  {selectedKitId === 'druida' && activeFormIndex > 0 && (
+            {/* Compact Actionable Kit Powers Row (NO long texts occupying space!) */}
+            {activeKitActionPowers.length > 0 && (
+              <div className="kit-actions-compact-row slide-up">
+                {activeKitActionPowers.map((power) => {
+                  const useCount = usedKitPowers[power.id] || 0;
+                  const isAvailable = useCount === 0;
+
+                  return (
                     <button
-                      className="control-btn"
-                      style={{ width: 'auto', padding: '1px 6px', fontSize: '0.75rem', borderColor: '#5EB05D', color: '#5EB05D' }}
-                      onClick={() => setIsWildShapeModalOpen(true)}
+                      key={power.id}
+                      className={`kit-compact-power-btn ${isAvailable ? 'available' : 'used'}`}
+                      onClick={() => handleUseKitPower(power)}
+                      title={`${power.name}: ${power.desc}`}
                     >
-                      🌿 Vantagens Fera ({currentForm.wildShapeAdvantages?.length || 0}/2)
+                      <span className="power-btn-name">{power.name}</span>
+                      <span className="power-btn-tag">
+                        {power.type === 'per_scene' ? (isAvailable ? '1/1 Cena' : `-${power.repeatCostPM || 3}PM`) :
+                         power.type === 'per_session' ? (isAvailable ? `-${power.costPM || 3}PM` : 'Usado') :
+                         `-${power.costPM || 2}PM`}
+                      </span>
                     </button>
-                  )}
-                </div>
+                  );
+                })}
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                  {currentKit.powers.map((power) => {
-                    const useCount = usedKitPowers[power.id] || 0;
-                    const isAvailable = useCount === 0;
-
-                    return (
-                      <div key={power.id} className="kit-power-row">
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <span style={{ fontWeight: 'bold', color: '#fff', fontSize: '0.9rem' }}>{power.name}</span>
-                          <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginLeft: '0.5rem' }}>{power.desc}</span>
-                        </div>
-
-                        {power.type === 'per_scene' && (
-                          <button
-                            className={`kit-power-action-btn ${isAvailable ? 'available' : 'used'}`}
-                            onClick={() => handleUseKitPower(power)}
-                            title={isAvailable ? "Usar poder nesta cena" : `Repetir poder (${power.repeatCostPM || 3} PM)`}
-                          >
-                            {isAvailable ? 'Usar (1/1)' : `Usado (-${power.repeatCostPM || 3}PM)`}
-                          </button>
-                        )}
-                        {power.type === 'per_session' && (
-                          <button
-                            className={`kit-power-action-btn ${isAvailable ? 'available' : 'used'}`}
-                            onClick={() => handleUseKitPower(power)}
-                            title={isAvailable ? `Ativar (${power.costPM || 3} PM)` : "Já usado nesta sessão"}
-                          >
-                            {isAvailable ? `Ativar (-${power.costPM || 3}PM)` : 'Usado (1x)'}
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+                {selectedKitId === 'druida' && activeFormIndex > 0 && (
+                  <button
+                    className="kit-compact-power-btn available"
+                    style={{ borderColor: '#5EB05D', color: '#5EB05D' }}
+                    onClick={() => setIsWildShapeModalOpen(true)}
+                    title="Configurar as 2 vantagens extras da Forma Selvagem"
+                  >
+                    <span className="power-btn-name">🌿 Vantagens Fera</span>
+                    <span className="power-btn-tag">{currentForm.wildShapeAdvantages?.length || 0}/2</span>
+                  </button>
+                )}
               </div>
             )}
             
@@ -2050,6 +1856,169 @@ export default function App() {
           </div>
         )}
       </div>
+
+      {/* Modal de Seleção de Kits com Busca (Otimizado para Mobile / Android) */}
+      {isKitSelectModalOpen && (
+        <div className="modal-overlay pop-in" style={{ zIndex: 390, alignItems: 'center' }} onClick={(e) => {
+          if (e.target === e.currentTarget) setIsKitSelectModalOpen(false);
+        }}>
+          <div className="modal-content" style={{ 
+            borderRadius: '4px',
+            borderTop: '2px solid var(--accent-color)',
+            borderBottom: '2px solid var(--accent-color)',
+            background: 'rgba(15, 18, 26, 0.96)',
+            boxShadow: '0 0 25px var(--accent-transparent)',
+            maxWidth: '550px',
+            width: '92%',
+            maxHeight: '88vh',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            <button className="modal-close" onClick={() => setIsKitSelectModalOpen(false)}>✕</button>
+            <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', marginBottom: '0.2rem', color: '#fff', letterSpacing: '1px' }}>
+              SELECIONAR KIT ({filteredKits.length})
+            </h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '0.8rem' }}>
+              Manual do Arcanauta — Escolha o caminho do seu herói:
+            </p>
+
+            {/* Search Input */}
+            <div className="kit-search-container">
+              <SearchIcon />
+              <input
+                type="text"
+                placeholder="Buscar por nome, perícia ou poder..."
+                value={kitSearchQuery}
+                onChange={(e) => setKitSearchQuery(e.target.value)}
+                className="kit-search-input"
+              />
+              {kitSearchQuery && (
+                <button className="kit-search-clear" onClick={() => setKitSearchQuery('')}>✕</button>
+              )}
+            </div>
+
+            {/* Núcleo Filter Chips */}
+            <div className="kit-nucleo-chips">
+              {[
+                { id: 'all', label: 'Todos' },
+                { id: 'Arcas', label: 'Era das Arcas' },
+                { id: 'Galáxia', label: 'Guerra da Galáxia' },
+                { id: 'ALPHA', label: 'Tormenta ALPHA' },
+                { id: 'UniPotência', label: 'UniPotência' },
+                { id: 'ARSENAL', label: 'Operação ARSENAL' }
+              ].map(chip => (
+                <button
+                  key={chip.id}
+                  className={`kit-chip-btn ${selectedNucleoFilter === chip.id ? 'active' : ''}`}
+                  onClick={() => setSelectedNucleoFilter(chip.id)}
+                >
+                  {chip.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Kits List */}
+            <div className="kit-cards-scroll-list">
+              {filteredKits.map((kit) => {
+                const isSelected = kit.id === selectedKitId;
+                return (
+                  <div
+                    key={kit.id}
+                    className={`kit-card-option ${isSelected ? 'selected' : ''}`}
+                    onClick={() => {
+                      updateActiveSheet({ selectedKitId: kit.id });
+                      setIsKitSelectModalOpen(false);
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.25rem', color: isSelected ? 'var(--accent-color)' : '#fff', letterSpacing: '0.5px' }}>
+                        {kit.name}
+                      </span>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', background: 'var(--bg-color)', padding: '2px 6px', borderRadius: '3px' }}>
+                        {kit.nucleos}
+                      </span>
+                    </div>
+
+                    {kit.exigencias && (
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                        <strong style={{ color: 'var(--text-main)' }}>Exigências:</strong> {kit.exigencias}
+                      </div>
+                    )}
+
+                    <div style={{ display: 'flex', gap: '0.4rem', marginTop: '6px', flexWrap: 'wrap' }}>
+                      {kit.powers.map(p => (
+                        <span key={p.id} style={{ fontSize: '0.72rem', background: 'rgba(255,255,255,0.06)', padding: '2px 6px', borderRadius: '3px', color: 'var(--text-main)' }}>
+                          • {p.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {filteredKits.length === 0 && (
+                <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+                  Nenhum kit encontrado com os filtros atuais.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Detalhes dos Poderes do Kit (Acessível pelo badge na gameplay) */}
+      {isKitInfoModalOpen && currentKit && (
+        <div className="modal-overlay pop-in" style={{ zIndex: 390, alignItems: 'center' }} onClick={(e) => {
+          if (e.target === e.currentTarget) setIsKitInfoModalOpen(false);
+        }}>
+          <div className="modal-content" style={{ 
+            borderRadius: '4px',
+            borderTop: '2px solid var(--accent-color)',
+            borderBottom: '2px solid var(--accent-color)',
+            background: 'rgba(15, 18, 26, 0.96)',
+            boxShadow: '0 0 25px var(--accent-transparent)',
+            maxWidth: '500px',
+            width: '90%',
+            maxHeight: '85vh',
+            overflowY: 'auto'
+          }}>
+            <button className="modal-close" onClick={() => setIsKitInfoModalOpen(false)}>✕</button>
+            <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', marginBottom: '0.2rem', color: 'var(--accent-color)', letterSpacing: '1px' }}>
+              KIT: {currentKit.name.toUpperCase()}
+            </h2>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
+              <div><strong style={{ color: '#fff' }}>Exigências:</strong> {currentKit.exigencias || 'Nenhuma'}</div>
+              <div><strong style={{ color: '#fff' }}>Núcleos:</strong> {currentKit.nucleos}</div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+              {currentKit.powers.map((power, idx) => (
+                <div key={power.id || idx} style={{ background: 'var(--surface-color)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '0.8rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
+                    <span style={{ fontWeight: 'bold', color: '#fff', fontSize: '1.05rem', fontFamily: 'Bebas Neue, sans-serif', letterSpacing: '0.5px' }}>
+                      {power.name}
+                    </span>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--accent-color)', textTransform: 'uppercase', border: '1px solid var(--accent-color)', padding: '1px 5px', borderRadius: '3px' }}>
+                      {power.type === 'per_scene' ? '1x Cena' : power.type === 'per_session' ? '1x Sessão' : power.type === 'buff' ? 'Buff' : 'Passivo'}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-main)', lineHeight: '1.4', opacity: 0.9 }}>
+                    {power.desc}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button
+              className="btn-roll"
+              style={{ marginTop: '1.2rem' }}
+              onClick={() => setIsKitInfoModalOpen(false)}
+            >
+              Fechar
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Modal de Gerenciamento de Múltiplas Fichas */}
       {isSheetsModalOpen && (
