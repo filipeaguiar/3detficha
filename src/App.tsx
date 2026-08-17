@@ -626,23 +626,23 @@ export default function App() {
                     {characterName || 'HERÓI DESCONHECIDO'}
                   </h1>
                   
-                  <SegmentedBar current={currentPV} max={maxPV} color="#ff3366" onClick={() => setIsEditingStats(true)} />
-                  <SegmentedBar current={currentPM} max={maxPM} color="#33ccff" onClick={() => setIsEditingStats(true)} />
-                  <SegmentedBar current={currentPA} max={maxPA} color="#ffcc00" onClick={() => setIsEditingStats(true)} halfWidth={true} />
+                  <SegmentedBar current={currentPV} max={maxPV} color="#5EB05D" onClick={() => setIsEditingStats(true)} />
+                  <SegmentedBar current={currentPM} max={maxPM} color="#894EC6" onClick={() => setIsEditingStats(true)} />
+                  <SegmentedBar current={currentPA} max={maxPA} color="#FF9E00" onClick={() => setIsEditingStats(true)} halfWidth={true} />
                 </div>
               </div>
               
               <div className="panel slide-up" style={{ animationDelay: '0.15s', width: '100%' }}>
                 <div className="stats-grid">
-                <button className="stat-box roll-btn" style={{ '--btn-color': '#ffcc00', '--btn-text-color': '#000000' } as React.CSSProperties} onClick={() => handleRoll('poder')} disabled={rolling}>
+                <button className="stat-box roll-btn" style={{ '--btn-color': '#FF9E00', '--btn-text-color': '#ffffff' } as React.CSSProperties} onClick={() => handleRoll('poder')} disabled={rolling}>
                   <div className="stat-icon-container"><PoderIcon /></div>
                   <div className="stat-value corner">{poder}</div>
                 </button>
-                <button className="stat-box roll-btn" style={{ '--btn-color': '#4fc3f7', '--btn-text-color': '#000000' } as React.CSSProperties} onClick={() => handleRoll('habilidade')} disabled={rolling}>
+                <button className="stat-box roll-btn" style={{ '--btn-color': '#894EC6', '--btn-text-color': '#ffffff' } as React.CSSProperties} onClick={() => handleRoll('habilidade')} disabled={rolling}>
                   <div className="stat-icon-container"><HabilidadeIcon /></div>
                   <div className="stat-value corner">{habilidade}</div>
                 </button>
-                <button className="stat-box roll-btn" style={{ '--btn-color': 'var(--danger-color)', '--btn-text-color': '#ffffff' } as React.CSSProperties} onClick={() => handleRoll('resistencia')} disabled={rolling}>
+                <button className="stat-box roll-btn" style={{ '--btn-color': '#5EB05D', '--btn-text-color': '#ffffff' } as React.CSSProperties} onClick={() => handleRoll('resistencia')} disabled={rolling}>
                   <div className="stat-icon-container"><ResistenciaIcon /></div>
                   <div className="stat-value corner">{resistencia}</div>
                 </button>
