@@ -392,8 +392,16 @@ const CubeIcon = () => (
   </svg>
 );
 
+const MenuIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="3" y1="12" x2="21" y2="12"></line>
+    <line x1="3" y1="6" x2="21" y2="6"></line>
+    <line x1="3" y1="18" x2="21" y2="18"></line>
+  </svg>
+);
+
 const UsersIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
     <circle cx="9" cy="7" r="4"/>
     <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
@@ -461,20 +469,20 @@ const ChevronDownIcon = () => (
 );
 
 const PencilIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
   </svg>
 );
 
 const VolumeIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
     <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
   </svg>
 );
 
 const VolumeXIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
     <line x1="23" y1="9" x2="17" y2="15"></line>
     <line x1="17" y1="9" x2="23" y2="15"></line>
@@ -489,7 +497,7 @@ const BookIcon = () => (
 );
 
 const ResetIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
     <path d="M3 3v5h5"/>
   </svg>
@@ -623,6 +631,9 @@ export default function App() {
   const [mode, setMode] = useState<'edit' | 'play'>('play');
   const [activeFormIndex, setActiveFormIndex] = useState<number>(0);
   
+  // Hidden Drawer Menu state
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
   // Modals state
   const [isSheetsModalOpen, setIsSheetsModalOpen] = useState(false);
   const [isKitSelectModalOpen, setIsKitSelectModalOpen] = useState(false);
@@ -638,6 +649,32 @@ export default function App() {
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const playDiceSound = useDiceSound();
+
+  // Gesture detection for Swipe Right to open Drawer & Swipe Left to close
+  const touchStartPos = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartPos.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY
+    };
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const deltaX = e.changedTouches[0].clientX - touchStartPos.current.x;
+    const deltaY = e.changedTouches[0].clientY - touchStartPos.current.y;
+
+    // Horizontal swipe threshold
+    if (Math.abs(deltaY) < 80) {
+      if (deltaX > 60 && !isDrawerOpen) {
+        // Swiped Right -> Open Drawer
+        setIsDrawerOpen(true);
+      } else if (deltaX < -50 && isDrawerOpen) {
+        // Swiped Left -> Close Drawer
+        setIsDrawerOpen(false);
+      }
+    }
+  };
 
   // Active Sheet properties
   const characterName = activeSheet.characterName;
@@ -811,6 +848,7 @@ export default function App() {
   };
 
   const handleEdit = () => {
+    setIsDrawerOpen(false);
     setMode('edit');
     if (diceBoxRef.current) diceBoxRef.current.clear();
     if (clearDiceTimeoutRef.current) clearTimeout(clearDiceTimeoutRef.current);
@@ -907,6 +945,7 @@ export default function App() {
     saveAllSheets([...characterSheets, newSheet], newSheet.id);
     setActiveFormIndex(0);
     setIsSheetsModalOpen(false);
+    setIsDrawerOpen(false);
     setMode('edit');
   };
 
@@ -1266,7 +1305,11 @@ export default function App() {
         style={{ display: 'none' }}
       />
 
-      <div className="app-container">
+      <div 
+        className="app-container"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         
         {mode === 'edit' && (
           <div className="panel slide-up" style={{ animationDelay: '0.1s', gridColumn: '1 / -1', maxWidth: '650px', margin: '0 auto', width: '100%' }}>
@@ -1593,7 +1636,7 @@ export default function App() {
               </div>
             )}
 
-            {/* FIGHTING GAME HUD */}
+            {/* FIGHTING GAME HUD (Cleaned of extra buttons, single toggle trigger + swipe right) */}
             <div className="slide-up" style={{ 
               display: 'flex', 
               gap: '1rem', 
@@ -1606,34 +1649,14 @@ export default function App() {
               animationDelay: '0.05s',
               zIndex: 20
             }}>
-              <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '0.4rem' }}>
+              {/* Menu trigger button (hamburger) */}
+              <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex' }}>
                 <button 
-                  onClick={() => setIsSheetsModalOpen(true)} 
-                  style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border-color)', color: 'var(--text-main)', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', cursor: 'pointer', zIndex: 10 }}
-                  title="Trocar de Personagem (Fichas)"
+                  onClick={() => setIsDrawerOpen(true)} 
+                  className="hud-menu-trigger"
+                  title="Menu do Personagem (Deslize para a direita ou clique)"
                 >
-                  <UsersIcon />
-                </button>
-                <button 
-                  onClick={handleResetScene} 
-                  style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border-color)', color: 'var(--accent-color)', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', cursor: 'pointer', zIndex: 10 }}
-                  title="Nova Cena (Resetar usos de poderes e buffs de cena)"
-                >
-                  <ResetIcon />
-                </button>
-                <button 
-                  onClick={() => updateActiveSheet({ soundOn: !soundOn })} 
-                  style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border-color)', color: soundOn ? 'var(--accent-color)' : 'var(--text-muted)', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', cursor: 'pointer', zIndex: 10 }}
-                  title={soundOn ? "Desativar Som" : "Ativar Som"}
-                >
-                  {soundOn ? <VolumeIcon /> : <VolumeXIcon />}
-                </button>
-                <button 
-                  onClick={handleEdit} 
-                  style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border-color)', color: 'var(--text-muted)', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', cursor: 'pointer', zIndex: 10 }}
-                  title="Editar Ficha"
-                >
-                  <PencilIcon />
+                  <MenuIcon />
                 </button>
               </div>
 
@@ -1676,7 +1699,7 @@ export default function App() {
 
               {/* Bars Area */}
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', paddingRight: '2.5rem' }}>
                   <h1 style={{ 
                     fontFamily: 'Bebas Neue, sans-serif', 
                     fontSize: '1.8rem', 
@@ -1708,7 +1731,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* Compact Actionable Kit Powers Row (NO long texts occupying space!) */}
+            {/* Compact Actionable Kit Powers Row */}
             {activeKitActionPowers.length > 0 && (
               <div className="kit-actions-compact-row slide-up">
                 {activeKitActionPowers.map((power) => {
@@ -1856,6 +1879,107 @@ export default function App() {
           </div>
         )}
       </div>
+
+      {/* ======================================================== */}
+      {/* MENU OCULTO LATERAL (DRAWER - DESLIZE PARA A DIREITA)     */}
+      {/* ======================================================== */}
+      {isDrawerOpen && (
+        <div 
+          className="drawer-backdrop fade-in"
+          onClick={() => setIsDrawerOpen(false)}
+        >
+          <div 
+            className="drawer-panel slide-right"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drawer Header */}
+            <div className="drawer-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                <div className="drawer-avatar-thumb" style={{ borderColor: accentColor }}>
+                  {currentForm.avatarUrl ? (
+                    <img src={currentForm.avatarUrl} alt={currentForm.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <span style={{ color: accentColor, fontWeight: 'bold', fontSize: '1.4rem', fontFamily: 'Bebas Neue, sans-serif' }}>
+                      {characterName ? characterName.charAt(0).toUpperCase() : '?'}
+                    </span>
+                  )}
+                </div>
+                <div>
+                  <div style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.4rem', color: '#fff', letterSpacing: '1px' }}>
+                    {characterName || 'HERÓI'}
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--accent-color)' }}>
+                    {currentKit ? currentKit.name : 'Sem Kit'}
+                  </div>
+                </div>
+              </div>
+
+              <button className="modal-close" onClick={() => setIsDrawerOpen(false)}>✕</button>
+            </div>
+
+            {/* Drawer Menu Items */}
+            <div className="drawer-items-list">
+              <button 
+                className="drawer-menu-item"
+                onClick={() => {
+                  setIsDrawerOpen(false);
+                  setIsSheetsModalOpen(true);
+                }}
+              >
+                <div className="drawer-item-icon"><UsersIcon /></div>
+                <div className="drawer-item-content">
+                  <div className="drawer-item-title">Trocar de Personagem</div>
+                  <div className="drawer-item-subtitle">Alternar entre suas fichas salvas</div>
+                </div>
+              </button>
+
+              <button 
+                className="drawer-menu-item"
+                onClick={() => {
+                  handleResetScene();
+                  setIsDrawerOpen(false);
+                }}
+              >
+                <div className="drawer-item-icon" style={{ color: 'var(--accent-color)' }}><ResetIcon /></div>
+                <div className="drawer-item-content">
+                  <div className="drawer-item-title">Nova Cena (Resetar)</div>
+                  <div className="drawer-item-subtitle">Restaura usos de poderes e buffs de cena</div>
+                </div>
+              </button>
+
+              <button 
+                className="drawer-menu-item"
+                onClick={() => {
+                  updateActiveSheet({ soundOn: !soundOn });
+                }}
+              >
+                <div className="drawer-item-icon" style={{ color: soundOn ? 'var(--accent-color)' : 'var(--text-muted)' }}>
+                  {soundOn ? <VolumeIcon /> : <VolumeXIcon />}
+                </div>
+                <div className="drawer-item-content">
+                  <div className="drawer-item-title">Som dos Dados 3D</div>
+                  <div className="drawer-item-subtitle">{soundOn ? 'Ativado (Clique para desativar)' : 'Desativado (Clique para ativar)'}</div>
+                </div>
+              </button>
+
+              <button 
+                className="drawer-menu-item"
+                onClick={handleEdit}
+              >
+                <div className="drawer-item-icon"><PencilIcon /></div>
+                <div className="drawer-item-content">
+                  <div className="drawer-item-title">Editar Ficha</div>
+                  <div className="drawer-item-subtitle">Modificar atributos, técnicas, avatar e kits</div>
+                </div>
+              </button>
+            </div>
+
+            <div className="drawer-footer-hint">
+              <span>👈 Deslize para a esquerda para fechar</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal de Seleção de Kits com Busca (Otimizado para Mobile / Android) */}
       {isKitSelectModalOpen && (
