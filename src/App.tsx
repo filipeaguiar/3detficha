@@ -80,7 +80,7 @@ const SegmentedBar = ({ current, max, color, onClick, halfWidth }: { current: nu
         key={i} 
         style={{
           flex: 1,
-          height: isHighVolume ? '16px' : '20px',
+          height: '16px',
           minWidth: '2px',
           backgroundColor: isFilled ? color : 'transparent',
           border: isHighVolume ? 'none' : `1px solid ${isFilled ? color : 'var(--border-color)'}`,
@@ -151,7 +151,7 @@ export default function App() {
     setCurrentPA(maxPA);
   }, [maxPV, maxPM, maxPA]);
 
-  const [editStat, setEditStat] = useState<'PA' | 'PM' | 'PV' | null>(null);
+  const [isEditingStats, setIsEditingStats] = useState(false);
 
   // Modificadores de rolagem
   const [bonusDice, setBonusDice] = useState<0 | 1 | 2>(0);
@@ -311,10 +311,10 @@ export default function App() {
     }
   };
 
-  const handleEditStatChange = (delta: number) => {
-    if (editStat === 'PA') setCurrentPA(p => p + delta);
-    else if (editStat === 'PM') setCurrentPM(p => p + delta);
-    else if (editStat === 'PV') setCurrentPV(p => p + delta);
+  const handleStatChange = (stat: 'PA' | 'PM' | 'PV', delta: number) => {
+    if (stat === 'PA') setCurrentPA(p => Math.max(0, p + delta));
+    else if (stat === 'PM') setCurrentPM(p => Math.max(0, p + delta));
+    else if (stat === 'PV') setCurrentPV(p => Math.max(0, p + delta));
   };
 
   const handleRoll = async (attrName: 'poder' | 'habilidade' | 'resistencia') => {
@@ -609,9 +609,9 @@ export default function App() {
                     {characterName || 'HERÓI DESCONHECIDO'}
                   </h1>
                   
-                  <SegmentedBar current={currentPV} max={maxPV} color="#ff3366" onClick={() => setEditStat('PV')} />
-                  <SegmentedBar current={currentPM} max={maxPM} color="#33ccff" onClick={() => setEditStat('PM')} />
-                  <SegmentedBar current={currentPA} max={maxPA} color="#ffcc00" onClick={() => setEditStat('PA')} halfWidth={true} />
+                  <SegmentedBar current={currentPV} max={maxPV} color="#ff3366" onClick={() => setIsEditingStats(true)} />
+                  <SegmentedBar current={currentPM} max={maxPM} color="#33ccff" onClick={() => setIsEditingStats(true)} />
+                  <SegmentedBar current={currentPA} max={maxPA} color="#ffcc00" onClick={() => setIsEditingStats(true)} halfWidth={true} />
                 </div>
               </div>
               
@@ -788,28 +788,52 @@ export default function App() {
       )}
 
       {/* Modal para Editar Pontos Derivados */}
-      {editStat && (
-        <div className="modal-overlay" style={{ zIndex: 350, alignItems: 'center' }}>
-          <div className="modal-content pop-in" style={{ textAlign: 'center', borderRadius: 'var(--radius)' }}>
-            <button className="modal-close" onClick={() => setEditStat(null)}>✕</button>
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '2rem', margin: '2rem 0' }}>
-              <button 
-                className="control-btn" 
-                style={{ width: '40px', height: '40px', fontSize: '1.5rem', borderColor: editStat === 'PM' ? '#4fc3f7' : editStat === 'PA' ? 'var(--success-color)' : 'var(--danger-color)', color: editStat === 'PM' ? '#4fc3f7' : editStat === 'PA' ? 'var(--success-color)' : 'var(--danger-color)' }} 
-                onClick={() => handleEditStatChange(-1)}
-              >
-                -
-              </button>
-              <span style={{ fontSize: '4rem', fontWeight: 'bold', color: editStat === 'PM' ? '#4fc3f7' : editStat === 'PA' ? 'var(--success-color)' : 'var(--danger-color)', fontFamily: 'Bebas Neue, sans-serif' }}>
-                {editStat === 'PA' ? currentPA : editStat === 'PM' ? currentPM : currentPV}
-              </span>
-              <button 
-                className="control-btn" 
-                style={{ width: '40px', height: '40px', fontSize: '1.5rem', borderColor: editStat === 'PM' ? '#4fc3f7' : editStat === 'PA' ? 'var(--success-color)' : 'var(--danger-color)', color: editStat === 'PM' ? '#4fc3f7' : editStat === 'PA' ? 'var(--success-color)' : 'var(--danger-color)' }} 
-                onClick={() => handleEditStatChange(1)}
-              >
-                +
-              </button>
+      {isEditingStats && (
+        <div className="modal-overlay pop-in" style={{ zIndex: 350, alignItems: 'center' }} onClick={(e) => {
+          if (e.target === e.currentTarget) setIsEditingStats(false);
+        }}>
+          <div className="modal-content" style={{ 
+            textAlign: 'center', 
+            borderRadius: '4px',
+            borderTop: '2px solid var(--accent-color)',
+            borderBottom: '2px solid var(--accent-color)',
+            background: 'rgba(0,0,0,0.85)',
+            boxShadow: '0 0 20px var(--accent-transparent)',
+            maxWidth: '400px'
+          }}>
+            <button className="modal-close" onClick={() => setIsEditingStats(false)}>✕</button>
+            <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', marginBottom: '1.5rem', color: '#fff', textShadow: '2px 2px 0px #000', letterSpacing: '2px' }}>STATUS</h2>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', margin: '1rem 0' }}>
+              {/* PV */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.8rem', background: 'rgba(255,51,102,0.1)', borderLeft: '4px solid #ff3366' }}>
+                <span style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.5rem', color: '#ff3366', width: '50px', textAlign: 'left', textShadow: '0 0 5px rgba(255,51,102,0.5)' }}>PV</span>
+                <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+                  <button className="control-btn" style={{ width: '45px', height: '45px', fontSize: '1.8rem', borderColor: '#ff3366', color: '#ff3366', background: 'rgba(0,0,0,0.5)' }} onClick={() => handleStatChange('PV', -1)}>-</button>
+                  <span style={{ fontSize: '3rem', fontWeight: 'bold', color: '#fff', fontFamily: 'Bebas Neue, sans-serif', width: '50px', textShadow: '0 0 10px #ff3366' }}>{currentPV}</span>
+                  <button className="control-btn" style={{ width: '45px', height: '45px', fontSize: '1.8rem', borderColor: '#ff3366', color: '#ff3366', background: 'rgba(0,0,0,0.5)' }} onClick={() => handleStatChange('PV', 1)}>+</button>
+                </div>
+              </div>
+              
+              {/* PM */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.8rem', background: 'rgba(51,204,255,0.1)', borderLeft: '4px solid #33ccff' }}>
+                <span style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.5rem', color: '#33ccff', width: '50px', textAlign: 'left', textShadow: '0 0 5px rgba(51,204,255,0.5)' }}>PM</span>
+                <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+                  <button className="control-btn" style={{ width: '45px', height: '45px', fontSize: '1.8rem', borderColor: '#33ccff', color: '#33ccff', background: 'rgba(0,0,0,0.5)' }} onClick={() => handleStatChange('PM', -1)}>-</button>
+                  <span style={{ fontSize: '3rem', fontWeight: 'bold', color: '#fff', fontFamily: 'Bebas Neue, sans-serif', width: '50px', textShadow: '0 0 10px #33ccff' }}>{currentPM}</span>
+                  <button className="control-btn" style={{ width: '45px', height: '45px', fontSize: '1.8rem', borderColor: '#33ccff', color: '#33ccff', background: 'rgba(0,0,0,0.5)' }} onClick={() => handleStatChange('PM', 1)}>+</button>
+                </div>
+              </div>
+
+              {/* PA */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.8rem', background: 'rgba(255,204,0,0.1)', borderLeft: '4px solid #ffcc00' }}>
+                <span style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.5rem', color: '#ffcc00', width: '50px', textAlign: 'left', textShadow: '0 0 5px rgba(255,204,0,0.5)' }}>PA</span>
+                <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+                  <button className="control-btn" style={{ width: '45px', height: '45px', fontSize: '1.8rem', borderColor: '#ffcc00', color: '#ffcc00', background: 'rgba(0,0,0,0.5)' }} onClick={() => handleStatChange('PA', -1)}>-</button>
+                  <span style={{ fontSize: '3rem', fontWeight: 'bold', color: '#fff', fontFamily: 'Bebas Neue, sans-serif', width: '50px', textShadow: '0 0 10px #ffcc00' }}>{currentPA}</span>
+                  <button className="control-btn" style={{ width: '45px', height: '45px', fontSize: '1.8rem', borderColor: '#ffcc00', color: '#ffcc00', background: 'rgba(0,0,0,0.5)' }} onClick={() => handleStatChange('PA', 1)}>+</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
