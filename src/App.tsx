@@ -482,28 +482,28 @@ export default function App() {
             </p>
 
             <div className="stats-grid">
-              <div className="stat-box" style={{ borderColor: '#ffcc00' }}>
-                <div className="stat-title" style={{ color: '#ffcc00' }}>Poder</div>
-                <input type="number" className="stat-input" style={{ color: '#ffcc00' }} min="0" max="10" value={poder} onChange={(e) => setPoder(Number(e.target.value))} />
+              <div className="stat-box edit-stat-box" style={{ '--btn-color': '#FF9E00', borderColor: '#FF9E00' } as React.CSSProperties}>
+                <div className="stat-title" style={{ color: '#FF9E00' }}>Poder</div>
+                <input type="number" className="stat-input stat-value" style={{ color: '#FF9E00' }} min="0" max="10" value={poder} onChange={(e) => setPoder(Number(e.target.value))} />
               </div>
-              <div className="stat-box" style={{ borderColor: '#4fc3f7' }}>
-                <div className="stat-title" style={{ color: '#4fc3f7' }}>Habilidade</div>
-                <input type="number" className="stat-input" style={{ color: '#4fc3f7' }} min="0" max="10" value={habilidade} onChange={(e) => setHabilidade(Number(e.target.value))} />
+              <div className="stat-box edit-stat-box" style={{ '--btn-color': '#894EC6', borderColor: '#894EC6' } as React.CSSProperties}>
+                <div className="stat-title" style={{ color: '#894EC6' }}>Habilidade</div>
+                <input type="number" className="stat-input stat-value" style={{ color: '#894EC6' }} min="0" max="10" value={habilidade} onChange={(e) => setHabilidade(Number(e.target.value))} />
               </div>
-              <div className="stat-box" style={{ borderColor: 'var(--danger-color)' }}>
-                <div className="stat-title" style={{ color: 'var(--danger-color)' }}>Resistência</div>
-                <input type="number" className="stat-input" style={{ color: 'var(--danger-color)' }} min="0" max="10" value={resistencia} onChange={(e) => setResistencia(Number(e.target.value))} />
+              <div className="stat-box edit-stat-box" style={{ '--btn-color': '#5EB05D', borderColor: '#5EB05D' } as React.CSSProperties}>
+                <div className="stat-title" style={{ color: '#5EB05D' }}>Resistência</div>
+                <input type="number" className="stat-input stat-value" style={{ color: '#5EB05D' }} min="0" max="10" value={resistencia} onChange={(e) => setResistencia(Number(e.target.value))} />
               </div>
             </div>
 
             <div className="stats-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
-              <div className="stat-box">
-                <div className="stat-title">+Vida (Níveis)</div>
-                <input type="number" className="stat-input" min="0" max="10" value={maisVida} onChange={(e) => setMaisVida(Number(e.target.value))} />
+              <div className="stat-box edit-stat-box" style={{ '--btn-color': '#5EB05D', borderColor: '#5EB05D' } as React.CSSProperties}>
+                <div className="stat-title" style={{ color: '#5EB05D' }}>+Vida (Níveis)</div>
+                <input type="number" className="stat-input stat-value" style={{ color: '#5EB05D' }} min="0" max="10" value={maisVida} onChange={(e) => setMaisVida(Number(e.target.value))} />
               </div>
-              <div className="stat-box">
-                <div className="stat-title">+Mana (Níveis)</div>
-                <input type="number" className="stat-input" min="0" max="10" value={maisMana} onChange={(e) => setMaisMana(Number(e.target.value))} />
+              <div className="stat-box edit-stat-box" style={{ '--btn-color': '#894EC6', borderColor: '#894EC6' } as React.CSSProperties}>
+                <div className="stat-title" style={{ color: '#894EC6' }}>+Mana (Níveis)</div>
+                <input type="number" className="stat-input stat-value" style={{ color: '#894EC6' }} min="0" max="10" value={maisMana} onChange={(e) => setMaisMana(Number(e.target.value))} />
               </div>
             </div>
 
