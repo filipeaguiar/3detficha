@@ -509,6 +509,21 @@ const ResetIcon = () => (
   </svg>
 );
 
+const BedIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M2 4v16"/>
+    <path d="M2 8h18a2 2 0 0 1 2 2v10"/>
+    <path d="M2 17h20"/>
+    <path d="M6 8v9"/>
+  </svg>
+);
+
+const ZapIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+  </svg>
+);
+
 const SegmentedBar = ({ current, max, color, onClick, halfWidth, pulseCount = 0 }: { current: number, max: number, color: string, onClick: () => void, halfWidth?: boolean, pulseCount?: number }) => {
   const segments = [];
   const maxSafe = Math.max(1, max);
@@ -1175,6 +1190,25 @@ export default function App() {
       });
       return next;
     });
+  };
+
+  // Descanso Completo (Recupera 100% de PV, PM e PA)
+  const handleFullRest = () => {
+    setCurrentPV(maxPV);
+    setCurrentPM(maxPM);
+    setCurrentPA(maxPA);
+    handleResetScene();
+    setIsDrawerOpen(false);
+  };
+
+  // Descanso Rápido (Recupera 50% de PV e PM, reseta usos de cena)
+  const handleQuickRest = () => {
+    const recoverPV = Math.max(1, Math.ceil(maxPV / 2));
+    const recoverPM = Math.max(1, Math.ceil(maxPM / 2));
+    setCurrentPV(p => Math.min(maxPV, p + recoverPV));
+    setCurrentPM(p => Math.min(maxPM, p + recoverPM));
+    handleResetScene();
+    setIsDrawerOpen(false);
   };
 
   const getBonusSubtitle = (bonus: RollBonus): string => {
@@ -2079,6 +2113,28 @@ export default function App() {
                 <div className="drawer-item-content">
                   <div className="drawer-item-title">Trocar de Personagem</div>
                   <div className="drawer-item-subtitle">Alternar entre suas fichas salvas</div>
+                </div>
+              </button>
+
+              <button 
+                className="drawer-menu-item"
+                onClick={handleFullRest}
+              >
+                <div className="drawer-item-icon" style={{ color: '#5EB05D' }}><BedIcon /></div>
+                <div className="drawer-item-content">
+                  <div className="drawer-item-title" style={{ color: '#5EB05D' }}>Realizar Descanso Completo</div>
+                  <div className="drawer-item-subtitle">Recupera 100% dos PV, PM e PA (Dormir / 8h)</div>
+                </div>
+              </button>
+
+              <button 
+                className="drawer-menu-item"
+                onClick={handleQuickRest}
+              >
+                <div className="drawer-item-icon" style={{ color: '#FF9E00' }}><ZapIcon /></div>
+                <div className="drawer-item-content">
+                  <div className="drawer-item-title" style={{ color: '#FF9E00' }}>Descanso Rápido</div>
+                  <div className="drawer-item-subtitle">Recupera +50% dos PV e PM (Fôlego / Pausa Curta)</div>
                 </div>
               </button>
 
