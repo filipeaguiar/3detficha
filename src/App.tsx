@@ -639,20 +639,22 @@ export default function App() {
                   className={`toggle-btn ${bonusDice > 0 ? 'active' : ''}`}
                   onClick={() => setBonusDice(prev => (prev >= 2 ? 0 : prev + 1) as 0 | 1 | 2)}
                   title={bonusDice === 0 ? "Rolagem Normal (1D)" : bonusDice === 1 ? "Ganho (+1D)" : "Ganho Duplo (+2D)"}
-                  style={{ display: 'flex', gap: '0.2rem', justifyContent: 'center' }}
                 >
-                  <CubeIcon />
-                  {bonusDice >= 1 && <CubeIcon />}
-                  {bonusDice >= 2 && <CubeIcon />}
+                  <div style={{ display: 'flex', gap: '0.2rem', justifyContent: 'center' }}>
+                    <CubeIcon />
+                    {bonusDice >= 1 && <CubeIcon />}
+                    {bonusDice >= 2 && <CubeIcon />}
+                  </div>
                 </button>
 
                 <button 
                   className={`toggle-btn ${critRange < 6 ? 'active' : ''}`}
                   onClick={() => setCritRange(prev => prev <= 4 ? 6 : prev - 1)}
                   title="Intervalo de Acerto Crítico"
-                  style={{ fontSize: '1.5rem', fontWeight: 'bold', fontFamily: "'Bebas Neue', sans-serif", letterSpacing: '2px' }}
                 >
-                  {critRange === 6 ? '6' : `${critRange}+`}
+                  <span style={{ fontSize: '1.5rem', fontWeight: 'bold', fontFamily: "'Bebas Neue', sans-serif", letterSpacing: '2px' }}>
+                    {critRange === 6 ? '6' : `${critRange}+`}
+                  </span>
                 </button>
               </div>
 
