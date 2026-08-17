@@ -11,6 +11,7 @@ export type RollBonus = {
   attribute: 'any' | 'poder' | 'habilidade' | 'resistencia';
   bonusType: 'attr_mod' | 'flat' | 'full_attr' | 'none';
   value: number; // For attr_mod (+2, +4) or flat (+1, +2)
+  duration: 'instant' | 'scene'; // Instant (1 roll) or Scene (lasts all scene)
   attrSource?: 'poder' | 'habilidade' | 'resistencia'; // For full_attr
   critThresholdMod?: number; // 0, -1, -2 (e.g. -1 reduces 6 to 5+)
   autoCrit?: boolean; // For Titânico (guarantees critical hit)
@@ -19,6 +20,286 @@ export type RollBonus = {
   costResource?: 'none' | 'PV' | 'PM' | 'PA';
 };
 
+export type CharacterForm = {
+  id: string;
+  name: string;
+  poder: number;
+  habilidade: number;
+  resistencia: number;
+  maisVida: number;
+  maisMana: number;
+  rollBonuses: RollBonus[];
+  wildShapeAdvantages?: string[]; // Druid chosen advantages
+};
+
+export type KitPower = {
+  id: string;
+  name: string;
+  desc: string;
+  type: 'per_scene' | 'per_session' | 'passive' | 'transformation' | 'buff';
+  maxUsesPerScene?: number;
+  costPM?: number;
+  repeatCostPM?: number;
+};
+
+export type CharacterKit = {
+  id: string;
+  name: string;
+  exigencias: string;
+  nucleos: string;
+  description: string;
+  powers: KitPower[];
+};
+
+export const DRUID_WILD_SHAPE_OPTIONS = [
+  { name: 'Aceleração', desc: 'Movimento extra por 1PM / Ganho em fugas' },
+  { name: 'Ágil', desc: 'Ganho em iniciativa e testes de agilidade/acrobacia' },
+  { name: 'Alcance 1', desc: 'Ataques alcançam até Perto' },
+  { name: 'Forte', desc: 'P+1 no atributo de Poder para esforço e dano' },
+  { name: 'Imune (Anfíbio)', desc: 'Respira e age na água sem penalidades' },
+  { name: 'Imune (Resiliente)', desc: 'Imunidade a venenos e doenças naturais' },
+  { name: '+Membros', desc: 'Membros extras para ataques ou manobras' },
+  { name: 'Paralisia', desc: 'Pode paralisar oponentes gastando PM' },
+  { name: 'Regeneração', desc: 'Recupera PV a cada rodada ou descanso' },
+  { name: 'Sentido Aguçado', desc: 'Ganho em testes de percepção (olfato/audição)' },
+  { name: 'Sentido (Infravisão/Radar)', desc: 'Enxerga no escuro ou detecta por vibração' },
+  { name: 'Vigoroso', desc: 'R+2 no atributo de Resistência' },
+  { name: 'Voo', desc: 'Capaz de voar em velocidade normal' }
+];
+
+export const KITS_CATALOG: CharacterKit[] = [
+  {
+    id: 'druida',
+    name: 'Druida',
+    exigencias: 'Animais; Ajudante, Transformação; Código Dahllan',
+    nucleos: 'Era das Arcas, Guerra da Galáxia, Operação ARSENAL',
+    description: 'Protetor da natureza que canaliza a força primeva das feras.',
+    powers: [
+      {
+        id: 'druida_forma_selvagem',
+        name: 'Forma Selvagem',
+        desc: 'Sua Transformação permite virar feras. Ao mudar para a 2ª forma, escolha 2 vantagens extras sem custo.',
+        type: 'transformation'
+      },
+      {
+        id: 'druida_irmaos_selvagens',
+        name: 'Irmãos Selvagens',
+        desc: 'Você pode mudar o tipo do seu Ajudante (Lutador, Defensor, etc.) no início de cada cena.',
+        type: 'passive'
+      },
+      {
+        id: 'druida_dadiva_natureza',
+        name: 'Dádiva da Natureza',
+        desc: '1x por cena gratuito (ou 3 PM p/ repetir), use Animais para substituir qualquer perícia.',
+        type: 'per_scene',
+        maxUsesPerScene: 1,
+        repeatCostPM: 3
+      }
+    ]
+  },
+  {
+    id: 'guerreiro',
+    name: 'Guerreiro',
+    exigencias: 'Luta',
+    nucleos: 'Era das Arcas, Operação ARSENAL, Tormenta ALPHA',
+    description: 'Mestre no combate marcial e táticas de confronto direto.',
+    powers: [
+      {
+        id: 'guerreiro_estilo',
+        name: 'Estilo de Combate',
+        desc: 'Especialização em ataques corpo-a-corpo ou à distância.',
+        type: 'passive'
+      },
+      {
+        id: 'guerreiro_ataque_gratuito',
+        name: 'Ataque Gratuito',
+        desc: '1x por cena, você pode usar um Ataque Especial sem gastar nenhum PM.',
+        type: 'per_scene',
+        maxUsesPerScene: 1
+      },
+      {
+        id: 'guerreiro_ultimo_recurso',
+        name: 'Último Recurso',
+        desc: 'Quando seus PVs estiverem perto da derrota (metade ou menos), seus ataques ganham Ganho (+1D).',
+        type: 'passive'
+      }
+    ]
+  },
+  {
+    id: 'cientista',
+    name: 'Cientista',
+    exigencias: 'Saber',
+    nucleos: 'Era das Arcas, Guerra da Galáxia, UniPotência',
+    description: 'Usa a lógica, inventos e descobertas para desvendar e vencer qualquer desafio.',
+    powers: [
+      {
+        id: 'cientista_eureka',
+        name: 'Eureka!',
+        desc: '1x por sessão, com 1 movimento e 3 PM, adquira qualquer vantagem de 1pt até o fim da cena.',
+        type: 'per_session',
+        costPM: 3
+      },
+      {
+        id: 'cientista_metodo',
+        name: 'Método Científico',
+        desc: '1x por cena gratuito (ou 3 PM p/ repetir), use Saber para substituir qualquer outra perícia.',
+        type: 'per_scene',
+        maxUsesPerScene: 1,
+        repeatCostPM: 3
+      },
+      {
+        id: 'cientista_pesquisa',
+        name: 'Pesquisa',
+        desc: 'Gaste 1 movimento e 1 PM para fazer teste de Saber (9) e descobrir segredos de um alvo.',
+        type: 'buff',
+        costPM: 1
+      }
+    ]
+  },
+  {
+    id: 'clerigo',
+    name: 'Clérigo',
+    exigencias: 'Devoto',
+    nucleos: 'Era das Arcas, Tormenta ALPHA, UniPotência',
+    description: 'Canalizador do poder divino de entidades e patronos sagrados.',
+    powers: [
+      {
+        id: 'clerigo_devoto',
+        name: 'Devoto Fervoroso',
+        desc: 'Pode usar o benefício da vantagem Devoto até 3 vezes por cena (em vez de 2).',
+        type: 'passive'
+      },
+      {
+        id: 'clerigo_dom_divino',
+        name: 'Dom Divino',
+        desc: '1x por cena, com 1 movimento e 3 PM, adquira uma vantagem ou perícia de 1pt até o fim da cena.',
+        type: 'per_scene',
+        costPM: 3
+      },
+      {
+        id: 'clerigo_poder_concedido',
+        name: 'Poder Concedido',
+        desc: '1x por cena, use sua vantagem concedida (Cura, Magia, Paralisia, etc.) sem gastar PM.',
+        type: 'per_scene',
+        maxUsesPerScene: 1
+      }
+    ]
+  },
+  {
+    id: 'barbaro',
+    name: 'Bárbaro',
+    exigencias: 'Sobrevivência; Vigoroso',
+    nucleos: 'Era das Arcas, Operação ARSENAL, Tormenta ALPHA',
+    description: 'Guerreiro bravio que canaliza uma fúria primitiva devastadora.',
+    powers: [
+      {
+        id: 'barbaro_espirito_livre',
+        name: 'Espírito Livre',
+        desc: 'Se estiver consciente, você nunca é considerado indefeso.',
+        type: 'passive'
+      },
+      {
+        id: 'barbaro_frenesi',
+        name: 'Frenesi de Combate',
+        desc: 'Gaste 3 PM para invocar frenesi que oferece P+3 até o fim da cena.',
+        type: 'buff',
+        costPM: 3
+      },
+      {
+        id: 'barbaro_resistencia',
+        name: 'Resistência Superior',
+        desc: 'A vantagem Vigoroso concede R+3 ao seu personagem em vez de R+2.',
+        type: 'passive'
+      }
+    ]
+  },
+  {
+    id: 'agente_secreto',
+    name: 'Agente Secreto',
+    exigencias: 'Manha ou Percepção; Patrono',
+    nucleos: 'Guerra da Galáxia, Operação ARSENAL',
+    description: 'Especialista em espionagem, infiltração e táticas sigilosas.',
+    powers: [
+      {
+        id: 'agente_identidade',
+        name: 'Identidade Secreta',
+        desc: 'Ganho em testes para ocultar atividades e Perda para quem tentar descobrir sobre você.',
+        type: 'passive'
+      },
+      {
+        id: 'agente_olho_clinico',
+        name: 'Olho Clínico',
+        desc: '1 ação e 1 PM para teste de Percepção (9) e descobrir atributos/vantagens de um alvo.',
+        type: 'buff',
+        costPM: 1
+      },
+      {
+        id: 'agente_plano_acao',
+        name: 'Plano de Ação',
+        desc: 'Gaste 1 movimento e 2 PM para receber H+2 até o fim da cena.',
+        type: 'buff',
+        costPM: 2
+      }
+    ]
+  },
+  {
+    id: 'elementalista',
+    name: 'Elementalista',
+    exigencias: 'Magia, Ambiente, Fraqueza',
+    nucleos: 'Era das Arcas, Tormenta ALPHA, UniPotência',
+    description: 'Mago especializado em dobrar um elemento fundamental da natureza.',
+    powers: [
+      {
+        id: 'elementalista_ambiente',
+        name: 'Ambiente Elemental',
+        desc: 'Se rolar 6 na verificação de Ambiente, ganha 1 uso de Magia gratuito sem gastar PM.',
+        type: 'passive'
+      },
+      {
+        id: 'elementalista_primordial',
+        name: 'Elemento Primordial',
+        desc: '1x por sessão, com 1 movimento e 3 PM, ganhe 1 perícia ou vantagem de 1pt até o fim da cena.',
+        type: 'per_session',
+        costPM: 3
+      },
+      {
+        id: 'elementalista_moldar',
+        name: 'Moldar Essência',
+        desc: 'Na primeira rodada de cada cena, pode redistribuir seus atributos e perícias livremente.',
+        type: 'transformation'
+      }
+    ]
+  },
+  {
+    id: 'abastado',
+    name: 'Abastado',
+    exigencias: 'Influência ou Manha; Riqueza',
+    nucleos: 'Era das Arcas, Guerra da Galáxia',
+    description: 'Magnata ou financista que resolve desafios com recursos abundantes.',
+    powers: [
+      {
+        id: 'abastado_meritocracia',
+        name: 'Meritocracia',
+        desc: '1x por cena, faça um teste de compra (9) para usar uma vantagem temporária de 1pt.',
+        type: 'per_scene',
+        maxUsesPerScene: 1
+      },
+      {
+        id: 'abastado_poder_aquisitivo',
+        name: 'Poder Aquisitivo',
+        desc: '+3 no resultado final de todos os testes de compra.',
+        type: 'passive'
+      },
+      {
+        id: 'abastado_tempo_dinheiro',
+        name: 'Tempo é Dinheiro',
+        desc: 'Primeiro teste de compra de cada sessão tem Ganho (+1D).',
+        type: 'passive'
+      }
+    ]
+  }
+];
+
 export const BONUS_PRESETS: Array<Omit<RollBonus, 'id'>> = [
   {
     name: 'Ataque Especial (Potente)',
@@ -26,6 +307,7 @@ export const BONUS_PRESETS: Array<Omit<RollBonus, 'id'>> = [
     attribute: 'poder',
     bonusType: 'attr_mod',
     value: 2,
+    duration: 'instant',
     critThresholdMod: 0,
     autoCrit: false,
     extraDice: 0,
@@ -38,6 +320,7 @@ export const BONUS_PRESETS: Array<Omit<RollBonus, 'id'>> = [
     attribute: 'poder',
     bonusType: 'attr_mod',
     value: 4,
+    duration: 'instant',
     critThresholdMod: 0,
     autoCrit: false,
     extraDice: 0,
@@ -50,6 +333,7 @@ export const BONUS_PRESETS: Array<Omit<RollBonus, 'id'>> = [
     attribute: 'poder',
     bonusType: 'none',
     value: 0,
+    duration: 'instant',
     critThresholdMod: -1,
     autoCrit: false,
     extraDice: 0,
@@ -62,6 +346,7 @@ export const BONUS_PRESETS: Array<Omit<RollBonus, 'id'>> = [
     attribute: 'habilidade',
     bonusType: 'none',
     value: 0,
+    duration: 'instant',
     critThresholdMod: 0,
     autoCrit: false,
     extraDice: 0,
@@ -74,6 +359,7 @@ export const BONUS_PRESETS: Array<Omit<RollBonus, 'id'>> = [
     attribute: 'resistencia',
     bonusType: 'none',
     value: 0,
+    duration: 'instant',
     critThresholdMod: 0,
     autoCrit: false,
     extraDice: 0,
@@ -86,6 +372,7 @@ export const BONUS_PRESETS: Array<Omit<RollBonus, 'id'>> = [
     attribute: 'poder',
     bonusType: 'none',
     value: 0,
+    duration: 'instant',
     critThresholdMod: 0,
     autoCrit: true,
     extraDice: 0,
@@ -98,6 +385,7 @@ export const BONUS_PRESETS: Array<Omit<RollBonus, 'id'>> = [
     attribute: 'resistencia',
     bonusType: 'attr_mod',
     value: 2,
+    duration: 'instant',
     critThresholdMod: 0,
     autoCrit: false,
     extraDice: 0,
@@ -110,6 +398,7 @@ export const BONUS_PRESETS: Array<Omit<RollBonus, 'id'>> = [
     attribute: 'resistencia',
     bonusType: 'attr_mod',
     value: 4,
+    duration: 'instant',
     critThresholdMod: 0,
     autoCrit: false,
     extraDice: 0,
@@ -122,6 +411,7 @@ export const BONUS_PRESETS: Array<Omit<RollBonus, 'id'>> = [
     attribute: 'resistencia',
     bonusType: 'none',
     value: 0,
+    duration: 'instant',
     critThresholdMod: -1,
     autoCrit: false,
     extraDice: 0,
@@ -134,6 +424,7 @@ export const BONUS_PRESETS: Array<Omit<RollBonus, 'id'>> = [
     attribute: 'habilidade',
     bonusType: 'none',
     value: 0,
+    duration: 'instant',
     critThresholdMod: 0,
     autoCrit: false,
     extraDice: 0,
@@ -146,6 +437,7 @@ export const BONUS_PRESETS: Array<Omit<RollBonus, 'id'>> = [
     attribute: 'poder',
     bonusType: 'none',
     value: 0,
+    duration: 'instant',
     critThresholdMod: 0,
     autoCrit: false,
     extraDice: 0,
@@ -158,8 +450,48 @@ export const BONUS_PRESETS: Array<Omit<RollBonus, 'id'>> = [
     attribute: 'resistencia',
     bonusType: 'none',
     value: 0,
+    duration: 'instant',
     critThresholdMod: 0,
     autoCrit: true,
+    extraDice: 0,
+    costValue: 3,
+    costResource: 'PM',
+  },
+  {
+    name: 'Inspirar (Buff de Cena)',
+    alias: '',
+    attribute: 'any',
+    bonusType: 'flat',
+    value: 2,
+    duration: 'scene',
+    critThresholdMod: 0,
+    autoCrit: false,
+    extraDice: 0,
+    costValue: 3,
+    costResource: 'PM',
+  },
+  {
+    name: 'Plano de Ação (Agente)',
+    alias: '',
+    attribute: 'habilidade',
+    bonusType: 'attr_mod',
+    value: 2,
+    duration: 'scene',
+    critThresholdMod: 0,
+    autoCrit: false,
+    extraDice: 0,
+    costValue: 2,
+    costResource: 'PM',
+  },
+  {
+    name: 'Frenesi de Combate (Bárbaro)',
+    alias: '',
+    attribute: 'poder',
+    bonusType: 'attr_mod',
+    value: 3,
+    duration: 'scene',
+    critThresholdMod: 0,
+    autoCrit: false,
     extraDice: 0,
     costValue: 3,
     costResource: 'PM',
@@ -170,6 +502,7 @@ export const BONUS_PRESETS: Array<Omit<RollBonus, 'id'>> = [
     attribute: 'any',
     bonusType: 'none',
     value: 0,
+    duration: 'instant',
     critThresholdMod: 0,
     autoCrit: false,
     extraDice: 1,
@@ -182,6 +515,7 @@ export const BONUS_PRESETS: Array<Omit<RollBonus, 'id'>> = [
     attribute: 'poder',
     bonusType: 'attr_mod',
     value: 2,
+    duration: 'instant',
     critThresholdMod: 0,
     autoCrit: false,
     extraDice: 0,
@@ -210,6 +544,7 @@ function normalizeRollBonus(raw: any): RollBonus {
     attribute: raw.attribute || 'any',
     bonusType: bonusType,
     value: typeof raw.value === 'number' ? raw.value : 0,
+    duration: raw.duration === 'scene' ? 'scene' : 'instant',
     attrSource: attrSource || 'poder',
     critThresholdMod: typeof raw.critThresholdMod === 'number' ? raw.critThresholdMod : 0,
     autoCrit: !!raw.autoCrit,
@@ -299,6 +634,23 @@ const BookIcon = () => (
   </svg>
 );
 
+const SparklesIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+    <path d="M5 3v4"/>
+    <path d="M19 17v4"/>
+    <path d="M3 5h4"/>
+    <path d="M17 19h4"/>
+  </svg>
+);
+
+const ResetIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+    <path d="M3 3v5h5"/>
+  </svg>
+);
+
 const SegmentedBar = ({ current, max, color, onClick, halfWidth, pulseCount = 0 }: { current: number, max: number, color: string, onClick: () => void, halfWidth?: boolean, pulseCount?: number }) => {
   const segments = [];
   const maxSafe = Math.max(1, max);
@@ -341,8 +693,25 @@ const loadInitialData = () => {
   if (saved) {
     try {
       const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed.rollBonuses)) {
-        parsed.rollBonuses = parsed.rollBonuses.map(normalizeRollBonus);
+      if (Array.isArray(parsed.forms) && parsed.forms.length > 0) {
+        parsed.forms = parsed.forms.map((f: any) => ({
+          ...f,
+          rollBonuses: (f.rollBonuses || []).map(normalizeRollBonus)
+        }));
+      } else {
+        // Migrate legacy single form
+        const legacyBonuses = Array.isArray(parsed.rollBonuses) ? parsed.rollBonuses.map(normalizeRollBonus) : [];
+        parsed.forms = [{
+          id: 'base',
+          name: parsed.characterName || 'Forma Normal',
+          poder: parsed.poder ?? 1,
+          habilidade: parsed.habilidade ?? 1,
+          resistencia: parsed.resistencia ?? 1,
+          maisVida: parsed.maisVida ?? 0,
+          maisMana: parsed.maisMana ?? 0,
+          rollBonuses: legacyBonuses,
+          wildShapeAdvantages: []
+        }];
       }
       return parsed;
     } catch (e) {
@@ -354,23 +723,51 @@ const loadInitialData = () => {
 
 export default function App() {
   const initData = useRef(loadInitialData()).current;
-  const hasSavedData = initData.poder !== undefined;
+  const hasSavedData = initData.forms && initData.forms.length > 0;
 
   const [mode, setMode] = useState<'edit' | 'play'>(hasSavedData ? 'play' : 'edit');
   const [characterName, setCharacterName] = useState(initData.characterName ?? '');
+  const [selectedKitId, setSelectedKitId] = useState<string>(initData.selectedKitId ?? 'druida');
   const [accentColor, setAccentColor] = useState(initData.accentColor ?? '#ff0066');
   const [soundOn, setSoundOn] = useState(initData.soundOn ?? true);
   
   const playDiceSound = useDiceSound();
 
-  // Atributos base
-  const [poder, setPoder] = useState(initData.poder ?? 1);
-  const [habilidade, setHabilidade] = useState(initData.habilidade ?? 1);
-  const [resistencia, setResistencia] = useState(initData.resistencia ?? 1);
-  
-  // Vantagens
-  const [maisVida, setMaisVida] = useState(initData.maisVida ?? 0);
-  const [maisMana, setMaisMana] = useState(initData.maisMana ?? 0);
+  // Multi-Form / Transformation state
+  const defaultBaseForm: CharacterForm = {
+    id: 'base',
+    name: 'Forma Normal',
+    poder: 1,
+    habilidade: 1,
+    resistencia: 1,
+    maisVida: 0,
+    maisMana: 0,
+    rollBonuses: [],
+    wildShapeAdvantages: []
+  };
+
+  const [forms, setForms] = useState<CharacterForm[]>(
+    Array.isArray(initData.forms) && initData.forms.length > 0 ? initData.forms : [defaultBaseForm]
+  );
+  const [activeFormIndex, setActiveFormIndex] = useState<number>(0);
+
+  const currentForm = forms[activeFormIndex] || forms[0] || defaultBaseForm;
+
+  // Selected Kit
+  const currentKit = useMemo(() => {
+    return KITS_CATALOG.find(k => k.id === selectedKitId) || null;
+  }, [selectedKitId]);
+
+  // Kit Power Uses in Current Scene
+  const [usedKitPowers, setUsedKitPowers] = useState<Record<string, number>>({});
+
+  // Current Form Attributes & Derived values
+  const poder = currentForm.poder;
+  const habilidade = currentForm.habilidade;
+  const resistencia = currentForm.resistencia;
+  const maisVida = currentForm.maisVida;
+  const maisMana = currentForm.maisMana;
+  const rollBonuses = currentForm.rollBonuses;
 
   // Cálculos Derivados (Máximos)
   const maxPV = (resistencia * 5) + (maisVida * 10);
@@ -386,18 +783,16 @@ export default function App() {
     setCurrentPV(maxPV);
     setCurrentPM(maxPM);
     setCurrentPA(maxPA);
-  }, [maxPV, maxPM, maxPA]);
+  }, [activeFormIndex, maxPV, maxPM, maxPA]);
 
   const [isEditingStats, setIsEditingStats] = useState(false);
+  const [isWildShapeModalOpen, setIsWildShapeModalOpen] = useState(false);
 
   // Modificadores manuais de rolagem
   const [manualBonusDice, setManualBonusDice] = useState<0 | 1 | 2>(0);
   const [manualCritRange, setManualCritRange] = useState(6);
 
-  // Bônus e Técnicas
-  const [rollBonuses, setRollBonuses] = useState<RollBonus[]>(
-    Array.isArray(initData.rollBonuses) ? initData.rollBonuses.map(normalizeRollBonus) : []
-  );
+  // Bônus e Técnicas Ativas
   const [activeBonuses, setActiveBonuses] = useState<Set<string>>(new Set());
   const [editingBonusId, setEditingBonusId] = useState<string | null>(null);
   const [isPresetModalOpen, setIsPresetModalOpen] = useState(false);
@@ -434,19 +829,21 @@ export default function App() {
     activeBonusesList.forEach(b => {
       if (b.critThresholdMod) totalCritMod += b.critThresholdMod;
     });
-    // 3DeT Victory limits criticals to 4+ (50% chance max)
     const range = manualCritRange + totalCritMod;
     return Math.max(4, Math.min(6, range));
   }, [activeBonusesList, manualCritRange]);
 
-  // Derived Extra Dice from active bonuses
+  // Derived Extra Dice from active bonuses + Druid Wild Shape Ágil
   const calculatedTotalExtraDice = useMemo(() => {
     let extra = manualBonusDice;
     activeBonusesList.forEach(b => {
       if (b.extraDice) extra += b.extraDice;
     });
-    return Math.max(0, Math.min(2, extra)); // Cap extra dice to 0..2 so total dice is 1..3
-  }, [activeBonusesList, manualBonusDice]);
+    if (currentForm.wildShapeAdvantages?.includes('Ágil')) {
+      extra += 1;
+    }
+    return Math.max(0, Math.min(2, extra));
+  }, [activeBonusesList, manualBonusDice, currentForm.wildShapeAdvantages]);
 
   // Restricted Attribute: check if active bonuses require a specific attribute
   const allowedAttributes = useMemo(() => {
@@ -458,13 +855,12 @@ export default function App() {
     });
 
     if (required.size === 0) {
-      return { poder: true, habilidade: true, resistencia: true, restrictedTo: null };
+      return { poder: true, habilidade: true, resistencia: true };
     }
     return {
       poder: required.has('poder'),
       habilidade: required.has('habilidade'),
-      resistencia: required.has('resistencia'),
-      restrictedTo: Array.from(required).join(' / ')
+      resistencia: required.has('resistencia')
     };
   }, [activeBonusesList]);
 
@@ -494,9 +890,14 @@ export default function App() {
     }
   }, [accentColor]);
 
+  // Save changes
   const handleSave = () => {
     const dataToSave = {
-      poder, habilidade, resistencia, maisVida, maisMana, characterName, accentColor, soundOn, rollBonuses
+      characterName,
+      selectedKitId,
+      accentColor,
+      soundOn,
+      forms
     };
     localStorage.setItem('3det_ficha', JSON.stringify(dataToSave));
     setMode('play');
@@ -505,10 +906,14 @@ export default function App() {
   useEffect(() => {
     if (mode === 'play') {
       localStorage.setItem('3det_ficha', JSON.stringify({
-        poder, habilidade, resistencia, maisVida, maisMana, characterName, accentColor, soundOn, rollBonuses
+        characterName,
+        selectedKitId,
+        accentColor,
+        soundOn,
+        forms
       }));
     }
-  }, [mode, poder, habilidade, resistencia, maisVida, maisMana, characterName, accentColor, soundOn, rollBonuses]);
+  }, [mode, characterName, selectedKitId, accentColor, soundOn, forms]);
 
   const handleEdit = () => {
     setMode('edit');
@@ -542,6 +947,35 @@ export default function App() {
     }
   }, [mode]);
 
+  // Form management
+  const updateCurrentForm = (updates: Partial<CharacterForm>) => {
+    setForms(prev => prev.map((f, i) => i === activeFormIndex ? { ...f, ...updates } : f));
+  };
+
+  const addTransformationForm = () => {
+    const isDruid = selectedKitId === 'druida';
+    const newForm: CharacterForm = {
+      id: Date.now().toString(),
+      name: isDruid ? 'Forma Selvagem (Fera)' : `Forma Alternativa ${forms.length + 1}`,
+      poder: Math.max(1, poder + (isDruid ? 1 : 0)),
+      habilidade: habilidade,
+      resistencia: Math.max(1, resistencia + (isDruid ? 1 : 0)),
+      maisVida: maisVida,
+      maisMana: maisMana,
+      rollBonuses: [],
+      wildShapeAdvantages: isDruid ? ['Ágil', 'Forte'] : []
+    };
+    setForms(prev => [...prev, newForm]);
+    setActiveFormIndex(forms.length);
+  };
+
+  const removeCurrentForm = (index: number) => {
+    if (forms.length <= 1) return;
+    setForms(prev => prev.filter((_, i) => i !== index));
+    setActiveFormIndex(0);
+  };
+
+  // Bonus management for current form
   const addCustomBonus = () => {
     const newId = Date.now().toString();
     const newBonus: RollBonus = {
@@ -551,13 +985,14 @@ export default function App() {
       attribute: 'any',
       bonusType: 'attr_mod',
       value: 2,
+      duration: 'instant',
       critThresholdMod: 0,
       autoCrit: false,
       extraDice: 0,
       costValue: 1,
       costResource: 'PM'
     };
-    setRollBonuses(prev => [...prev, newBonus]);
+    updateCurrentForm({ rollBonuses: [...rollBonuses, newBonus] });
     setEditingBonusId(newId);
   };
 
@@ -567,13 +1002,13 @@ export default function App() {
       ...preset,
       id: newId
     };
-    setRollBonuses(prev => [...prev, newBonus]);
+    updateCurrentForm({ rollBonuses: [...rollBonuses, newBonus] });
     setIsPresetModalOpen(false);
     setEditingBonusId(newId);
   };
 
   const removeRollBonus = (id: string) => {
-    setRollBonuses(prev => prev.filter(b => b.id !== id));
+    updateCurrentForm({ rollBonuses: rollBonuses.filter(b => b.id !== id) });
     setActiveBonuses(prev => {
       const next = new Set(prev);
       next.delete(id);
@@ -582,14 +1017,59 @@ export default function App() {
   };
 
   const updateRollBonus = (id: string, updates: Partial<RollBonus>) => {
-    setRollBonuses(prev => prev.map(b => b.id === id ? { ...b, ...updates } : b));
+    updateCurrentForm({
+      rollBonuses: rollBonuses.map(b => b.id === id ? { ...b, ...updates } : b)
+    });
   };
 
   const toggleActiveBonus = (id: string) => {
+    const bonus = rollBonuses.find(b => b.id === id);
+    if (!bonus) return;
+
     setActiveBonuses(prev => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+        // If scene duration, deduct cost once upon activation
+        if (bonus.duration === 'scene' && bonus.costResource && bonus.costResource !== 'none' && bonus.costValue) {
+          if (bonus.costResource === 'PM') setCurrentPM(p => Math.max(0, p - (bonus.costValue || 0)));
+          if (bonus.costResource === 'PV') setCurrentPV(p => Math.max(0, p - (bonus.costValue || 0)));
+          if (bonus.costResource === 'PA') setCurrentPA(p => Math.max(0, p - (bonus.costValue || 0)));
+        }
+      }
+      return next;
+    });
+  };
+
+  // Kit power usage
+  const handleUseKitPower = (power: KitPower) => {
+    const count = usedKitPowers[power.id] || 0;
+    const isFirstUse = count === 0;
+
+    if (isFirstUse && power.costPM) {
+      setCurrentPM(p => Math.max(0, p - power.costPM!));
+    } else if (!isFirstUse && power.repeatCostPM) {
+      setCurrentPM(p => Math.max(0, p - power.repeatCostPM!));
+    }
+
+    setUsedKitPowers(prev => ({
+      ...prev,
+      [power.id]: count + 1
+    }));
+  };
+
+  const handleResetScene = () => {
+    setUsedKitPowers({});
+    // Deactivate scene-duration bonuses
+    setActiveBonuses(prev => {
+      const next = new Set<string>();
+      rollBonuses.forEach(b => {
+        if (b.duration !== 'scene' && prev.has(b.id)) {
+          next.add(b.id);
+        }
+      });
       return next;
     });
   };
@@ -617,6 +1097,9 @@ export default function App() {
       parts.push(`+${bonus.extraDice}D Ganho`);
     } else if (bonus.extraDice && bonus.extraDice < 0) {
       parts.push(`${bonus.extraDice}D Perda`);
+    }
+    if (bonus.duration === 'scene') {
+      parts.push('Cena');
     }
 
     let text = parts.join(' • ');
@@ -649,9 +1132,16 @@ export default function App() {
 
     let baseAttrValue = 0;
     let label = '';
-    if (attrName === 'poder') { baseAttrValue = poder; label = 'Poder'; }
-    else if (attrName === 'habilidade') { baseAttrValue = habilidade; label = 'Habilidade'; }
-    else if (attrName === 'resistencia') { baseAttrValue = resistencia; label = 'Resistência'; }
+    if (attrName === 'poder') {
+      baseAttrValue = poder + (currentForm.wildShapeAdvantages?.includes('Forte') ? 1 : 0);
+      label = 'Poder';
+    } else if (attrName === 'habilidade') {
+      baseAttrValue = habilidade;
+      label = 'Habilidade';
+    } else if (attrName === 'resistencia') {
+      baseAttrValue = resistencia + (currentForm.wildShapeAdvantages?.includes('Vigoroso') ? 2 : 0);
+      label = 'Resistência';
+    }
 
     // Calculate attribute modifications and flat bonuses
     let attrModValue = 0;
@@ -685,8 +1175,10 @@ export default function App() {
       }
 
       let costStr = '';
-      if (bonus.costResource && bonus.costResource !== 'none' && bonus.costValue) {
+      if (bonus.duration === 'instant' && bonus.costResource && bonus.costResource !== 'none' && bonus.costValue) {
         costStr = `-${bonus.costValue} ${bonus.costResource}`;
+      } else if (bonus.duration === 'scene') {
+        costStr = 'Buff de Cena';
       }
 
       appliedBonuses.push({
@@ -741,21 +1233,33 @@ export default function App() {
       
       let rolledCrits = rolls.filter((r) => r >= effectiveCritRange).length;
       if (hasAutoCrit && rolledCrits === 0) {
-        rolledCrits = 1; // Titânico guarantees at least 1 critical
+        rolledCrits = 1;
       }
       const criticals = rolledCrits;
 
       // In 3DeT Victory: Final = DiceSum + Attribute + (Attribute * Criticals) + FlatBonus
       const finalTotal = diceSum + totalEffectiveAttribute + (totalEffectiveAttribute * criticals) + flatBonusTotal;
 
-      // Deduct resource costs
-      const costPV = activeBonusesList.filter(b => b.costResource === 'PV').reduce((sum, b) => sum + (b.costValue || 0), 0);
-      const costPM = activeBonusesList.filter(b => b.costResource === 'PM').reduce((sum, b) => sum + (b.costValue || 0), 0);
-      const costPA = activeBonusesList.filter(b => b.costResource === 'PA').reduce((sum, b) => sum + (b.costValue || 0), 0);
+      // Deduct resource costs ONLY for instant bonuses (scene bonuses deducted on toggle)
+      const instantBonuses = activeBonusesList.filter(b => b.duration === 'instant');
+      const costPV = instantBonuses.filter(b => b.costResource === 'PV').reduce((sum, b) => sum + (b.costValue || 0), 0);
+      const costPM = instantBonuses.filter(b => b.costResource === 'PM').reduce((sum, b) => sum + (b.costValue || 0), 0);
+      const costPA = instantBonuses.filter(b => b.costResource === 'PA').reduce((sum, b) => sum + (b.costValue || 0), 0);
       
       if (costPV > 0) setCurrentPV(prev => Math.max(0, prev - costPV));
       if (costPM > 0) setCurrentPM(prev => Math.max(0, prev - costPM));
       if (costPA > 0) setCurrentPA(prev => Math.max(0, prev - costPA));
+
+      // Auto-deactivate instant bonuses after the roll
+      setActiveBonuses(prev => {
+        const next = new Set<string>();
+        rollBonuses.forEach(b => {
+          if (b.duration === 'scene' && prev.has(b.id)) {
+            next.add(b.id);
+          }
+        });
+        return next;
+      });
 
       setResult({
         rolls,
@@ -788,10 +1292,11 @@ export default function App() {
     }, 400);
   };
 
-  // Calculate current active costs for pulsing
-  const totalCostPV = activeBonusesList.filter(b => b.costResource === 'PV').reduce((sum, b) => sum + (b.costValue || 0), 0);
-  const totalCostPM = activeBonusesList.filter(b => b.costResource === 'PM').reduce((sum, b) => sum + (b.costValue || 0), 0);
-  const totalCostPA = activeBonusesList.filter(b => b.costResource === 'PA').reduce((sum, b) => sum + (b.costValue || 0), 0);
+  // Calculate current active instant costs for pulsing
+  const instantActiveBonuses = activeBonusesList.filter(b => b.duration === 'instant');
+  const totalCostPV = instantActiveBonuses.filter(b => b.costResource === 'PV').reduce((sum, b) => sum + (b.costValue || 0), 0);
+  const totalCostPM = instantActiveBonuses.filter(b => b.costResource === 'PM').reduce((sum, b) => sum + (b.costValue || 0), 0);
+  const totalCostPA = instantActiveBonuses.filter(b => b.costResource === 'PA').reduce((sum, b) => sum + (b.costValue || 0), 0);
 
   return (
     <>
@@ -800,10 +1305,10 @@ export default function App() {
       <div className="app-container">
         
         {mode === 'edit' && (
-          <div className="panel slide-up" style={{ animationDelay: '0.1s', gridColumn: '1 / -1', maxWidth: '600px', margin: '0 auto', width: '100%' }}>
+          <div className="panel slide-up" style={{ animationDelay: '0.1s', gridColumn: '1 / -1', maxWidth: '650px', margin: '0 auto', width: '100%' }}>
             <h1 className="panel-title">Cadastro da Ficha</h1>
             
-            <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
+            <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
               <div className="stat-label" style={{ marginBottom: '0.5rem', color: 'var(--text-muted)' }}>NOME DO PERSONAGEM</div>
               <input 
                 type="text" 
@@ -823,55 +1328,148 @@ export default function App() {
                   padding: '0.5rem',
                   transition: 'var(--transition)'
                 }}
-                onFocus={(e) => e.target.style.borderColor = 'var(--accent-color)'}
-                onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
               />
             </div>
 
+            {/* Seleção do Kit de Personagem */}
+            <div style={{ marginBottom: '1.5rem', background: 'var(--surface-hover)', padding: '1rem', borderRadius: 'var(--radius)', border: '1px solid var(--border-color)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                <span className="stat-label" style={{ color: 'var(--accent-color)', fontWeight: 'bold' }}>KIT DE PERSONAGEM (ARCANAUTA)</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Manual do Arcanauta</span>
+              </div>
+              <select
+                className="select-box"
+                value={selectedKitId}
+                onChange={(e) => setSelectedKitId(e.target.value)}
+                style={{ fontSize: '1.1rem', fontWeight: 'bold', background: 'var(--bg-color)', color: '#fff' }}
+              >
+                {KITS_CATALOG.map((kit) => (
+                  <option key={kit.id} value={kit.id}>
+                    {kit.name} — {kit.nucleos}
+                  </option>
+                ))}
+              </select>
+
+              {currentKit && (
+                <div style={{ marginTop: '0.8rem', fontSize: '0.85rem' }}>
+                  <div style={{ color: 'var(--text-muted)', marginBottom: '0.3rem' }}>
+                    <strong style={{ color: '#fff' }}>Exigências:</strong> {currentKit.exigencias}
+                  </div>
+                  <div style={{ color: 'var(--text-main)', opacity: 0.9 }}>
+                    {currentKit.description}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Cor do Personagem */}
             <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
               <div className="stat-label" style={{ marginBottom: '0.5rem', color: 'var(--text-muted)' }}>COR DO PERSONAGEM (DADOS)</div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <HexColorPicker color={accentColor} onChange={setAccentColor} />
-                <div style={{ marginTop: '1rem', color: accentColor, fontWeight: 'bold' }}>{accentColor.toUpperCase()}</div>
+                <div style={{ marginTop: '0.5rem', color: accentColor, fontWeight: 'bold' }}>{accentColor.toUpperCase()}</div>
               </div>
             </div>
 
-            <h2 className="panel-title">Atributos</h2>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>
-              Defina seus atributos e vantagens. Os dados ficarão salvos automaticamente.
-            </p>
+            {/* Gerenciamento de Formas / Transformação */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+              <h2 className="panel-title" style={{ margin: 0, fontSize: '1.4rem' }}>Formas & Transformações</h2>
+              <button 
+                className="control-btn" 
+                style={{ width: 'auto', padding: '0.3rem 0.8rem', fontSize: '0.85rem', borderColor: 'var(--accent-color)', color: 'var(--accent-color)' }}
+                onClick={addTransformationForm}
+              >
+                <PlusIcon /> Nova Forma
+              </button>
+            </div>
+
+            {/* Abas de Formas no Modo Edição */}
+            <div className="form-tabs-container" style={{ marginBottom: '1.5rem' }}>
+              {forms.map((form, idx) => (
+                <button
+                  key={form.id}
+                  className={`form-tab-btn ${activeFormIndex === idx ? 'active' : ''}`}
+                  onClick={() => setActiveFormIndex(idx)}
+                >
+                  <span>{form.name}</span>
+                  {forms.length > 1 && idx !== 0 && (
+                    <span 
+                      className="form-tab-close" 
+                      onClick={(e) => { e.stopPropagation(); removeCurrentForm(idx); }}
+                      title="Remover esta forma"
+                    >
+                      ✕
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.3rem' }}>NOME DA FORMA ATIVA</label>
+              <input
+                type="text"
+                className="input-number"
+                value={currentForm.name}
+                onChange={(e) => updateCurrentForm({ name: e.target.value })}
+                placeholder="Ex: Humano, Lobo, Urso..."
+              />
+            </div>
 
             <div className="stats-grid">
               <div className="stat-box edit-stat-box" style={{ '--btn-color': '#FF9E00', borderColor: '#FF9E00' } as React.CSSProperties}>
                 <div className="stat-title" style={{ color: '#FF9E00' }}>Poder</div>
-                <input type="number" className="stat-input stat-value" style={{ color: '#FF9E00' }} min="0" max="10" value={poder} onChange={(e) => setPoder(Number(e.target.value))} />
+                <input type="number" className="stat-input stat-value" style={{ color: '#FF9E00' }} min="0" max="10" value={poder} onChange={(e) => updateCurrentForm({ poder: Number(e.target.value) })} />
               </div>
               <div className="stat-box edit-stat-box" style={{ '--btn-color': '#894EC6', borderColor: '#894EC6' } as React.CSSProperties}>
                 <div className="stat-title" style={{ color: '#894EC6' }}>Habilidade</div>
-                <input type="number" className="stat-input stat-value" style={{ color: '#894EC6' }} min="0" max="10" value={habilidade} onChange={(e) => setHabilidade(Number(e.target.value))} />
+                <input type="number" className="stat-input stat-value" style={{ color: '#894EC6' }} min="0" max="10" value={habilidade} onChange={(e) => updateCurrentForm({ habilidade: Number(e.target.value) })} />
               </div>
               <div className="stat-box edit-stat-box" style={{ '--btn-color': '#5EB05D', borderColor: '#5EB05D' } as React.CSSProperties}>
                 <div className="stat-title" style={{ color: '#5EB05D' }}>Resistência</div>
-                <input type="number" className="stat-input stat-value" style={{ color: '#5EB05D' }} min="0" max="10" value={resistencia} onChange={(e) => setResistencia(Number(e.target.value))} />
+                <input type="number" className="stat-input stat-value" style={{ color: '#5EB05D' }} min="0" max="10" value={resistencia} onChange={(e) => updateCurrentForm({ resistencia: Number(e.target.value) })} />
               </div>
             </div>
 
             <div className="stats-grid">
               <div className="stat-box edit-stat-box" style={{ '--btn-color': '#5EB05D', borderColor: '#5EB05D' } as React.CSSProperties}>
                 <div className="stat-title" style={{ color: '#5EB05D' }}>+Vida (Níveis)</div>
-                <input type="number" className="stat-input stat-value" style={{ color: '#5EB05D' }} min="0" max="10" value={maisVida} onChange={(e) => setMaisVida(Number(e.target.value))} />
+                <input type="number" className="stat-input stat-value" style={{ color: '#5EB05D' }} min="0" max="10" value={maisVida} onChange={(e) => updateCurrentForm({ maisVida: Number(e.target.value) })} />
               </div>
               <div className="stat-box edit-stat-box" style={{ '--btn-color': '#894EC6', borderColor: '#894EC6' } as React.CSSProperties}>
                 <div className="stat-title" style={{ color: '#894EC6' }}>+Mana (Níveis)</div>
-                <input type="number" className="stat-input stat-value" style={{ color: '#894EC6' }} min="0" max="10" value={maisMana} onChange={(e) => setMaisMana(Number(e.target.value))} />
+                <input type="number" className="stat-input stat-value" style={{ color: '#894EC6' }} min="0" max="10" value={maisMana} onChange={(e) => updateCurrentForm({ maisMana: Number(e.target.value) })} />
               </div>
             </div>
 
-            <h2 className="panel-title" style={{ marginTop: '2rem' }}>Vantagens, Técnicas & Bônus</h2>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '1rem', fontSize: '0.9rem' }}>
-              Configure técnicas especiais com Aliases personalizados (ex: "Kamehameha"), bônus de atributo que multiplicam em críticos, reduções de margem de crítico e restrições de atributo.
-            </p>
+            {/* Vantagens da Forma Selvagem (Druida) */}
+            {selectedKitId === 'druida' && activeFormIndex > 0 && (
+              <div style={{ background: 'rgba(94,176,93,0.15)', border: '1px solid #5EB05D', padding: '1rem', borderRadius: 'var(--radius)', marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                  <span style={{ fontWeight: 'bold', color: '#5EB05D' }}>🌿 Vantagens da Forma Selvagem (2 Gratuitas)</span>
+                  <button
+                    className="control-btn"
+                    style={{ width: 'auto', padding: '0.2rem 0.6rem', fontSize: '0.75rem', borderColor: '#5EB05D', color: '#5EB05D' }}
+                    onClick={() => setIsWildShapeModalOpen(true)}
+                  >
+                    Escolher Vantagens
+                  </button>
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  {currentForm.wildShapeAdvantages && currentForm.wildShapeAdvantages.length > 0 ? (
+                    currentForm.wildShapeAdvantages.map(adv => (
+                      <span key={adv} className="bonus-attr-badge" style={{ color: '#5EB05D', borderColor: '#5EB05D', fontSize: '0.8rem', padding: '2px 8px' }}>
+                        ✓ {adv}
+                      </span>
+                    ))
+                  ) : (
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Nenhuma vantagem escolhida ainda.</span>
+                  )}
+                </div>
+              </div>
+            )}
 
+            <h2 className="panel-title" style={{ marginTop: '2rem' }}>Técnicas & Bônus desta Forma</h2>
             <div className="bonus-editor-list">
               {rollBonuses.map((bonus) => (
                 <div key={bonus.id} className="bonus-editor-row" style={{ justifyContent: 'space-between', padding: '0.8rem 1rem', cursor: 'pointer' }} onClick={(e) => {
@@ -886,6 +1484,11 @@ export default function App() {
                       {bonus.alias && (
                         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', background: 'var(--surface-hover)', padding: '2px 6px', borderRadius: '4px' }}>
                           {bonus.name}
+                        </span>
+                      )}
+                      {bonus.duration === 'scene' && (
+                        <span className="bonus-attr-badge" style={{ color: '#33ccff', borderColor: '#33ccff' }}>
+                          CENA
                         </span>
                       )}
                       {bonus.attribute !== 'any' && (
@@ -939,6 +1542,27 @@ export default function App() {
 
         {mode === 'play' && (
           <div style={{ gridColumn: '1 / -1', maxWidth: '600px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column' }}>
+            
+            {/* Form Switcher Tabs in Play Mode */}
+            {forms.length > 1 && (
+              <div className="form-tabs-container" style={{ marginBottom: '0.8rem' }}>
+                {forms.map((form, idx) => (
+                  <button
+                    key={form.id}
+                    className={`form-tab-btn ${activeFormIndex === idx ? 'active' : ''}`}
+                    onClick={() => {
+                      setActiveFormIndex(idx);
+                      if (selectedKitId === 'druida' && idx > 0) {
+                        setIsWildShapeModalOpen(true);
+                      }
+                    }}
+                  >
+                    <span>{form.name}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
             {/* FIGHTING GAME HUD */}
             <div className="slide-up" style={{ 
               display: 'flex', 
@@ -953,6 +1577,13 @@ export default function App() {
               zIndex: 20
             }}>
               <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '0.5rem' }}>
+                <button 
+                  onClick={handleResetScene} 
+                  style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border-color)', color: 'var(--accent-color)', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', cursor: 'pointer', zIndex: 10 }}
+                  title="Nova Cena (Resetar usos de poderes e buffs de cena)"
+                >
+                  <ResetIcon />
+                </button>
                 <button 
                   onClick={() => setSoundOn(!soundOn)} 
                   style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border-color)', color: soundOn ? 'var(--accent-color)' : 'var(--text-muted)', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', cursor: 'pointer', zIndex: 10 }}
@@ -988,23 +1619,85 @@ export default function App() {
 
               {/* Bars Area */}
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <h1 style={{ 
-                  fontFamily: 'Bebas Neue, sans-serif', 
-                  fontSize: '1.8rem', 
-                  margin: '0 0 0.5rem 0', 
-                  color: '#fff', 
-                  letterSpacing: '1px',
-                  textTransform: 'uppercase',
-                  textShadow: '2px 2px 0px #000'
-                }}>
-                  {characterName || 'HERÓI DESCONHECIDO'}
-                </h1>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <h1 style={{ 
+                    fontFamily: 'Bebas Neue, sans-serif', 
+                    fontSize: '1.8rem', 
+                    margin: '0', 
+                    color: '#fff', 
+                    letterSpacing: '1px',
+                    textTransform: 'uppercase',
+                    textShadow: '2px 2px 0px #000'
+                  }}>
+                    {characterName || 'HERÓI DESCONHECIDO'}
+                  </h1>
+                  {currentKit && (
+                    <span style={{ fontSize: '0.75rem', color: 'var(--accent-color)', fontWeight: 'bold', background: 'var(--surface-hover)', padding: '1px 6px', borderRadius: '3px', textTransform: 'uppercase' }}>
+                      {currentKit.name}
+                    </span>
+                  )}
+                </div>
                 
                 <SegmentedBar current={currentPV} max={maxPV} color="#5EB05D" onClick={() => setIsEditingStats(true)} pulseCount={totalCostPV} />
                 <SegmentedBar current={currentPM} max={maxPM} color="#894EC6" onClick={() => setIsEditingStats(true)} pulseCount={totalCostPM} />
                 <SegmentedBar current={currentPA} max={maxPA} color="#FF9E00" onClick={() => setIsEditingStats(true)} halfWidth={true} pulseCount={totalCostPA} />
               </div>
             </div>
+
+            {/* Painel de Poderes do Kit */}
+            {currentKit && currentKit.powers.length > 0 && (
+              <div className="panel slide-up" style={{ animationDelay: '0.1s', padding: '0.8rem', marginBottom: '1rem', width: '100%' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--accent-color)', textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                    <SparklesIcon /> PODERES DO KIT: {currentKit.name.toUpperCase()}
+                  </span>
+                  {selectedKitId === 'druida' && activeFormIndex > 0 && (
+                    <button
+                      className="control-btn"
+                      style={{ width: 'auto', padding: '1px 6px', fontSize: '0.75rem', borderColor: '#5EB05D', color: '#5EB05D' }}
+                      onClick={() => setIsWildShapeModalOpen(true)}
+                    >
+                      🌿 Trocar Vantagens Fera
+                    </button>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  {currentKit.powers.map((power) => {
+                    const useCount = usedKitPowers[power.id] || 0;
+                    const isAvailable = useCount === 0;
+
+                    return (
+                      <div key={power.id} className="kit-power-row">
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <span style={{ fontWeight: 'bold', color: '#fff', fontSize: '0.9rem' }}>{power.name}</span>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginLeft: '0.5rem' }}>{power.desc}</span>
+                        </div>
+
+                        {power.type === 'per_scene' && (
+                          <button
+                            className={`kit-power-action-btn ${isAvailable ? 'available' : 'used'}`}
+                            onClick={() => handleUseKitPower(power)}
+                            title={isAvailable ? "Usar poder nesta cena" : `Repetir poder (${power.repeatCostPM || 3} PM)`}
+                          >
+                            {isAvailable ? 'Usar (1/1)' : `Usado (-${power.repeatCostPM || 3}PM)`}
+                          </button>
+                        )}
+                        {power.type === 'per_session' && (
+                          <button
+                            className={`kit-power-action-btn ${isAvailable ? 'available' : 'used'}`}
+                            onClick={() => handleUseKitPower(power)}
+                            title={isAvailable ? `Ativar (${power.costPM || 3} PM)` : "Já usado nesta sessão"}
+                          >
+                            {isAvailable ? `Ativar (-${power.costPM || 3}PM)` : 'Usado (1x)'}
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             
             <div className="panel slide-up" style={{ animationDelay: '0.15s', width: '100%' }}>
               <div className="stats-grid">
@@ -1016,7 +1709,9 @@ export default function App() {
                   title={!allowedAttributes.poder ? "Desabilitado pela técnica selecionada" : "Rolar Poder"}
                 >
                   <div className="stat-icon-container"><PoderIcon /></div>
-                  <div className="stat-value corner">{poder}</div>
+                  <div className="stat-value corner">
+                    {poder + (currentForm.wildShapeAdvantages?.includes('Forte') ? 1 : 0)}
+                  </div>
                 </button>
                 <button 
                   className={`stat-box roll-btn ${!allowedAttributes.habilidade ? 'disabled-attribute' : ''}`}
@@ -1036,11 +1731,13 @@ export default function App() {
                   title={!allowedAttributes.resistencia ? "Desabilitado pela técnica selecionada" : "Rolar Resistência"}
                 >
                   <div className="stat-icon-container"><ResistenciaIcon /></div>
-                  <div className="stat-value corner">{resistencia}</div>
+                  <div className="stat-value corner">
+                    {resistencia + (currentForm.wildShapeAdvantages?.includes('Vigoroso') ? 2 : 0)}
+                  </div>
                 </button>
               </div>
             
-              <hr style={{ border: 'none', borderTop: '1px solid var(--border-color)', margin: '2rem 0' }} />
+              <hr style={{ border: 'none', borderTop: '1px solid var(--border-color)', margin: '1.5rem 0' }} />
             
               <h2 className="panel-title" style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Modificadores de Rolagem</h2>
             
@@ -1070,7 +1767,7 @@ export default function App() {
 
               {rollBonuses.length > 0 && (
                 <div className="form-group">
-                  <h2 className="panel-title" style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Técnicas & Bônus Disponíveis</h2>
+                  <h2 className="panel-title" style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Técnicas & Bônus</h2>
                   <div className="bonus-toggles-grid">
                     {rollBonuses.map((bonus) => {
                       const isActive = activeBonuses.has(bonus.id);
@@ -1085,6 +1782,11 @@ export default function App() {
                             <span className="bonus-toggle-label">
                               {bonus.alias ? bonus.alias : bonus.name}
                             </span>
+                            {bonus.duration === 'scene' && (
+                              <span className="bonus-attr-micro" style={{ background: '#33ccff', color: '#000' }}>
+                                CENA
+                              </span>
+                            )}
                             {bonus.attribute !== 'any' && (
                               <span className="bonus-attr-micro" style={{
                                 color: bonus.attribute === 'poder' ? '#FF9E00' : bonus.attribute === 'habilidade' ? '#894EC6' : '#5EB05D'
@@ -1208,11 +1910,84 @@ export default function App() {
         </div>
       )}
 
-      {/* Botão de Histórico (último resultado) */}
+      {/* Botão de Histórico */}
       {!isModalOpen && !isClosing && result && !rolling && mode === 'play' && (
         <button className="history-btn slide-up-center" onClick={() => setIsModalOpen(true)} title="Ver último resultado">
           <ChevronUpIcon />
         </button>
+      )}
+
+      {/* Modal de Seleção de Vantagens da Forma Selvagem (Druida) */}
+      {isWildShapeModalOpen && (
+        <div className="modal-overlay pop-in" style={{ zIndex: 370, alignItems: 'center' }} onClick={(e) => {
+          if (e.target === e.currentTarget) setIsWildShapeModalOpen(false);
+        }}>
+          <div className="modal-content" style={{ 
+            borderRadius: '4px',
+            borderTop: '2px solid #5EB05D',
+            borderBottom: '2px solid #5EB05D',
+            background: 'rgba(15, 26, 18, 0.95)',
+            boxShadow: '0 0 25px rgba(94, 176, 93, 0.3)',
+            maxWidth: '500px',
+            width: '90%',
+            maxHeight: '85vh',
+            overflowY: 'auto'
+          }}>
+            <button className="modal-close" onClick={() => setIsWildShapeModalOpen(false)}>✕</button>
+            <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', marginBottom: '0.3rem', color: '#5EB05D', textShadow: '2px 2px 0px #000', letterSpacing: '1px' }}>
+              🌿 FORMA SELVAGEM: ESCOLHA 2 VANTAGENS
+            </h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.2rem' }}>
+              Pelo poder do Kit Druida, cada vez que entra em Forma Selvagem você adquire 2 vantagens gratuitas:
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {DRUID_WILD_SHAPE_OPTIONS.map((opt) => {
+                const currentSelected = currentForm.wildShapeAdvantages || [];
+                const isChecked = currentSelected.includes(opt.name);
+
+                return (
+                  <div
+                    key={opt.name}
+                    className={`wild-shape-card-item ${isChecked ? 'selected' : ''}`}
+                    onClick={() => {
+                      if (isChecked) {
+                        updateCurrentForm({ wildShapeAdvantages: currentSelected.filter(n => n !== opt.name) });
+                      } else {
+                        if (currentSelected.length >= 2) {
+                          // Replace the oldest selection
+                          updateCurrentForm({ wildShapeAdvantages: [currentSelected[1], opt.name] });
+                        } else {
+                          updateCurrentForm({ wildShapeAdvantages: [...currentSelected, opt.name] });
+                        }
+                      }
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontWeight: 'bold', color: isChecked ? '#5EB05D' : '#fff', fontSize: '1.1rem', fontFamily: 'Bebas Neue, sans-serif', letterSpacing: '0.5px' }}>
+                        {opt.name}
+                      </span>
+                      <span style={{ fontSize: '0.85rem', color: isChecked ? '#5EB05D' : 'var(--text-muted)' }}>
+                        {isChecked ? '✓ SELECIONADO' : 'Clique p/ escolher'}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                      {opt.desc}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <button
+              className="btn-roll"
+              style={{ marginTop: '1.5rem', backgroundColor: '#5EB05D', color: '#000' }}
+              onClick={() => setIsWildShapeModalOpen(false)}
+            >
+              Confirmar Forma Selvagem
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Modal para Editar Pontos Derivados */}
@@ -1306,8 +2081,9 @@ export default function App() {
                       </span>
                     )}
                   </div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', gap: '0.5rem', marginTop: '2px' }}>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', gap: '0.5rem', marginTop: '2px', flexWrap: 'wrap' }}>
                     <span>Atributo: <strong style={{ textTransform: 'uppercase', color: preset.attribute === 'poder' ? '#FF9E00' : preset.attribute === 'habilidade' ? '#894EC6' : preset.attribute === 'resistencia' ? '#5EB05D' : 'var(--text-main)' }}>{preset.attribute}</strong></span>
+                    {preset.duration === 'scene' && <span>• <strong style={{ color: '#33ccff' }}>Cena</strong></span>}
                     {preset.bonusType === 'attr_mod' && <span>• <strong>+{preset.value} Atributo</strong></span>}
                     {preset.critThresholdMod ? <span>• <strong>Crítico 5+</strong></span> : null}
                     {preset.autoCrit ? <span>• <strong>Crítico Automático</strong></span> : null}
@@ -1389,19 +2165,32 @@ export default function App() {
                   </div>
 
                   <div>
-                    <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.3rem' }}>TIPO DE BÔNUS</label>
+                    <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.3rem' }}>DURAÇÃO</label>
                     <select
                       className="bonus-type-select"
                       style={{ width: '100%', fontSize: '1rem', background: 'var(--surface-hover)', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)' }}
-                      value={bonus.bonusType}
-                      onChange={(e) => updateRollBonus(bonus.id, { bonusType: e.target.value as any })}
+                      value={bonus.duration || 'instant'}
+                      onChange={(e) => updateRollBonus(bonus.id, { duration: e.target.value as any })}
                     >
-                      <option value="attr_mod">Bônus no Atributo (+2 P, etc)</option>
-                      <option value="flat">Bônus Fixo no Total (+1, +2)</option>
-                      <option value="full_attr">Soma Outro Atributo (+P, +H, +R)</option>
-                      <option value="none">Nenhum Bônus Numérico</option>
+                      <option value="instant">Instantânea (1 Rolagem)</option>
+                      <option value="scene">Cena (Buff Contínuo)</option>
                     </select>
                   </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.3rem' }}>TIPO DE BÔNUS</label>
+                  <select
+                    className="bonus-type-select"
+                    style={{ width: '100%', fontSize: '1rem', background: 'var(--surface-hover)', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)' }}
+                    value={bonus.bonusType}
+                    onChange={(e) => updateRollBonus(bonus.id, { bonusType: e.target.value as any })}
+                  >
+                    <option value="attr_mod">Bônus no Atributo (+2 P, etc - Multiplica no Crítico)</option>
+                    <option value="flat">Bônus Fixo no Total (+1, +2)</option>
+                    <option value="full_attr">Soma Outro Atributo (+P, +H, +R)</option>
+                    <option value="none">Nenhum Bônus Numérico</option>
+                  </select>
                 </div>
 
                 {(bonus.bonusType === 'attr_mod' || bonus.bonusType === 'flat') && (
