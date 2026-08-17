@@ -66,7 +66,7 @@ const VolumeXIcon = () => (
   </svg>
 );
 
-const SegmentedBar = ({ current, max, color, onClick }: { current: number, max: number, color: string, onClick: () => void }) => {
+const SegmentedBar = ({ current, max, color, onClick, halfWidth }: { current: number, max: number, color: string, onClick: () => void, halfWidth?: boolean }) => {
   const segments = [];
   const maxSafe = Math.max(1, max); // Evita barra vazia se max for 0
   
@@ -95,7 +95,7 @@ const SegmentedBar = ({ current, max, color, onClick }: { current: number, max: 
   }
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0', cursor: 'pointer', width: '100%' }} onClick={onClick}>
+    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '3px', cursor: 'pointer', width: halfWidth ? '50%' : '100%' }} onClick={onClick}>
       <div style={{ display: 'flex', flexWrap: 'nowrap', flex: 1 }}>
         {segments}
       </div>
@@ -144,6 +144,12 @@ export default function App() {
   const [currentPV, setCurrentPV] = useState(maxPV);
   const [currentPM, setCurrentPM] = useState(maxPM);
   const [currentPA, setCurrentPA] = useState(maxPA);
+
+  useEffect(() => {
+    setCurrentPV(maxPV);
+    setCurrentPM(maxPM);
+    setCurrentPA(maxPA);
+  }, [maxPV, maxPM, maxPA]);
 
   const [editStat, setEditStat] = useState<'PA' | 'PM' | 'PV' | null>(null);
 
@@ -540,18 +546,19 @@ export default function App() {
         )}
 
         {mode === 'play' && (
-          <div className="panel slide-up" style={{ animationDelay: '0.1s', gridColumn: '1 / -1', maxWidth: '600px', margin: '0 auto', width: '100%' }}>
+          <div style={{ gridColumn: '1 / -1', maxWidth: '600px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column' }}>
               {/* FIGHTING GAME HUD */}
-              <div style={{ 
+              <div className="slide-up" style={{ 
                 display: 'flex', 
                 gap: '1rem', 
-                marginBottom: '2rem', 
-                padding: '1rem', 
-                background: 'rgba(0,0,0,0.3)', 
+                marginBottom: '1rem', 
+                padding: '0.8rem', 
+                background: 'rgba(0,0,0,0.5)', 
                 borderTop: '2px solid var(--accent-color)', 
                 borderBottom: '2px solid var(--accent-color)',
-                borderRadius: '4px',
-                position: 'relative'
+                position: 'relative',
+                animationDelay: '0.05s',
+                zIndex: 20
               }}>
                 {/* Botoes Flutuantes no Canto Superior Direito do HUD */}
                 <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '0.5rem' }}>
@@ -604,11 +611,12 @@ export default function App() {
                   
                   <SegmentedBar current={currentPV} max={maxPV} color="#ff3366" onClick={() => setEditStat('PV')} />
                   <SegmentedBar current={currentPM} max={maxPM} color="#33ccff" onClick={() => setEditStat('PM')} />
-                  <SegmentedBar current={currentPA} max={maxPA} color="#ffcc00" onClick={() => setEditStat('PA')} />
+                  <SegmentedBar current={currentPA} max={maxPA} color="#ffcc00" onClick={() => setEditStat('PA')} halfWidth={true} />
                 </div>
               </div>
               
-              <div className="stats-grid">
+              <div className="panel slide-up" style={{ animationDelay: '0.15s', width: '100%' }}>
+                <div className="stats-grid">
                 <button className="stat-box roll-btn" style={{ '--btn-color': 'var(--success-color)' } as React.CSSProperties} onClick={() => handleRoll('poder')} disabled={rolling}>
                   <div className="stat-title" style={{ color: 'var(--success-color)' }}>Poder</div>
                   <div className="stat-value">{poder}</div>
@@ -696,6 +704,7 @@ export default function App() {
                 </div>
               )}
             </div>
+          </div>
         )}
       </div>
 
