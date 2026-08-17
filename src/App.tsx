@@ -66,7 +66,7 @@ const VolumeXIcon = () => (
   </svg>
 );
 
-const SegmentedBar = ({ current, max, color, label, onClick }: { current: number, max: number, color: string, label: string, onClick: () => void }) => {
+const SegmentedBar = ({ current, max, color, onClick }: { current: number, max: number, color: string, onClick: () => void }) => {
   const segments = [];
   const maxSafe = Math.max(1, max); // Evita barra vazia se max for 0
   
@@ -95,15 +95,9 @@ const SegmentedBar = ({ current, max, color, label, onClick }: { current: number
   }
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.6rem', cursor: 'pointer', width: '100%' }} onClick={onClick}>
-      <div style={{ width: '30px', fontWeight: 'bold', color: color, fontSize: '1.2rem', fontFamily: 'Bebas Neue, sans-serif', textShadow: `0 0 5px ${color}80` }}>
-        {label}
-      </div>
-      <div style={{ display: 'flex', flexWrap: 'nowrap', flex: 1, paddingRight: '10px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0', cursor: 'pointer', width: '100%' }} onClick={onClick}>
+      <div style={{ display: 'flex', flexWrap: 'nowrap', flex: 1 }}>
         {segments}
-      </div>
-      <div style={{ width: '25px', textAlign: 'right', fontWeight: 'bold', color: '#fff', fontSize: '1.2rem', fontFamily: 'Bebas Neue, sans-serif' }}>
-        {current}
       </div>
     </div>
   );
@@ -608,9 +602,9 @@ export default function App() {
                     {characterName || 'HERÓI DESCONHECIDO'}
                   </h1>
                   
-                  <SegmentedBar current={currentPV} max={maxPV} color="#ff3366" label="PV" onClick={() => setEditStat('PV')} />
-                  <SegmentedBar current={currentPM} max={maxPM} color="#33ccff" label="PM" onClick={() => setEditStat('PM')} />
-                  <SegmentedBar current={currentPA} max={maxPA} color="#ffcc00" label="PA" onClick={() => setEditStat('PA')} />
+                  <SegmentedBar current={currentPV} max={maxPV} color="#ff3366" onClick={() => setEditStat('PV')} />
+                  <SegmentedBar current={currentPM} max={maxPM} color="#33ccff" onClick={() => setEditStat('PM')} />
+                  <SegmentedBar current={currentPA} max={maxPA} color="#ffcc00" onClick={() => setEditStat('PA')} />
                 </div>
               </div>
               
