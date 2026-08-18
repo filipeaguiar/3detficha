@@ -36,7 +36,7 @@ type PlayModeProps = {
   calculatedCritRange: number;
   manualBonusDice: 0 | 1 | 2;
   setManualBonusDice: React.Dispatch<React.SetStateAction<0 | 1 | 2>>;
-  setManualCritRange: React.Dispatch<React.SetStateAction<number>>;
+  setManualCritRange: React.Dispatch<React.SetStateAction<5 | 6>>;
   setIsDrawerOpen: (open: boolean) => void;
   setCurrentPM: React.Dispatch<React.SetStateAction<number>>;
   setActiveFormIndex: (index: number) => void;
@@ -238,7 +238,7 @@ export default function PlayMode(props: PlayModeProps) {
             </div>
           </button>
 
-          <button className={`toggle-btn ${calculatedCritRange < 6 ? 'active' : ''}`} onClick={() => setManualCritRange(prev => prev <= 4 ? 6 : prev - 1)} title={`Intervalo de Acerto Crítico: ${calculatedCritRange === 6 ? '6' : `${calculatedCritRange}+`}`}>
+          <button className={`toggle-btn ${calculatedCritRange < 6 ? 'active' : ''}`} onClick={() => setManualCritRange(prev => (prev === 6 ? 5 : 6))} title={`Intervalo de Acerto Crítico: ${calculatedCritRange === 6 ? '6' : `${calculatedCritRange}+`}`}>
             <span style={{ fontSize: '1.5rem', fontWeight: 'bold', fontFamily: "'Bebas Neue', sans-serif", letterSpacing: '2px' }}>
               {calculatedCritRange === 6 ? '6' : `${calculatedCritRange}+`}
             </span>

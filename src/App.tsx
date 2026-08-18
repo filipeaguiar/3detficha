@@ -123,7 +123,7 @@ export default function App() {
 
   // Modificadores manuais de rolagem
   const [manualBonusDice, setManualBonusDice] = useState<0 | 1 | 2>(0);
-  const [manualCritRange, setManualCritRange] = useState(6);
+  const [manualCritRange, setManualCritRange] = useState<5 | 6>(6);
 
   // Bônus e Técnicas Ativas
   const [activeBonuses, setActiveBonuses] = useState<Set<string>>(new Set());
