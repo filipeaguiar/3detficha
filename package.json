@@ -15,7 +15,8 @@
     "@3d-dice/dice-box": "^1.1.4",
     "react": "^19.2.8",
     "react-colorful": "^5.8.0",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "react-easy-crop": "^6.2.3"
   },
   "devDependencies": {
     "@types/node": "^24.13.3",

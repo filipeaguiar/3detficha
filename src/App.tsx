@@ -4,6 +4,7 @@ import { ALL_KITS } from './kitsData';
 // @ts-ignore
 import DiceBox from '@3d-dice/dice-box';
 import { HexColorPicker } from "react-colorful";
+import ImageCropper from './ImageCropper';
 
 export type RollBonus = {
   id: string;
@@ -761,10 +762,23 @@ export default function App() {
   const [isTransformModalOpen, setIsTransformModalOpen] = useState(false);
   const [isEditingStats, setIsEditingStats] = useState(false);
   const [editingBonusId, setEditingBonusId] = useState<string | null>(null);
+  
+  // Prep Magic Modal
+  // @ts-ignore
+  const [isPrepMagicModalOpen, setIsPrepMagicModalOpen] = useState(false);
+  // @ts-ignore
+  const [prepMagicName, setPrepMagicName] = useState('');
+  // @ts-ignore
+  const [prepMagicAttr, setPrepMagicAttr] = useState<any>('any');
+  // @ts-ignore
+  const [prepMagicBonus, setPrepMagicBonus] = useState(2);
+  // @ts-ignore
+  const [prepMagicCost, setPrepMagicCost] = useState(1);
 
   // Search & Filter in Kit Modal
   const [kitSearchQuery, setKitSearchQuery] = useState('');
   const [selectedNucleoFilter, setSelectedNucleoFilter] = useState('all');
+  const [croppingImage, setCroppingImage] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const playDiceSound = useDiceSound();
@@ -1112,8 +1126,17 @@ export default function App() {
     const file = e.target.files?.[0];
     if (!file) return;
     processImageUpload(file, (base64Url) => {
-      updateCurrentForm({ avatarUrl: base64Url });
+      setCroppingImage(base64Url);
     });
+  };
+
+  const handleCropComplete = (croppedImageBase64: string) => {
+    updateCurrentForm({ avatarUrl: croppedImageBase64 });
+    setCroppingImage(null);
+  };
+
+  const handleCropCancel = () => {
+    setCroppingImage(null);
   };
 
   const removeAvatar = () => {
@@ -1928,6 +1951,15 @@ export default function App() {
                 <PlusIcon /> Técnica Custom
               </button>
             </div>
+            {selectedKitId === 'mago' && (
+              <button 
+                className="bonus-add-btn" 
+                onClick={() => setIsPrepMagicModalOpen(true)} 
+                style={{ marginTop: '1rem', borderColor: '#33ccff', color: '#33ccff', width: '100%' }}
+              >
+                🪄 Preparar Magia (Mago)
+              </button>
+            )}
 
             <button className="btn-roll" onClick={() => setMode('play')} style={{ marginTop: '2rem' }}>
               Salvar e Jogar
@@ -3226,6 +3258,15 @@ export default function App() {
           </div>
         );
       })()}
+
+      {croppingImage && (
+        <ImageCropper
+          imageSrc={croppingImage}
+          onCropComplete={handleCropComplete}
+          onCancel={handleCropCancel}
+          accentColor={activeSheet.accentColor}
+        />
+      )}
     </>
   );
 }
