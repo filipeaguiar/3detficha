@@ -1,7 +1,9 @@
+import { useMemo, useState } from 'react';
 import { HexColorPicker } from 'react-colorful';
 import { ADVANTAGES_CATALOG, DISADVANTAGES_CATALOG } from '../../constants/advantagesData';
 import { SKILLS_CATALOG } from '../../constants/skillsData';
 import { getBonusSubtitle } from '../../utils/character';
+import { ADVANTAGE_VARIANT_OPTIONS, DISADVANTAGE_VARIANT_OPTIONS } from '../../constants/app/variants';
 import type { CharacterForm, CharacterKit, CharacterSheet, RollBonus } from '../../types/character';
 import { BookIcon, CameraIcon, CheckIcon, CloseIcon, LeafIcon, PencilIcon, PlusIcon, TabAdvantagesIcon, TabAttributesIcon, TabConceptIcon, TabSkillsIcon, TabTechniquesIcon, TrashIcon, UsersIcon, WandSparklesIcon } from '../common/Icons';
 
@@ -52,6 +54,8 @@ const EDITOR_TABS: Array<{ id: EditorTab; label: string; icon: React.ReactNode }
 ];
 
 export default function CharacterEditor(props: CharacterEditorProps) {
+  const [advantageSearch, setAdvantageSearch] = useState('');
+
   const {
     usingLinkedForms,
     activeTab,
@@ -87,6 +91,36 @@ export default function CharacterEditor(props: CharacterEditorProps) {
     setIsPrepMagicModalOpen,
     setMode,
   } = props;
+
+  const expandedAdvantages = useMemo(() => {
+    return ADVANTAGES_CATALOG.flatMap((adv) => {
+      const variants = ADVANTAGE_VARIANT_OPTIONS[adv.id];
+      if (!variants || variants.length === 0) return [{ ...adv, variantId: adv.id, displayName: adv.name, displayCost: adv.cost }];
+      return variants.map((variant) => ({
+        ...adv,
+        variantId: `${adv.id}::${variant.key}`,
+        displayName: `${adv.name} — ${variant.label}`,
+        displayCost: variant.cost || adv.cost,
+      }));
+    });
+  }, []);
+
+  const expandedDisadvantages = useMemo(() => {
+    return DISADVANTAGES_CATALOG.flatMap((disadv) => {
+      const variants = DISADVANTAGE_VARIANT_OPTIONS[disadv.id];
+      if (!variants || variants.length === 0) return [{ ...disadv, variantId: disadv.id, displayName: disadv.name, displayCost: disadv.cost }];
+      return variants.map((variant) => ({
+        ...disadv,
+        variantId: `${disadv.id}::${variant.key}`,
+        displayName: `${disadv.name} — ${variant.label}`,
+        displayCost: variant.cost || disadv.cost,
+      }));
+    });
+  }, []);
+
+  const normalizedAdvSearch = advantageSearch.trim().toLowerCase();
+  const filteredAdvantages = expandedAdvantages.filter((adv) => normalizedAdvSearch === '' || adv.displayName.toLowerCase().includes(normalizedAdvSearch) || adv.desc.toLowerCase().includes(normalizedAdvSearch));
+  const filteredDisadvantages = expandedDisadvantages.filter((disadv) => normalizedAdvSearch === '' || disadv.displayName.toLowerCase().includes(normalizedAdvSearch) || disadv.desc.toLowerCase().includes(normalizedAdvSearch));
 
   return (
     <div className="panel slide-up editor-panel" style={{ animationDelay: '0.1s', gridColumn: '1 / -1', maxWidth: '650px', margin: '0 auto', width: '100%' }}>
@@ -317,19 +351,28 @@ export default function CharacterEditor(props: CharacterEditorProps) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <h2 className="panel-title" style={{ margin: 0 }}>Vantagens & Desvantagens</h2>
         </div>
+        <div style={{ marginBottom: '1rem' }}>
+          <input
+            type="text"
+            className="input-number"
+            value={advantageSearch}
+            onChange={(e) => setAdvantageSearch(e.target.value)}
+            placeholder="Buscar vantagens e desvantagens..."
+          />
+        </div>
         <div style={{ display: 'grid', gap: '1.5rem', maxHeight: '500px', overflowY: 'auto', paddingRight: '0.5rem' }}>
           <div>
             <h3 style={{ color: 'var(--accent-color)', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>Vantagens</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginTop: '1rem' }}>
-              {ADVANTAGES_CATALOG.map(adv => {
-                const isSelected = currentForm.advantages?.includes(adv.id);
+              {filteredAdvantages.map(adv => {
+                const isSelected = currentForm.advantages?.includes(adv.variantId);
                 return (
                   <div
-                    key={adv.id}
+                    key={adv.variantId}
                     onClick={() => {
                       const current = currentForm.advantages || [];
-                      if (isSelected) updateCurrentForm({ advantages: current.filter((id: string) => id !== adv.id) });
-                      else updateCurrentForm({ advantages: [...current, adv.id] });
+                      if (isSelected) updateCurrentForm({ advantages: current.filter((id: string) => id !== adv.variantId) });
+                      else updateCurrentForm({ advantages: [...current, adv.variantId] });
                     }}
                     style={{
                       background: isSelected ? 'rgba(0, 255, 0, 0.1)' : 'var(--surface-hover)',
@@ -342,9 +385,9 @@ export default function CharacterEditor(props: CharacterEditorProps) {
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                       <strong style={{ fontSize: '1.1rem', color: isSelected ? 'var(--accent-color)' : '#fff' }}>
-                        {isSelected && <CheckIcon size={14} />} {adv.name}
+                        {isSelected && <CheckIcon size={14} />} {adv.displayName}
                       </strong>
-                      <span style={{ fontSize: '0.8rem', background: isSelected ? 'var(--accent-color)' : 'var(--surface-hover)', color: isSelected ? '#000' : 'var(--text-muted)', border: '1px solid var(--border-color)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>{adv.cost}</span>
+                      <span style={{ fontSize: '0.8rem', background: isSelected ? 'var(--accent-color)' : 'var(--surface-hover)', color: isSelected ? '#000' : 'var(--text-muted)', border: '1px solid var(--border-color)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>{adv.displayCost}</span>
                     </div>
                     <p style={{ margin: 0, fontSize: '0.85rem', color: isSelected ? '#fff' : 'var(--text-muted)' }}>{adv.desc}</p>
                   </div>
@@ -356,15 +399,15 @@ export default function CharacterEditor(props: CharacterEditorProps) {
           <div>
             <h3 style={{ color: '#ff4d4d', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>Desvantagens</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginTop: '1rem' }}>
-              {DISADVANTAGES_CATALOG.map(disadv => {
-                const isSelected = currentForm.disadvantages?.includes(disadv.id);
+              {filteredDisadvantages.map(disadv => {
+                const isSelected = currentForm.disadvantages?.includes(disadv.variantId);
                 return (
                   <div
-                    key={disadv.id}
+                    key={disadv.variantId}
                     onClick={() => {
                       const current = currentForm.disadvantages || [];
-                      if (isSelected) updateCurrentForm({ disadvantages: current.filter((id: string) => id !== disadv.id) });
-                      else updateCurrentForm({ disadvantages: [...current, disadv.id] });
+                      if (isSelected) updateCurrentForm({ disadvantages: current.filter((id: string) => id !== disadv.variantId) });
+                      else updateCurrentForm({ disadvantages: [...current, disadv.variantId] });
                     }}
                     style={{
                       background: isSelected ? 'rgba(255, 77, 77, 0.1)' : 'var(--surface-hover)',
@@ -377,9 +420,9 @@ export default function CharacterEditor(props: CharacterEditorProps) {
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                       <strong style={{ fontSize: '1.1rem', color: isSelected ? '#ff4d4d' : '#fff' }}>
-                        {isSelected && <CheckIcon size={14} />} {disadv.name}
+                        {isSelected && <CheckIcon size={14} />} {disadv.displayName}
                       </strong>
-                      <span style={{ fontSize: '0.8rem', background: isSelected ? '#ff4d4d' : 'var(--surface-hover)', color: isSelected ? '#000' : 'var(--text-muted)', border: '1px solid var(--border-color)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>{disadv.cost}</span>
+                      <span style={{ fontSize: '0.8rem', background: isSelected ? '#ff4d4d' : 'var(--surface-hover)', color: isSelected ? '#000' : 'var(--text-muted)', border: '1px solid var(--border-color)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>{disadv.displayCost}</span>
                     </div>
                     <p style={{ margin: 0, fontSize: '0.85rem', color: isSelected ? '#fff' : 'var(--text-muted)' }}>{disadv.desc}</p>
                   </div>
