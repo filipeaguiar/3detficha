@@ -524,6 +524,39 @@ const ZapIcon = () => (
   </svg>
 );
 
+const CloseIcon = ({ size = 16 }: { size?: number }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18"></line>
+    <line x1="6" y1="6" x2="18" y2="18"></line>
+  </svg>
+);
+
+const CheckIcon = ({ size = 14 }: { size?: number }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12"></polyline>
+  </svg>
+);
+
+const TransformIcon = ({ size = 14 }: { size?: number }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+  </svg>
+);
+
+const LeafIcon = ({ size = 16 }: { size?: number }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M11 20A7 7 0 0 1 4 13a7 7 0 0 1 7-7c4 0 9 2 9 7a7 7 0 0 1-7 7z"/>
+    <path d="M11 20v-7"/>
+  </svg>
+);
+
+const ArrowLeftIcon = ({ size = 14 }: { size?: number }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="19" y1="12" x2="5" y2="12"></line>
+    <polyline points="12 19 5 12 12 5"></polyline>
+  </svg>
+);
+
 const SegmentedBar = ({ current, max, color, onClick, halfWidth, pulseCount = 0 }: { current: number, max: number, color: string, onClick: () => void, halfWidth?: boolean, pulseCount?: number }) => {
   const segments = [];
   const maxSafe = Math.max(1, max);
@@ -1598,7 +1631,7 @@ export default function App() {
                       onClick={(e) => { e.stopPropagation(); removeCurrentForm(idx); }}
                       title="Remover esta forma"
                     >
-                      ✕
+                      <CloseIcon size={12} />
                     </span>
                   )}
                 </button>
@@ -1689,7 +1722,9 @@ export default function App() {
             {selectedKitId === 'druida' && activeFormIndex > 0 && (
               <div style={{ background: 'rgba(94,176,93,0.15)', border: '1px solid #5EB05D', padding: '1rem', borderRadius: 'var(--radius)', marginBottom: '1.5rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                  <span style={{ fontWeight: 'bold', color: '#5EB05D' }}>🌿 Vantagens da Forma Selvagem (2 Gratuitas)</span>
+                  <span style={{ fontWeight: 'bold', color: '#5EB05D', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <LeafIcon size={16} /> Vantagens da Forma Selvagem (2 Gratuitas)
+                  </span>
                   <button
                     className="control-btn"
                     style={{ width: 'auto', padding: '0.2rem 0.6rem', fontSize: '0.75rem', borderColor: '#5EB05D', color: '#5EB05D' }}
@@ -1701,8 +1736,8 @@ export default function App() {
                 <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                   {currentForm.wildShapeAdvantages && currentForm.wildShapeAdvantages.length > 0 ? (
                     currentForm.wildShapeAdvantages.map(adv => (
-                      <span key={adv} className="bonus-attr-badge" style={{ color: '#5EB05D', borderColor: '#5EB05D', fontSize: '0.8rem', padding: '2px 8px' }}>
-                        ✓ {adv}
+                      <span key={adv} className="bonus-attr-badge" style={{ color: '#5EB05D', borderColor: '#5EB05D', fontSize: '0.8rem', padding: '2px 8px', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <CheckIcon size={11} /> {adv}
                       </span>
                     ))
                   ) : (
@@ -1855,7 +1890,7 @@ export default function App() {
                 )}
                 {forms.length > 1 && (
                   <div className="avatar-transform-indicator" title="Clique para transformar">
-                    🔄
+                    <TransformIcon size={12} />
                   </div>
                 )}
               </div>
@@ -1888,7 +1923,8 @@ export default function App() {
                       }}
                       title="Clique para alternar de forma"
                     >
-                      <span>🔄 {currentForm.name}</span>
+                      <TransformIcon size={13} />
+                      <span>{currentForm.name}</span>
                     </button>
                   )}
 
@@ -1920,10 +1956,14 @@ export default function App() {
                   const isAvailable = useCount === 0;
                   const mod = getKitPowerModifier(power);
 
-                  let statusTag = '';
+                  let statusTag: React.ReactNode = '';
                   if (isActiveBuff) {
                     const attrLetter = mod.attribute === 'poder' ? 'P' : mod.attribute === 'habilidade' ? 'H' : mod.attribute === 'resistencia' ? 'R' : '';
-                    statusTag = `✓ ATIVO ${mod.value ? `(+${mod.value}${attrLetter})` : ''}`;
+                    statusTag = (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
+                        <CheckIcon size={11} /> ATIVO {mod.value ? `(+${mod.value}${attrLetter})` : ''}
+                      </span>
+                    );
                   } else if (mod.bonusType !== 'none') {
                     const attrLetter = mod.attribute === 'poder' ? 'P' : mod.attribute === 'habilidade' ? 'H' : mod.attribute === 'resistencia' ? 'R' : '';
                     statusTag = `${mod.value ? `+${mod.value}${attrLetter}` : ''} [${power.costPM || 3}PM]`;
@@ -1951,11 +1991,12 @@ export default function App() {
                 {selectedKitId === 'druida' && activeFormIndex > 0 && (
                   <button
                     className="kit-compact-power-btn available"
-                    style={{ borderColor: '#5EB05D', color: '#5EB05D' }}
+                    style={{ borderColor: '#5EB05D', color: '#5EB05D', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
                     onClick={() => setIsWildShapeModalOpen(true)}
                     title="Configurar as 2 vantagens extras da Forma Selvagem"
                   >
-                    <span className="power-btn-name">🌿 Vantagens Fera</span>
+                    <LeafIcon size={14} />
+                    <span className="power-btn-name">Vantagens Fera</span>
                     <span className="power-btn-tag">{currentForm.wildShapeAdvantages?.length || 0}/2</span>
                   </button>
                 )}
@@ -2107,7 +2148,7 @@ export default function App() {
                 </div>
               </div>
 
-              <button className="modal-close" onClick={() => setIsDrawerOpen(false)}>✕</button>
+              <button className="modal-close" onClick={() => setIsDrawerOpen(false)}><CloseIcon size={18} /></button>
             </div>
 
             {/* Drawer Menu Items */}
@@ -2189,8 +2230,9 @@ export default function App() {
               </button>
             </div>
 
-            <div className="drawer-footer-hint">
-              <span>👈 Deslize para a esquerda para fechar</span>
+            <div className="drawer-footer-hint" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+              <ArrowLeftIcon size={14} />
+              <span>Deslize para a esquerda para fechar</span>
             </div>
           </div>
         </div>
@@ -2213,7 +2255,7 @@ export default function App() {
             display: 'flex',
             flexDirection: 'column'
           }}>
-            <button className="modal-close" onClick={() => setIsKitSelectModalOpen(false)}>✕</button>
+            <button className="modal-close" onClick={() => setIsKitSelectModalOpen(false)}><CloseIcon size={18} /></button>
             <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', marginBottom: '0.2rem', color: '#fff', letterSpacing: '1px' }}>
               SELECIONAR KIT ({filteredKits.length})
             </h2>
@@ -2232,7 +2274,7 @@ export default function App() {
                 className="kit-search-input"
               />
               {kitSearchQuery && (
-                <button className="kit-search-clear" onClick={() => setKitSearchQuery('')}>✕</button>
+                <button className="kit-search-clear" onClick={() => setKitSearchQuery('')}><CloseIcon size={14} /></button>
               )}
             </div>
 
@@ -2321,7 +2363,7 @@ export default function App() {
             maxHeight: '85vh',
             overflowY: 'auto'
           }}>
-            <button className="modal-close" onClick={() => setIsKitInfoModalOpen(false)}>✕</button>
+            <button className="modal-close" onClick={() => setIsKitInfoModalOpen(false)}><CloseIcon size={18} /></button>
             <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', marginBottom: '0.2rem', color: 'var(--accent-color)', letterSpacing: '1px' }}>
               KIT: {currentKit.name.toUpperCase()}
             </h2>
@@ -2375,7 +2417,7 @@ export default function App() {
             maxHeight: '85vh',
             overflowY: 'auto'
           }}>
-            <button className="modal-close" onClick={() => setIsSheetsModalOpen(false)}>✕</button>
+            <button className="modal-close" onClick={() => setIsSheetsModalOpen(false)}><CloseIcon size={18} /></button>
             <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', marginBottom: '0.3rem', color: '#fff', letterSpacing: '1px' }}>
               MEUS PERSONAGENS (FICHAS)
             </h2>
@@ -2583,9 +2625,9 @@ export default function App() {
             maxHeight: '85vh',
             overflowY: 'auto'
           }}>
-            <button className="modal-close" onClick={() => setIsWildShapeModalOpen(false)}>✕</button>
-            <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', marginBottom: '0.3rem', color: '#5EB05D', letterSpacing: '1px' }}>
-              🌿 FORMA SELVAGEM: ESCOLHA 2 VANTAGENS
+            <button className="modal-close" onClick={() => setIsWildShapeModalOpen(false)}><CloseIcon size={18} /></button>
+            <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', marginBottom: '0.3rem', color: '#5EB05D', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <LeafIcon size={22} /> FORMA SELVAGEM: ESCOLHA 2 VANTAGENS
             </h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.2rem' }}>
               Pelo poder do Kit Druida, cada vez que entra em Forma Selvagem você adquire 2 vantagens gratuitas:
@@ -2617,7 +2659,11 @@ export default function App() {
                         {opt.name}
                       </span>
                       <span style={{ fontSize: '0.85rem', color: isChecked ? '#5EB05D' : 'var(--text-muted)' }}>
-                        {isChecked ? '✓ SELECIONADO' : 'Clique p/ escolher'}
+                        {isChecked ? (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                            <CheckIcon size={12} /> SELECIONADO
+                          </span>
+                        ) : 'Clique p/ escolher'}
                       </span>
                     </div>
                     <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>
@@ -2653,7 +2699,7 @@ export default function App() {
             boxShadow: '0 0 20px var(--accent-transparent)',
             maxWidth: '400px'
           }}>
-            <button className="modal-close" onClick={() => setIsEditingStats(false)}>✕</button>
+            <button className="modal-close" onClick={() => setIsEditingStats(false)}><CloseIcon size={18} /></button>
             <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', marginBottom: '1.5rem', color: '#fff', textShadow: '2px 2px 0px #000', letterSpacing: '2px' }}>STATUS</h2>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', margin: '1rem 0' }}>
@@ -2707,7 +2753,7 @@ export default function App() {
             maxHeight: '85vh',
             overflowY: 'auto'
           }}>
-            <button className="modal-close" onClick={() => setIsPresetModalOpen(false)}>✕</button>
+            <button className="modal-close" onClick={() => setIsPresetModalOpen(false)}><CloseIcon size={18} /></button>
             <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', marginBottom: '0.5rem', color: '#fff', textShadow: '2px 2px 0px #000', letterSpacing: '1px' }}>VANTAGENS DO LIVRO BÁSICO</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
               Selecione uma vantagem ou técnica oficial para adicionar à sua ficha:
@@ -2764,7 +2810,7 @@ export default function App() {
               maxHeight: '90vh',
               overflowY: 'auto'
             }}>
-              <button className="modal-close" onClick={() => setEditingBonusId(null)}>✕</button>
+              <button className="modal-close" onClick={() => setEditingBonusId(null)}><CloseIcon size={18} /></button>
               <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', marginBottom: '1.5rem', color: '#fff', textShadow: '2px 2px 0px #000', letterSpacing: '1px' }}>CONFIGURAR TÉCNICA</h2>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', textAlign: 'left' }}>
