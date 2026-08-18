@@ -14,13 +14,41 @@ export const TrashIcon = () => (
   </svg>
 );
 
-export const CubeIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+export const CubeIcon = ({ size = 24 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
     <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
     <line x1="12" y1="22.08" x2="12" y2="12"></line>
   </svg>
 );
+
+export const DiceCountIcon = ({ count = 1, size = 18 }: { count?: 1 | 2 | 3; size?: number }) => {
+  const cube = (x: number, y: number, key: string) => (
+    <g key={key} transform={`translate(${x} ${y})`}>
+      <path d="M10.5 1.5 18 5.8v8.4l-7.5 4.3L3 14.2V5.8z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M10.5 10.1 3 5.8M10.5 10.1 18 5.8M10.5 10.1v8.4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </g>
+  );
+
+  return (
+    <svg width={size * 2.2} height={size * 1.9} viewBox="0 0 48 36" fill="none" aria-hidden="true">
+      {count === 1 && cube(15, 8, 'single')}
+      {count === 2 && (
+        <>
+          {cube(5, 8, 'left')}
+          {cube(23, 8, 'right')}
+        </>
+      )}
+      {count === 3 && (
+        <>
+          {cube(15, 0, 'top')}
+          {cube(5, 15, 'bottom-left')}
+          {cube(23, 15, 'bottom-right')}
+        </>
+      )}
+    </svg>
+  );
+};
 
 export const MenuIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
