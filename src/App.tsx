@@ -812,6 +812,7 @@ export default function App() {
   const maisVida = currentForm.maisVida;
   const maisMana = currentForm.maisMana;
   const rollBonuses = currentForm.rollBonuses;
+  const visibleRollBonuses = rollBonuses.filter(b => b.bonusType !== 'none' || b.critThresholdMod || b.extraDice || b.autoCrit || !b.id.startsWith('kit_'));
 
   // Cálculos Derivados (Máximos)
   const maxPV = (resistencia * 5) + (maisVida * 10);
@@ -1857,7 +1858,7 @@ export default function App() {
 
             <h2 className="panel-title" style={{ marginTop: '2rem' }}>Técnicas & Bônus desta Forma</h2>
             <div className="bonus-editor-list">
-              {rollBonuses.map((bonus) => (
+              {visibleRollBonuses.map((bonus) => (
                 <div key={bonus.id} className="bonus-editor-row" style={{ justifyContent: 'space-between', padding: '0.8rem 1rem', cursor: 'pointer' }} onClick={(e) => {
                   if ((e.target as HTMLElement).closest('button')) return;
                   setEditingBonusId(bonus.id);
@@ -2173,11 +2174,11 @@ export default function App() {
                 </button>
               </div>
 
-              {rollBonuses.length > 0 && (
+              {visibleRollBonuses.length > 0 && (
                 <div className="form-group">
                   <h2 className="panel-title" style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Técnicas & Bônus</h2>
                   <div className="bonus-toggles-grid">
-                    {rollBonuses.map((bonus) => {
+                    {visibleRollBonuses.map((bonus) => {
                       const isActive = activeBonuses.has(bonus.id);
                       return (
                         <button
