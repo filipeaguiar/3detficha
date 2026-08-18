@@ -1218,9 +1218,61 @@ export default function App() {
     });
   };
 
-  const toggleActiveBonus = (id: string) => {
+  const toggleActiveBonus = async (id: string) => {
     const bonus = rollBonuses.find(b => b.id === id);
     if (!bonus) return;
+
+    if (id === 'kit_mago_bateria_de_mana') {
+      if (!diceBoxRef.current || rolling) return;
+      setRolling(true);
+      setResult(null);
+
+      try {
+        if (soundOn) {
+          const snd = new Audio('/sounds/dice-roll.mp3');
+          snd.play().catch(e => console.log('Audio play failed', e));
+        }
+
+        diceBoxRef.current.updateConfig({
+          themeColor: accentColor,
+        });
+
+        diceBoxRef.current.clear();
+        
+        const diceResults = await diceBoxRef.current.roll('1d6');
+        const dResult = diceResults[0];
+        
+        const rollTotal = dResult.value;
+        const total = rollTotal + habilidade;
+
+        setTimeout(() => {
+          if (diceBoxRef.current) diceBoxRef.current.clear();
+          
+          setCurrentPM(prev => Math.min(maxPM, prev + total));
+
+          setResult({
+            rolls: [rollTotal],
+            diceSum: rollTotal,
+            criticals: 0,
+            isCriticalFail: false,
+            finalTotal: total,
+            usedAttributeName: 'Bateria de Mana (PM)',
+            baseAttributeValue: habilidade,
+            attrBonusValue: 0,
+            totalEffectiveAttribute: habilidade,
+            flatBonusTotal: 0,
+            critRangeUsed: 6,
+            appliedBonuses: [{ name: 'Bateria de Mana', desc: `Recuperou ${total} PM.` }]
+          });
+          setIsModalOpen(true);
+          setRolling(false);
+        }, 1500);
+      } catch(e) {
+        console.error(e);
+        setRolling(false);
+      }
+      return;
+    }
 
     setActiveBonuses(prev => {
       const next = new Set(prev);
