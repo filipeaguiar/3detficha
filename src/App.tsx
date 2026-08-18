@@ -713,6 +713,7 @@ export default function App() {
   }, [characterSheets, activeCharacterId]);
 
   const [mode, setMode] = useState<'edit' | 'play'>('play');
+  const [activeTab, setActiveTab] = useState<'concept' | 'attributes' | 'advantages' | 'skills' | 'techniques'>('concept');
   const [activeFormIndex, setActiveFormIndex] = useState<number>(0);
   
   // Hidden Drawer Menu state
@@ -1637,6 +1638,43 @@ export default function App() {
               </button>
             </div>
             
+            {/* Tabs Header */}
+            <div style={{ display: 'flex', borderBottom: '2px solid var(--border-color)', marginBottom: '1.5rem', overflowX: 'auto', whiteSpace: 'nowrap', gap: '0.5rem', paddingBottom: '0.5rem' }}>
+              {([
+                { id: 'concept', label: 'Conceito', icon: '👤' },
+                { id: 'attributes', label: 'Atributos', icon: '📊' },
+                { id: 'advantages', label: 'Vantagens', icon: '🎭' },
+                { id: 'skills', label: 'Perícias', icon: '🤹' },
+                { id: 'techniques', label: 'Técnicas', icon: '⚔️' }
+              ] as const).map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  style={{
+                    padding: '0.6rem 1rem',
+                    background: activeTab === tab.id ? 'var(--surface-hover)' : 'transparent',
+                    border: 'none',
+                    borderBottom: activeTab === tab.id ? '3px solid var(--accent-color)' : '3px solid transparent',
+                    color: activeTab === tab.id ? 'var(--accent-color)' : 'var(--text-muted)',
+                    fontFamily: 'Bebas Neue, sans-serif',
+                    fontSize: '1.1rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    transition: 'all 0.2s',
+                    borderRadius: '4px 4px 0 0'
+                  }}
+                >
+                  <span>{tab.icon}</span>
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* TAB CONCEITO */}
+            <div style={{ display: activeTab === 'concept' ? 'block' : 'none' }}>
+
             <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
               <div className="stat-label" style={{ marginBottom: '0.5rem', color: 'var(--text-muted)' }}>NOME DO PERSONAGEM</div>
               <input 
@@ -1801,6 +1839,11 @@ export default function App() {
               </div>
             </div>
 
+            </div> {/* END CONCEITO */}
+
+            {/* TAB ATRIBUTOS */}
+            <div style={{ display: activeTab === 'attributes' ? 'block' : 'none' }}>
+
             <div className="stats-grid">
               <div className="stat-box edit-stat-box" style={{ '--btn-color': '#FF9E00', borderColor: '#FF9E00' } as React.CSSProperties}>
                 <div className="stat-title" style={{ color: '#FF9E00' }}>Poder</div>
@@ -1855,6 +1898,25 @@ export default function App() {
                 </div>
               </div>
             )}
+
+            </div> {/* END ATRIBUTOS */}
+
+            {/* TAB VANTAGENS */}
+            <div style={{ display: activeTab === 'advantages' ? 'block' : 'none', minHeight: '200px' }}>
+              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                <em>Sistema de Vantagens e Desvantagens em breve!</em>
+              </div>
+            </div>
+
+            {/* TAB PERICIAS */}
+            <div style={{ display: activeTab === 'skills' ? 'block' : 'none', minHeight: '200px' }}>
+              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                <em>Sistema de Perícias em breve!</em>
+              </div>
+            </div>
+
+            {/* TAB TECNICAS */}
+            <div style={{ display: activeTab === 'techniques' ? 'block' : 'none' }}>
 
             <h2 className="panel-title" style={{ marginTop: '2rem' }}>Técnicas & Bônus desta Forma</h2>
             <div className="bonus-editor-list">
@@ -1930,7 +1992,10 @@ export default function App() {
               </button>
             )}
 
+            </div> {/* END TECNICAS */}
+
             <button className="btn-roll" onClick={() => setMode('play')} style={{ marginTop: '2rem' }}>
+
               Salvar e Jogar
             </button>
           </div>
