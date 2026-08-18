@@ -8,6 +8,7 @@ import { BookIcon, CameraIcon, CheckIcon, CloseIcon, LeafIcon, PencilIcon, PlusI
 export type EditorTab = 'concept' | 'attributes' | 'advantages' | 'skills' | 'techniques';
 
 type CharacterEditorProps = {
+  usingLinkedForms?: boolean;
   activeTab: EditorTab;
   setActiveTab: (tab: EditorTab) => void;
   totalPoints: number;
@@ -52,6 +53,7 @@ const EDITOR_TABS: Array<{ id: EditorTab; label: string; icon: React.ReactNode }
 
 export default function CharacterEditor(props: CharacterEditorProps) {
   const {
+    usingLinkedForms,
     activeTab,
     setActiveTab,
     totalPoints,
@@ -203,7 +205,12 @@ export default function CharacterEditor(props: CharacterEditorProps) {
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-          <h2 className="panel-title" style={{ margin: 0, fontSize: '1.4rem' }}>Formas & Transformações</h2>
+          <div>
+            <h2 className="panel-title" style={{ margin: 0, fontSize: '1.4rem' }}>Formas & Transformações</h2>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+              {usingLinkedForms ? 'Cada forma é uma ficha vinculada completa.' : 'Formas internas da ficha atual.'}
+            </div>
+          </div>
           <button className="control-btn" style={{ width: 'auto', padding: '0.3rem 0.8rem', fontSize: '0.85rem', borderColor: 'var(--accent-color)', color: 'var(--accent-color)' }} onClick={addTransformationForm}>
             <PlusIcon /> Nova Forma
           </button>

@@ -11,7 +11,7 @@ import PlayMode from './components/play/PlayMode';
 import AppModals from './components/modals/AppModals';
 
 export default function App() {
-  const { characterSheets, activeCharacterId, activeSheet, saveAllSheets, updateActiveSheet, updateCurrentForm, linkedSheets, createLinkedSheet } = useCharacterSheets();
+  const { characterSheets, activeCharacterId, activeSheet, saveAllSheets, updateActiveSheet, updateCurrentForm, linkedSheets, createLinkedSheet, unlinkSheet } = useCharacterSheets();
 
   const [mode, setMode] = useState<'edit' | 'play'>('play');
   const [activeTab, setActiveTab] = useState<'concept' | 'attributes' | 'advantages' | 'skills' | 'techniques'>('concept');
@@ -270,8 +270,7 @@ export default function App() {
     if (linkedSheets.length > 1) {
       const targetSheet = linkedSheets[index];
       if (!targetSheet || targetSheet.id === activeCharacterId) return;
-      const updatedSheets = characterSheets.filter(sheet => sheet.id !== targetSheet.id);
-      saveAllSheets(updatedSheets, activeCharacterId);
+      unlinkSheet(targetSheet.id);
       setActiveFormIndex(0);
       return;
     }
@@ -794,6 +793,7 @@ export default function App() {
         
         {mode === 'edit' && (
           <CharacterEditor
+            usingLinkedForms={linkedSheets.length > 1 || !!activeSheet.linkGroupId}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             totalPoints={totalPoints}

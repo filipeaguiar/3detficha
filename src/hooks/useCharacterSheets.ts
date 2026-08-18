@@ -64,6 +64,27 @@ export function useCharacterSheets() {
     saveAllSheets(updatedSheets, linkedNewSheet.id, updatedGroups);
   };
 
+  const unlinkSheet = (sheetId: string) => {
+    const targetSheet = characterSheets.find(sheet => sheet.id === sheetId);
+    if (!targetSheet?.linkGroupId) return;
+
+    const targetGroup = linkGroups.find(group => group.id === targetSheet.linkGroupId);
+    if (!targetGroup) return;
+
+    const remainingIds = targetGroup.sheetIds.filter(id => id !== sheetId);
+    const updatedSheets = characterSheets.map(sheet =>
+      sheet.id === sheetId
+        ? { ...sheet, linkGroupId: undefined, relationType: undefined, relationLabel: undefined }
+        : sheet
+    );
+
+    const updatedGroups = remainingIds.length >= 2
+      ? linkGroups.map(group => group.id === targetGroup.id ? { ...group, sheetIds: remainingIds, primarySheetId: remainingIds[0] } : group)
+      : linkGroups.filter(group => group.id !== targetGroup.id);
+
+    saveAllSheets(updatedSheets, activeCharacterId, updatedGroups);
+  };
+
   return {
     characterSheets,
     activeCharacterId,
@@ -75,6 +96,7 @@ export function useCharacterSheets() {
     updateActiveSheet,
     updateCurrentForm,
     createLinkedSheet,
+    unlinkSheet,
     setActiveCharacterId,
     setCharacterSheets,
     setLinkGroups,
