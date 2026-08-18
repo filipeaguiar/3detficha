@@ -176,7 +176,7 @@ export default function App() {
     if (currentForm.wildShapeAdvantages?.includes('Ágil')) {
       extra += 1;
     }
-    return Math.max(0, Math.min(2, extra));
+    return Math.max(-2, Math.min(2, extra));
   }, [activeBonusesList, activeKitBuffsList, manualBonusDice, currentForm.wildShapeAdvantages]);
 
   // Restricted Attribute

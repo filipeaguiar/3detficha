@@ -229,7 +229,7 @@ export default function PlayMode(props: PlayModeProps) {
         <h2 className="panel-title" style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Modificadores de Rolagem</h2>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
-          <button className={`toggle-btn ${calculatedTotalExtraDice > 0 ? 'active' : ''}`} onClick={() => setManualBonusDice(prev => (prev === 2 ? -1 : prev === -1 ? -2 : prev === -2 ? 0 : prev + 1) as any)} title={`Rolagem: ${1 + Math.abs(calculatedTotalExtraDice)}D (${calculatedTotalExtraDice > 0 ? 'Fica com o Maior' : calculatedTotalExtraDice < 0 ? 'Fica com o Pior' : 'Normal'})`}>
+          <button className={`toggle-btn ${calculatedTotalExtraDice !== 0 ? 'active' : ''}`} onClick={() => setManualBonusDice(prev => (prev === 2 ? -1 : prev === -1 ? -2 : prev === -2 ? 0 : prev + 1) as any)} title={`Rolagem: ${1 + Math.abs(calculatedTotalExtraDice)}D (${calculatedTotalExtraDice > 0 ? 'Fica com o Maior' : calculatedTotalExtraDice < 0 ? 'Fica com o Pior' : 'Normal'})`}>
             <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center', alignItems: 'center' }}>
               <CubeIcon />
               <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: calculatedTotalExtraDice > 0 ? '#5EB05D' : calculatedTotalExtraDice < 0 ? '#ff4d4d' : 'inherit' }}>
