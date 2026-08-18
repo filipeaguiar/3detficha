@@ -599,7 +599,10 @@ export default function App() {
         desc = `+${val} (${bonus.attrSource})`;
       }
 
-      if (bonus.critThresholdMod) desc += desc ? ' | Crítico 5+' : 'Crítico 5+';
+      if (bonus.critThresholdMod) {
+        const critValue = Math.max(4, 6 + bonus.critThresholdMod);
+        desc += desc ? ` | Crítico ${critValue}+` : `Crítico ${critValue}+`;
+      }
       if (bonus.autoCrit) {
         hasAutoCrit = true;
         desc += desc ? ' | Crítico Automático' : 'Crítico Automático';
@@ -635,7 +638,10 @@ export default function App() {
         desc = `+${mod.value} Total`;
       }
 
-      if (mod.critThresholdMod) desc += desc ? ' | Crítico 5+' : 'Crítico 5+';
+      if (mod.critThresholdMod) {
+        const critValue = Math.max(4, 6 + mod.critThresholdMod);
+        desc += desc ? ` | Crítico ${critValue}+` : `Crítico ${critValue}+`;
+      }
       if (mod.autoCrit) {
         hasAutoCrit = true;
         desc += desc ? ' | Crítico Automático' : 'Crítico Automático';
@@ -700,10 +706,11 @@ export default function App() {
       const isCriticalFail = rolls.length > 0 && rolls.every((r) => r === 1);
       
       let rolledCrits = rolls.filter((r) => r >= effectiveCritRange).length;
-      if (hasAutoCrit && rolledCrits === 0) {
-        rolledCrits = 1;
+      if (isCriticalFail) {
+        rolledCrits = 0;
       }
-      const criticals = rolledCrits;
+      const autoCrits = hasAutoCrit && !isCriticalFail ? 1 : 0;
+      const criticals = rolledCrits + autoCrits;
 
       const finalTotal = diceSum + totalEffectiveAttribute + (totalEffectiveAttribute * criticals) + flatBonusTotal;
 

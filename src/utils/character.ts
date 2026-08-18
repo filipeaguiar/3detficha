@@ -127,7 +127,10 @@ export function getBonusSubtitle(bonus: RollBonus): string {
     parts.push(`+${srcLetter}`);
   }
 
-  if (bonus.critThresholdMod && bonus.critThresholdMod < 0) parts.push('Crítico 5+');
+  if (bonus.critThresholdMod && bonus.critThresholdMod < 0) {
+    const critValue = Math.max(4, 6 + bonus.critThresholdMod);
+    parts.push(`Crítico ${critValue}+`);
+  }
   if (bonus.autoCrit) parts.push('Crítico Auto');
   if (bonus.extraDice && bonus.extraDice > 0) parts.push(`+${bonus.extraDice}D Ganho`);
   else if (bonus.extraDice && bonus.extraDice < 0) parts.push(`${bonus.extraDice}D Perda`);
