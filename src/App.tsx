@@ -1786,26 +1786,6 @@ export default function App() {
         {mode === 'play' && (
           <div style={{ gridColumn: '1 / -1', maxWidth: '600px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column' }}>
             
-            {/* Form Switcher Tabs in Play Mode */}
-            {forms.length > 1 && (
-              <div className="form-tabs-container" style={{ marginBottom: '0.8rem' }}>
-                {forms.map((form, idx) => (
-                  <button
-                    key={form.id}
-                    className={`form-tab-btn ${activeFormIndex === idx ? 'active' : ''}`}
-                    onClick={() => {
-                      setActiveFormIndex(idx);
-                      if (selectedKitId === 'druida' && idx > 0) {
-                        setIsWildShapeModalOpen(true);
-                      }
-                    }}
-                  >
-                    <span>{form.name}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-
             {/* FIGHTING GAME HUD (Cleaned of extra buttons, single toggle trigger + swipe right) */}
             <div className="slide-up" style={{ 
               display: 'flex', 
@@ -1830,7 +1810,7 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Portrait Area */}
+              {/* Portrait Area - Click to switch form */}
               <div 
                 style={{ 
                   width: '90px', 
@@ -1844,10 +1824,18 @@ export default function App() {
                   boxShadow: '0 0 15px var(--accent-transparent)',
                   overflow: 'hidden',
                   position: 'relative',
-                  cursor: 'pointer'
+                  cursor: forms.length > 1 ? 'pointer' : 'default'
                 }}
-                onClick={() => fileInputRef.current?.click()}
-                title="Clique para carregar/alterar a foto desta forma"
+                onClick={() => {
+                  if (forms.length > 1) {
+                    const nextIndex = (activeFormIndex + 1) % forms.length;
+                    setActiveFormIndex(nextIndex);
+                    if (selectedKitId === 'druida' && nextIndex > 0) {
+                      setIsWildShapeModalOpen(true);
+                    }
+                  }
+                }}
+                title={forms.length > 1 ? `Clique para transformar: Próxima forma (${forms[(activeFormIndex + 1) % forms.length].name})` : currentForm.name}
               >
                 {currentForm.avatarUrl ? (
                   <img 
@@ -1863,6 +1851,11 @@ export default function App() {
                 ) : (
                   <div style={{ transform: 'skewX(10deg)', fontSize: '3.5rem', fontWeight: 'bold', color: 'var(--accent-color)', fontFamily: 'Bebas Neue, sans-serif' }}>
                     {characterName ? characterName.charAt(0).toUpperCase() : '?'}
+                  </div>
+                )}
+                {forms.length > 1 && (
+                  <div className="avatar-transform-indicator" title="Clique para transformar">
+                    🔄
                   </div>
                 )}
               </div>
@@ -1882,6 +1875,23 @@ export default function App() {
                     {characterName || 'HERÓI DESCONHECIDO'}
                   </h1>
                   
+                  {/* Current Form Badge (if multiple forms exist) */}
+                  {forms.length > 1 && (
+                    <button
+                      className="form-pill-badge"
+                      onClick={() => {
+                        const nextIndex = (activeFormIndex + 1) % forms.length;
+                        setActiveFormIndex(nextIndex);
+                        if (selectedKitId === 'druida' && nextIndex > 0) {
+                          setIsWildShapeModalOpen(true);
+                        }
+                      }}
+                      title="Clique para alternar de forma"
+                    >
+                      <span>🔄 {currentForm.name}</span>
+                    </button>
+                  )}
+
                   {/* Clean Kit Badge with Info Trigger */}
                   {currentKit && (
                     <button
