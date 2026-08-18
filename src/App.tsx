@@ -2317,7 +2317,30 @@ export default function App() {
                     key={kit.id}
                     className={`kit-card-option ${isSelected ? 'selected' : ''}`}
                     onClick={() => {
-                      updateActiveSheet({ selectedKitId: kit.id });
+                      const newBonuses: RollBonus[] = kit.powers.map(p => ({
+                        id: 'kit_' + p.id,
+                        name: p.name,
+                        alias: '',
+                        attribute: p.attribute || 'any',
+                        bonusType: p.bonusType || 'none',
+                        value: p.value || 0,
+                        duration: p.type === 'per_scene' ? 'scene' : 'instant',
+                        critThresholdMod: p.critThresholdMod || 0,
+                        autoCrit: p.autoCrit || false,
+                        extraDice: p.extraDice || 0,
+                        costValue: p.costPM || 0,
+                        costResource: (p.costPM && p.costPM > 0) ? 'PM' : 'none'
+                      }));
+                      
+                      const updatedForms = [...forms];
+                      // Remove old kit powers to prevent duplicates
+                      const cleanedBonuses = updatedForms[activeFormIndex].rollBonuses.filter(b => !b.id.startsWith('kit_'));
+                      updatedForms[activeFormIndex] = {
+                        ...updatedForms[activeFormIndex],
+                        rollBonuses: [...cleanedBonuses, ...newBonuses]
+                      };
+
+                      updateActiveSheet({ selectedKitId: kit.id, forms: updatedForms });
                       setIsKitSelectModalOpen(false);
                     }}
                   >
