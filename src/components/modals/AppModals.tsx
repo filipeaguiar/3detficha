@@ -52,7 +52,7 @@ type AppModalsProps = {
   setIsTransformModalOpen: (open: boolean) => void;
   updateCurrentForm: (updates: Partial<CharacterForm>) => void;
   setCurrentPM: React.Dispatch<React.SetStateAction<number>>;
-  setManualBonusDice: React.Dispatch<React.SetStateAction<-2 | -1 | 0 | 1 | 2>>;
+  setManualBonusDice: React.Dispatch<React.SetStateAction<0 | 1 | 2>>;
   currentPM: number;
   isEditingStats: boolean;
   setIsEditingStats: (open: boolean) => void;

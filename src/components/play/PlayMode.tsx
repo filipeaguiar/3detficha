@@ -34,8 +34,8 @@ type PlayModeProps = {
   resistencia: number;
   calculatedTotalExtraDice: number;
   calculatedCritRange: number;
-  manualBonusDice: -2 | -1 | 0 | 1 | 2;
-  setManualBonusDice: React.Dispatch<React.SetStateAction<-2 | -1 | 0 | 1 | 2>>;
+  manualBonusDice: 0 | 1 | 2;
+  setManualBonusDice: React.Dispatch<React.SetStateAction<0 | 1 | 2>>;
   setManualCritRange: React.Dispatch<React.SetStateAction<number>>;
   setIsDrawerOpen: (open: boolean) => void;
   setCurrentPM: React.Dispatch<React.SetStateAction<number>>;
@@ -229,11 +229,11 @@ export default function PlayMode(props: PlayModeProps) {
         <h2 className="panel-title" style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Modificadores de Rolagem</h2>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
-          <button className={`toggle-btn ${calculatedTotalExtraDice !== 0 ? 'active' : ''}`} onClick={() => setManualBonusDice(prev => (prev === 2 ? -1 : prev === -1 ? -2 : prev === -2 ? 0 : prev + 1) as any)} title={`Rolagem: ${1 + Math.abs(calculatedTotalExtraDice)}D (${calculatedTotalExtraDice > 0 ? 'Fica com o Maior' : calculatedTotalExtraDice < 0 ? 'Fica com o Pior' : 'Normal'})`}>
+          <button className={`toggle-btn ${calculatedTotalExtraDice !== 0 ? 'active' : ''}`} onClick={() => setManualBonusDice(prev => (prev >= 2 ? 0 : (prev + 1) as 0 | 1 | 2))} title={`Rolagem: ${1 + calculatedTotalExtraDice}D (${calculatedTotalExtraDice > 0 ? 'Fica com o Maior' : 'Normal'})`}>
             <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center', alignItems: 'center' }}>
               <CubeIcon />
-              <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: calculatedTotalExtraDice > 0 ? '#5EB05D' : calculatedTotalExtraDice < 0 ? '#ff4d4d' : 'inherit' }}>
-                {calculatedTotalExtraDice === 0 ? 'Normal' : calculatedTotalExtraDice > 0 ? `+${calculatedTotalExtraDice} Ganho` : `${calculatedTotalExtraDice} Perda`}
+              <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: calculatedTotalExtraDice > 0 ? '#5EB05D' : 'inherit' }}>
+                {calculatedTotalExtraDice === 0 ? 'Normal' : `+${calculatedTotalExtraDice} Ganho`}
               </span>
             </div>
           </button>

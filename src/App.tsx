@@ -122,7 +122,7 @@ export default function App() {
   }, [activeFormIndex, activeCharacterId, maxPV, maxPM, maxPA]);
 
   // Modificadores manuais de rolagem
-  const [manualBonusDice, setManualBonusDice] = useState<-2 | -1 | 0 | 1 | 2>(0);
+  const [manualBonusDice, setManualBonusDice] = useState<0 | 1 | 2>(0);
   const [manualCritRange, setManualCritRange] = useState(6);
 
   // Bônus e Técnicas Ativas
