@@ -771,7 +771,7 @@ export default function App() {
   }, [currentKit]);
 
 
-  const totalPoints = calculatePoints(currentForm);
+  const totalPoints = calculatePoints(currentForm, currentKit ? 1 : 0);
   return (
     <>
       <div id="dice-box" style={{ visibility: mode === 'play' ? 'visible' : 'hidden' }}></div>

@@ -199,8 +199,8 @@ function getFirstNumericCost(cost?: string): number {
   return positiveMatch ? parseInt(positiveMatch[0], 10) : 0;
 }
 
-export function calculatePoints(currentForm: CharacterForm): number {
-  let total = currentForm.poder + currentForm.habilidade + currentForm.resistencia;
+export function calculatePoints(currentForm: CharacterForm, kitCost = 0): number {
+  let total = currentForm.poder + currentForm.habilidade + currentForm.resistencia + kitCost;
 
   if (currentForm.skills) total += currentForm.skills.length;
 
