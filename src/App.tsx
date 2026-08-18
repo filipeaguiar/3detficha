@@ -405,42 +405,6 @@ function normalizeRollBonus(raw: any): RollBonus {
   };
 }
 
-// Compress and resize uploaded image to keep localStorage healthy
-function processImageUpload(file: File, callback: (base64Url: string) => void) {
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const maxDim = 320;
-      let width = img.width;
-      let height = img.height;
-
-      if (width > height) {
-        if (width > maxDim) {
-          height = Math.round((height * maxDim) / width);
-          width = maxDim;
-        }
-      } else {
-        if (height > maxDim) {
-          width = Math.round((width * maxDim) / height);
-          height = maxDim;
-        }
-      }
-
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.drawImage(img, 0, 0, width, height);
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-        callback(dataUrl);
-      }
-    };
-    img.src = e.target?.result as string;
-  };
-  reader.readAsDataURL(file);
-}
 
 const PlusIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -1125,9 +1089,13 @@ export default function App() {
   const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    processImageUpload(file, (base64Url) => {
-      setCroppingImage(base64Url);
-    });
+    
+    // Read the original file into base64 to allow high-res cropping
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setCroppingImage(event.target?.result as string);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleCropComplete = (croppedImageBase64: string) => {

@@ -121,8 +121,39 @@ async function getCroppedImg(
     pixelCrop.height
   );
 
-  // As Base64 string
-  return croppedCanvas.toDataURL('image/jpeg');
+  // Resize the cropped image to a max dimension of 320px to save storage
+  const maxDim = 320;
+  let finalWidth = pixelCrop.width;
+  let finalHeight = pixelCrop.height;
+
+  if (finalWidth > finalHeight) {
+    if (finalWidth > maxDim) {
+      finalHeight = Math.round((finalHeight * maxDim) / finalWidth);
+      finalWidth = maxDim;
+    }
+  } else {
+    if (finalHeight > maxDim) {
+      finalWidth = Math.round((finalWidth * maxDim) / finalHeight);
+      finalHeight = maxDim;
+    }
+  }
+
+  const resizedCanvas = document.createElement('canvas');
+  resizedCanvas.width = finalWidth;
+  resizedCanvas.height = finalHeight;
+  const resizedCtx = resizedCanvas.getContext('2d');
+  
+  if (resizedCtx) {
+    resizedCtx.drawImage(
+      croppedCanvas,
+      0, 0, pixelCrop.width, pixelCrop.height,
+      0, 0, finalWidth, finalHeight
+    );
+    return resizedCanvas.toDataURL('image/jpeg', 0.85);
+  }
+
+  // Fallback
+  return croppedCanvas.toDataURL('image/jpeg', 0.85);
 }
 
 export default ImageCropper;
