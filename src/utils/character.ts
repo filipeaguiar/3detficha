@@ -1,5 +1,5 @@
 import { ADVANTAGES_CATALOG, DISADVANTAGES_CATALOG } from '../constants/advantagesData';
-import type { CharacterForm, CharacterSheet, KitPower, RollBonus } from '../types/character';
+import type { CharacterForm, CharacterLinkGroup, CharacterSheet, KitPower, RollBonus } from '../types/character';
 
 export function normalizeRollBonus(raw: any): RollBonus {
   const name = raw.name || raw.label || 'Bônus';
@@ -54,7 +54,7 @@ export function createDefaultSheet(): CharacterSheet {
   };
 }
 
-export function loadInitialSheets(): { sheets: CharacterSheet[]; activeId: string } {
+export function loadInitialSheets(): { sheets: CharacterSheet[]; activeId: string; linkGroups: CharacterLinkGroup[] } {
   const defaultSheet = createDefaultSheet();
 
   try {
@@ -72,7 +72,9 @@ export function loadInitialSheets(): { sheets: CharacterSheet[]; activeId: strin
           }))
         }));
         const activeId = savedActiveId || normalized[0].id;
-        return { sheets: normalized, activeId };
+        const savedGroups = localStorage.getItem('3det_character_link_groups');
+        const parsedGroups = savedGroups ? JSON.parse(savedGroups) : [];
+        return { sheets: normalized, activeId, linkGroups: Array.isArray(parsedGroups) ? parsedGroups : [] };
       }
     }
 
@@ -102,13 +104,13 @@ export function loadInitialSheets(): { sheets: CharacterSheet[]; activeId: strin
           }
         ]
       };
-      return { sheets: [migratedSheet], activeId: migratedSheet.id };
+      return { sheets: [migratedSheet], activeId: migratedSheet.id, linkGroups: [] };
     }
   } catch (e) {
     console.error('Error loading characters from storage:', e);
   }
 
-  return { sheets: [defaultSheet], activeId: defaultSheet.id };
+  return { sheets: [defaultSheet], activeId: defaultSheet.id, linkGroups: [] };
 }
 
 export function getBonusSubtitle(bonus: RollBonus): string {

@@ -11,7 +11,7 @@ import PlayMode from './components/play/PlayMode';
 import AppModals from './components/modals/AppModals';
 
 export default function App() {
-  const { characterSheets, activeCharacterId, activeSheet, saveAllSheets, updateActiveSheet, updateCurrentForm } = useCharacterSheets();
+  const { characterSheets, activeCharacterId, activeSheet, saveAllSheets, updateActiveSheet, updateCurrentForm, linkedSheets, createLinkedSheet } = useCharacterSheets();
 
   const [mode, setMode] = useState<'edit' | 'play'>('play');
   const [activeTab, setActiveTab] = useState<'concept' | 'attributes' | 'advantages' | 'skills' | 'techniques'>('concept');
@@ -69,9 +69,18 @@ export default function App() {
   const selectedKitId = activeSheet.selectedKitId;
   const accentColor = activeSheet.accentColor;
   const soundOn = activeSheet.soundOn;
-  const forms = activeSheet.forms;
+  const forms = linkedSheets.length > 1
+    ? linkedSheets.map((sheet, index) => ({
+        ...(sheet.forms[0] || activeSheet.forms[0]),
+        id: sheet.id,
+        name: sheet.relationLabel || sheet.forms[0]?.name || `Forma ${index + 1}`,
+        avatarUrl: sheet.forms[0]?.avatarUrl,
+      }))
+    : activeSheet.forms;
 
-  const currentForm = forms[activeFormIndex] || forms[0];
+  const currentForm = linkedSheets.length > 1
+    ? (linkedSheets[activeFormIndex]?.forms[0] || linkedSheets[0]?.forms[0] || activeSheet.forms[0])
+    : (forms[activeFormIndex] || forms[0]);
 
   // Selected Kit Info
   const currentKit = useMemo(() => {
@@ -216,13 +225,21 @@ export default function App() {
 
   // Form management for active sheet
   const updateCurrentFormForActiveIndex = (updates: Partial<CharacterForm>) => {
+    if (linkedSheets.length > 1) {
+      const targetSheet = linkedSheets[activeFormIndex] || linkedSheets[0];
+      if (!targetSheet) return;
+      const updatedForms = targetSheet.forms.map((f, i) => i === 0 ? { ...f, ...updates } : f);
+      const updatedSheets = characterSheets.map(sheet => sheet.id === targetSheet.id ? { ...sheet, forms: updatedForms } : sheet);
+      saveAllSheets(updatedSheets, targetSheet.id);
+      return;
+    }
     updateCurrentForm(activeFormIndex, updates);
   };
 
   const addTransformationForm = () => {
     const isDruid = selectedKitId === 'druida';
     const newForm: CharacterForm = {
-      id: Date.now().toString(),
+      id: 'base',
       name: isDruid ? 'Forma Selvagem (Fera)' : `Forma Alternativa ${forms.length + 1}`,
       poder: Math.max(1, poder + (isDruid ? 1 : 0)),
       habilidade: habilidade,
@@ -230,14 +247,35 @@ export default function App() {
       maisVida: maisVida,
       maisMana: maisMana,
       rollBonuses: [],
-      wildShapeAdvantages: isDruid ? ['Ágil', 'Forte'] : []
+      wildShapeAdvantages: isDruid ? ['Ágil', 'Forte'] : [],
+      advantages: [],
+      disadvantages: [],
+      skills: []
     };
-    const updatedForms = [...forms, newForm];
-    updateActiveSheet({ forms: updatedForms });
+
+    const newSheet: CharacterSheet = {
+      id: 'char_' + Date.now(),
+      characterName,
+      selectedKitId,
+      accentColor,
+      soundOn,
+      forms: [newForm]
+    };
+
+    createLinkedSheet(activeCharacterId, newSheet, newForm.name, 'form');
     setActiveFormIndex(forms.length);
   };
 
   const removeCurrentForm = (index: number) => {
+    if (linkedSheets.length > 1) {
+      const targetSheet = linkedSheets[index];
+      if (!targetSheet || targetSheet.id === activeCharacterId) return;
+      const updatedSheets = characterSheets.filter(sheet => sheet.id !== targetSheet.id);
+      saveAllSheets(updatedSheets, activeCharacterId);
+      setActiveFormIndex(0);
+      return;
+    }
+
     if (forms.length <= 1) return;
     const updatedForms = forms.filter((_, i) => i !== index);
     updateActiveSheet({ forms: updatedForms });

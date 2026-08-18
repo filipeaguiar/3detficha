@@ -30,6 +30,8 @@ export type CharacterForm = {
   skills?: string[];
 };
 
+export type CharacterLinkRelation = 'base' | 'form' | 'alternate';
+
 export type CharacterSheet = {
   id: string;
   characterName: string;
@@ -37,6 +39,15 @@ export type CharacterSheet = {
   accentColor: string;
   soundOn: boolean;
   forms: CharacterForm[];
+  linkGroupId?: string;
+  relationType?: CharacterLinkRelation;
+  relationLabel?: string;
+};
+
+export type CharacterLinkGroup = {
+  id: string;
+  primarySheetId: string;
+  sheetIds: string[];
 };
 
 export type KitPower = {
