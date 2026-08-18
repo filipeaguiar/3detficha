@@ -87,11 +87,11 @@ export default function CharacterEditor(props: CharacterEditorProps) {
   } = props;
 
   return (
-    <div className="panel slide-up" style={{ animationDelay: '0.1s', gridColumn: '1 / -1', maxWidth: '650px', margin: '0 auto', width: '100%' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+    <div className="panel slide-up editor-panel" style={{ animationDelay: '0.1s', gridColumn: '1 / -1', maxWidth: '650px', margin: '0 auto', width: '100%' }}>
+      <div className="editor-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h1 className="panel-title" style={{ margin: 0 }}>Cadastro da Ficha</h1>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div className="editor-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <div style={{ background: 'var(--surface-color)', padding: '0.4rem 0.8rem', borderRadius: 'var(--radius)', border: `1px solid ${totalPoints > 10 ? 'var(--danger-color)' : 'var(--border-color)'}` }}>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginRight: '0.5rem' }}>PONTOS:</span>
             <strong style={{ fontSize: '1.2rem', color: totalPoints > 10 ? 'var(--danger-color)' : 'var(--accent-color)', fontFamily: 'Bebas Neue, sans-serif' }}>
@@ -222,7 +222,7 @@ export default function CharacterEditor(props: CharacterEditorProps) {
           ))}
         </div>
 
-        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', marginBottom: '1.5rem', background: 'var(--surface-hover)', padding: '1rem', borderRadius: 'var(--radius)', border: '1px solid var(--border-color)' }}>
+        <div className="editor-form-card" style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', marginBottom: '1.5rem', background: 'var(--surface-hover)', padding: '1rem', borderRadius: 'var(--radius)', border: '1px solid var(--border-color)' }}>
           <div className="avatar-preview-box" onClick={() => fileInputRef.current?.click()} title="Clique para alterar a imagem desta forma" style={{ borderColor: accentColor }}>
             {currentForm.avatarUrl ? (
               <img src={currentForm.avatarUrl} alt={currentForm.name} className="avatar-img" />
@@ -387,7 +387,7 @@ export default function CharacterEditor(props: CharacterEditorProps) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <h2 className="panel-title" style={{ margin: 0 }}>Perícias</h2>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', maxHeight: '500px', overflowY: 'auto' }}>
+        <div className="editor-skills-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', maxHeight: '500px', overflowY: 'auto' }}>
           {SKILLS_CATALOG.map(skill => {
             const isSelected = currentForm.skills?.includes(skill.id);
             return (
@@ -463,7 +463,7 @@ export default function CharacterEditor(props: CharacterEditorProps) {
           ))}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
+        <div className="editor-technique-actions" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
           <button className="bonus-add-btn" onClick={() => setIsPresetModalOpen(true)} style={{ borderColor: 'var(--accent-color)', color: 'var(--accent-color)' }}>
             <BookIcon /> Preset do Livro
           </button>

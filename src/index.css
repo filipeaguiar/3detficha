@@ -77,12 +77,48 @@ h1, h2, h3, h4, h5, h6 {
     grid-template-columns: 1fr;
     padding: 0;
     margin: 0;
+    overflow-x: hidden;
   }
   
   .panel {
     border-radius: 0 !important;
     border: none !important;
     padding: 1.5rem 1rem !important;
+  }
+
+  .editor-header {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .editor-header-actions {
+    width: 100%;
+    justify-content: stretch;
+    gap: 0.75rem !important;
+  }
+
+  .editor-header-actions > * {
+    width: 100%;
+  }
+
+  .editor-form-card {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 1rem !important;
+  }
+
+  .editor-skills-grid,
+  .editor-technique-actions {
+    grid-template-columns: 1fr !important;
+  }
+
+  .bonus-editor-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bonus-editor-row > div:last-child {
+    justify-content: flex-end;
   }
 }
 
@@ -92,6 +128,35 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: var(--radius);
   padding: 2rem;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.editor-panel {
+  overflow-x: hidden;
+}
+
+.editor-header {
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.editor-header-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.editor-form-card {
+  min-width: 0;
+}
+
+.editor-skills-grid {
+  min-width: 0;
+}
+
+.editor-technique-actions {
+  min-width: 0;
 }
 
 .panel-title {
@@ -771,6 +836,7 @@ input.stat-input:focus {
   font-weight: bold;
   font-size: 1.2rem;
   transition: var(--transition);
+  max-width: 100%;
 }
 
 .control-btn:hover {
@@ -809,10 +875,12 @@ input.stat-input:focus {
   transition: var(--transition);
   transform: skewX(-5deg);
   box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+  min-width: 0;
 }
 
 .bonus-editor-row > * {
   transform: skewX(5deg);
+  min-width: 0;
 }
 
 .bonus-editor-row:focus-within {
@@ -1059,6 +1127,7 @@ input.stat-input:focus {
   gap: 0.5rem;
   overflow-x: auto;
   padding-bottom: 4px;
+  min-width: 0;
 }
 
 .form-tab-btn {
