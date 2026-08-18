@@ -1,10 +1,11 @@
+import { useState } from 'react';
 import { ADVANTAGES_CATALOG, DISADVANTAGES_CATALOG } from '../../constants/advantagesData';
 import { ADVANTAGE_VARIANT_OPTIONS, DISADVANTAGE_VARIANT_OPTIONS } from '../../constants/app/variants';
 import { SKILLS_CATALOG } from '../../constants/skillsData';
 import { getBonusSubtitle, getKitPowerModifier } from '../../utils/character';
 import type { CharacterForm, CharacterKit, KitPower, RollBonus } from '../../types/character';
 import SegmentedBar from '../common/SegmentedBar';
-import { CheckIcon, DiceCountIcon, HabilidadeIcon, InfoIcon, LeafIcon, MaskIcon, MenuIcon, PoderIcon, ResistenciaIcon, SkillsIcon, SparklesIcon, TransformIcon } from '../common/Icons';
+import { CheckIcon, CloseIcon, DiceCountIcon, HabilidadeIcon, InfoIcon, LeafIcon, MaskIcon, MenuIcon, PoderIcon, ResistenciaIcon, SkillsIcon, SparklesIcon, TransformIcon } from '../common/Icons';
 
 type PlayModeProps = {
   characterName: string;
@@ -50,6 +51,7 @@ type PlayModeProps = {
 };
 
 export default function PlayMode(props: PlayModeProps) {
+  const [detailModal, setDetailModal] = useState<{ title: string; subtitle?: string; body: string; tone: 'advantage' | 'skill' | 'disadvantage' | 'technique' } | null>(null);
   const {
     characterName,
     currentKit,
@@ -216,11 +218,11 @@ export default function PlayMode(props: PlayModeProps) {
               const variant = variantKey ? ADVANTAGE_VARIANT_OPTIONS[baseId]?.find(v => v.key === variantKey) : undefined;
               const displayName = adv ? (variant ? `${adv.name} — ${variant.label}` : adv.name) : id;
               const displayCost = variant?.cost || adv?.cost || '';
-              return adv ? <button key={id} onClick={() => alert(`${displayName}\n\nCusto: ${displayCost}\n\n${adv.desc}`)} style={{ background: 'var(--accent-color)', border: 'none', color: '#000', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}><SparklesIcon size={12} />{displayName}</button> : null;
+              return adv ? <button key={id} onClick={() => setDetailModal({ title: displayName, subtitle: displayCost ? `Custo: ${displayCost}` : undefined, body: adv.desc, tone: 'advantage' })} style={{ background: 'var(--accent-color)', border: 'none', color: '#000', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}><SparklesIcon size={12} />{displayName}</button> : null;
             })}
             {currentForm.skills?.map(id => {
               const skill = SKILLS_CATALOG.find(a => a.id === id);
-              return skill ? <button key={id} onClick={() => alert(`${skill.name}\n\n${skill.desc}`)} style={{ background: '#33ccff', border: 'none', color: '#000', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}><SkillsIcon size={12} />{skill.name}</button> : null;
+              return skill ? <button key={id} onClick={() => setDetailModal({ title: skill.name, body: skill.desc, tone: 'skill' })} style={{ background: '#33ccff', border: 'none', color: '#000', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}><SkillsIcon size={12} />{skill.name}</button> : null;
             })}
             {currentForm.disadvantages?.map(id => {
               const [baseId, variantKey] = id.split('::');
@@ -228,7 +230,7 @@ export default function PlayMode(props: PlayModeProps) {
               const variant = variantKey ? DISADVANTAGE_VARIANT_OPTIONS[baseId]?.find(v => v.key === variantKey) : undefined;
               const displayName = disadv ? (variant ? `${disadv.name} — ${variant.label}` : disadv.name) : id;
               const displayCost = variant?.cost || disadv?.cost || '';
-              return disadv ? <button key={id} onClick={() => alert(`${displayName}\n\nCusto: ${displayCost}\n\n${disadv.desc}`)} style={{ background: '#ff4d4d', border: 'none', color: '#fff', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}><MaskIcon size={12} />{displayName}</button> : null;
+              return disadv ? <button key={id} onClick={() => setDetailModal({ title: displayName, subtitle: displayCost ? `Custo: ${displayCost}` : undefined, body: disadv.desc, tone: 'disadvantage' })} style={{ background: '#ff4d4d', border: 'none', color: '#fff', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}><MaskIcon size={12} />{displayName}</button> : null;
             })}
           </div>
         )}
@@ -258,7 +260,7 @@ export default function PlayMode(props: PlayModeProps) {
               {visibleRollBonuses.map((bonus) => {
                 const isActive = activeBonuses.has(bonus.id);
                 return (
-                  <button key={bonus.id} className={`bonus-toggle ${isActive ? 'active' : ''}`} onClick={() => toggleActiveBonus(bonus.id)} title={`${bonus.alias || bonus.name}: ${getBonusSubtitle(bonus)}`}>
+                  <button key={bonus.id} className={`bonus-toggle ${isActive ? 'active' : ''}`} onClick={() => toggleActiveBonus(bonus.id)} onContextMenu={(e) => { e.preventDefault(); setDetailModal({ title: bonus.alias || bonus.name, subtitle: getBonusSubtitle(bonus), body: bonus.name !== (bonus.alias || bonus.name) ? `Base: ${bonus.name}` : 'Técnica configurada nesta forma.', tone: 'technique' }); }} title={`${bonus.alias || bonus.name}: ${getBonusSubtitle(bonus)}`}>
                     <div className="bonus-toggle-header">
                       <span className="bonus-toggle-label">{bonus.alias ? bonus.alias : bonus.name}</span>
                       {bonus.duration === 'scene' && <span className="bonus-attr-micro" style={{ background: '#33ccff', color: '#000' }}>CENA</span>}
@@ -273,6 +275,18 @@ export default function PlayMode(props: PlayModeProps) {
           </div>
         )}
       </div>
+      {detailModal && (
+        <div className="modal-overlay pop-in" style={{ zIndex: 340, alignItems: 'center' }} onClick={(e) => { if (e.target === e.currentTarget) setDetailModal(null); }}>
+          <div className="modal-content detail-modal-content">
+            <button className="modal-close" onClick={() => setDetailModal(null)}><CloseIcon size={18} /></button>
+            <div className={`detail-modal-badge ${detailModal.tone}`}>{detailModal.tone === 'advantage' ? 'Vantagem' : detailModal.tone === 'disadvantage' ? 'Desvantagem' : detailModal.tone === 'skill' ? 'Perícia' : 'Técnica'}</div>
+            <h2 className="detail-modal-title">{detailModal.title}</h2>
+            {detailModal.subtitle && <div className="detail-modal-subtitle">{detailModal.subtitle}</div>}
+            <p className="detail-modal-body">{detailModal.body}</p>
+            <button className="btn-roll" style={{ marginTop: '1rem' }} onClick={() => setDetailModal(null)}>Fechar</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

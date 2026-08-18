@@ -1900,3 +1900,74 @@ input.stat-input:focus {
 .cropper-actions .btn-primary:hover {
   filter: brightness(1.1);
 }
+
+.detail-modal-content {
+  border-radius: 4px;
+  border-top: 2px solid var(--accent-color);
+  border-bottom: 2px solid var(--accent-color);
+  background: rgba(15, 18, 26, 0.96);
+  box-shadow: 0 0 25px var(--accent-transparent);
+  max-width: 460px;
+  width: 90%;
+}
+
+.detail-modal-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 0.8rem;
+  border: 1px solid;
+}
+
+.detail-modal-badge.advantage {
+  color: var(--accent-color);
+  border-color: var(--accent-color);
+  background: var(--accent-transparent);
+}
+
+.detail-modal-badge.disadvantage {
+  color: #ff4d4d;
+  border-color: #ff4d4d;
+  background: rgba(255, 77, 77, 0.12);
+}
+
+.detail-modal-badge.skill {
+  color: #33ccff;
+  border-color: #33ccff;
+  background: rgba(51, 204, 255, 0.12);
+}
+
+.detail-modal-badge.technique {
+  color: #ffd166;
+  border-color: #ffd166;
+  background: rgba(255, 209, 102, 0.12);
+}
+
+.detail-modal-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  letter-spacing: 1px;
+  color: #fff;
+  margin: 0 0 0.35rem 0;
+}
+
+.detail-modal-subtitle {
+  color: var(--accent-color);
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.detail-modal-body {
+  color: var(--text-main);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0;
+  white-space: pre-line;
+}
