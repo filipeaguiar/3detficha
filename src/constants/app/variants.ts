@@ -106,7 +106,12 @@ export const DISADVANTAGE_VARIANT_OPTIONS: Record<string, Array<{ key: string; l
     { key: 'total', label: 'Pacifista total', cost: '-2pt' },
   ],
   codigo: [
-    { key: 'conduta', label: 'Definir código', cost: '-1pt' },
+    { key: 'honra', label: 'Código de Honra', cost: '-1pt' },
+    { key: 'heroico', label: 'Código Heroico', cost: '-1pt' },
+    { key: 'cavalheirismo', label: 'Código de Cavalheirismo', cost: '-1pt' },
+    { key: 'justica', label: 'Código de Justiça', cost: '-1pt' },
+    { key: 'pacifismo', label: 'Código de Pacifismo', cost: '-1pt' },
+    { key: 'lealdade', label: 'Código de Lealdade', cost: '-1pt' },
   ],
   transtorno: [
     { key: 'fobia', label: 'Fobia', cost: '-1pt' },
