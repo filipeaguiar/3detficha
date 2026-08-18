@@ -1863,10 +1863,15 @@ export default function App() {
                 }}
                 onClick={() => {
                   if (forms.length > 1) {
-                    const nextIndex = (activeFormIndex + 1) % forms.length;
-                    setActiveFormIndex(nextIndex);
-                    if (selectedKitId === 'druida' && nextIndex > 0) {
-                      setIsWildShapeModalOpen(true);
+                    if (currentPM >= 1) {
+                      setCurrentPM(prev => prev - 1);
+                      const nextIndex = (activeFormIndex + 1) % forms.length;
+                      setActiveFormIndex(nextIndex);
+                      if (selectedKitId === 'druida' && nextIndex > 0) {
+                        setIsWildShapeModalOpen(true);
+                      }
+                    } else {
+                      alert("PM insuficiente para mudar de forma (Custo: 1 PM).");
                     }
                   }
                 }}
@@ -1915,10 +1920,15 @@ export default function App() {
                     <button
                       className="form-pill-badge"
                       onClick={() => {
-                        const nextIndex = (activeFormIndex + 1) % forms.length;
-                        setActiveFormIndex(nextIndex);
-                        if (selectedKitId === 'druida' && nextIndex > 0) {
-                          setIsWildShapeModalOpen(true);
+                        if (currentPM >= 1) {
+                          setCurrentPM(prev => prev - 1);
+                          const nextIndex = (activeFormIndex + 1) % forms.length;
+                          setActiveFormIndex(nextIndex);
+                          if (selectedKitId === 'druida' && nextIndex > 0) {
+                            setIsWildShapeModalOpen(true);
+                          }
+                        } else {
+                          alert("PM insuficiente para mudar de forma (Custo: 1 PM).");
                         }
                       }}
                       title="Clique para alternar de forma"
