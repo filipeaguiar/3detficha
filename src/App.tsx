@@ -839,7 +839,7 @@ export default function App() {
   }, [activeFormIndex, activeCharacterId, maxPV, maxPM, maxPA]);
 
   // Modificadores manuais de rolagem
-  const [manualBonusDice, setManualBonusDice] = useState<0 | 1 | 2>(0);
+  const [manualBonusDice, setManualBonusDice] = useState<-2 | -1 | 0 | 1 | 2>(0);
   const [manualCritRange, setManualCritRange] = useState(6);
 
   // Bônus e Técnicas Ativas
@@ -1502,7 +1502,8 @@ export default function App() {
     });
 
     const totalEffectiveAttribute = Math.max(0, baseAttrValue + attrModValue);
-    const diceCount = Math.max(1, Math.min(3, 1 + calculatedTotalExtraDice));
+    const totalExtraDice = calculatedTotalExtraDice;
+    const diceCount = Math.max(1, Math.min(3, 1 + Math.abs(totalExtraDice)));
     const effectiveCritRange = calculatedCritRange;
 
     try {
@@ -1538,7 +1539,14 @@ export default function App() {
         }
       }
 
-      const diceSum = rolls.reduce((a, b) => a + b, 0);
+      let diceSum = 0;
+      if (totalExtraDice > 0) {
+        diceSum = Math.max(...rolls);
+      } else if (totalExtraDice < 0) {
+        diceSum = Math.min(...rolls);
+      } else {
+        diceSum = rolls[0];
+      }
       const isCriticalFail = rolls.length > 0 && rolls.every((r) => r === 1);
       
       let rolledCrits = rolls.filter((r) => r >= effectiveCritRange).length;
@@ -2373,6 +2381,36 @@ export default function App() {
                   </div>
                 </button>
               </div>
+
+              {/* CHARACTER TRAITS */}
+              {((currentForm.advantages && currentForm.advantages.length > 0) || (currentForm.disadvantages && currentForm.disadvantages.length > 0) || (currentForm.skills && currentForm.skills.length > 0)) && (
+                <div style={{ marginTop: '1rem', display: 'flex', flexWrap: 'wrap', gap: '0.4rem', justifyContent: 'center' }}>
+                  {currentForm.advantages?.map(id => {
+                    const adv = ADVANTAGES_CATALOG.find(a => a.id === id);
+                    return adv ? (
+                      <button key={id} onClick={() => alert(`${adv.name}\n\nCusto: ${adv.cost}\n\n${adv.desc}`)} style={{ background: 'var(--accent-color)', border: 'none', color: '#000', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}>
+                        {adv.name}
+                      </button>
+                    ) : null;
+                  })}
+                  {currentForm.skills?.map(id => {
+                    const skill = SKILLS_CATALOG.find(a => a.id === id);
+                    return skill ? (
+                      <button key={id} onClick={() => alert(`${skill.name}\n\n${skill.desc}`)} style={{ background: '#33ccff', border: 'none', color: '#000', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}>
+                        {skill.name}
+                      </button>
+                    ) : null;
+                  })}
+                  {currentForm.disadvantages?.map(id => {
+                    const disadv = DISADVANTAGES_CATALOG.find(a => a.id === id);
+                    return disadv ? (
+                      <button key={id} onClick={() => alert(`${disadv.name}\n\nCusto: ${disadv.cost}\n\n${disadv.desc}`)} style={{ background: '#ff4d4d', border: 'none', color: '#fff', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}>
+                        {disadv.name}
+                      </button>
+                    ) : null;
+                  })}
+                </div>
+              )}
             
               <hr style={{ border: 'none', borderTop: '1px solid var(--border-color)', margin: '1.5rem 0' }} />
             
@@ -2381,13 +2419,14 @@ export default function App() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
                 <button 
                   className={`toggle-btn ${calculatedTotalExtraDice > 0 ? 'active' : ''}`}
-                  onClick={() => setManualBonusDice(prev => (prev >= 2 ? 0 : prev + 1) as 0 | 1 | 2)}
-                  title={`Dados na rolagem: ${1 + calculatedTotalExtraDice}D (Base: 1D + Modificadores: ${calculatedTotalExtraDice}D)`}
+                  onClick={() => setManualBonusDice(prev => (prev === 2 ? -1 : prev === -1 ? -2 : prev === -2 ? 0 : prev + 1) as any)}
+                  title={`Rolagem: ${1 + Math.abs(calculatedTotalExtraDice)}D (${calculatedTotalExtraDice > 0 ? 'Fica com o Maior' : calculatedTotalExtraDice < 0 ? 'Fica com o Pior' : 'Normal'})`}
                 >
-                  <div style={{ display: 'flex', gap: '0.2rem', justifyContent: 'center' }}>
+                  <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center', alignItems: 'center' }}>
                     <CubeIcon />
-                    {calculatedTotalExtraDice >= 1 && <CubeIcon />}
-                    {calculatedTotalExtraDice >= 2 && <CubeIcon />}
+                    <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: calculatedTotalExtraDice > 0 ? '#5EB05D' : calculatedTotalExtraDice < 0 ? '#ff4d4d' : 'inherit' }}>
+                      {calculatedTotalExtraDice === 0 ? 'Normal' : calculatedTotalExtraDice > 0 ? `+${calculatedTotalExtraDice} Ganho` : `${calculatedTotalExtraDice} Perda`}
+                    </span>
                   </div>
                 </button>
 
