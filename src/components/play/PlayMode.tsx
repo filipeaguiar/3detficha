@@ -230,8 +230,8 @@ export default function PlayMode(props: PlayModeProps) {
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
           <button className={`toggle-btn ${calculatedTotalExtraDice !== 0 ? 'active' : ''}`} onClick={() => setManualBonusDice(prev => (prev >= 2 ? 0 : (prev + 1) as 0 | 1 | 2))} title={`Rolagem: ${1 + calculatedTotalExtraDice}D (${calculatedTotalExtraDice > 0 ? 'Fica com o Maior' : 'Normal'})`}>
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', color: calculatedTotalExtraDice > 0 ? '#5EB05D' : 'inherit' }}>
-              <DiceCountIcon count={(1 + calculatedTotalExtraDice) as 1 | 2 | 3} size={16} />
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'currentColor' }}>
+              <DiceCountIcon count={(1 + calculatedTotalExtraDice) as 1 | 2 | 3} size={22} />
             </div>
           </button>
 
