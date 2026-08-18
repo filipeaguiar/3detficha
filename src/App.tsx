@@ -1980,29 +1980,6 @@ export default function App() {
                     {characterName || 'HERÓI DESCONHECIDO'}
                   </h1>
                   
-                  {/* Current Form Badge (if multiple forms exist) */}
-                  {forms.length > 1 && (
-                    <button
-                      className="form-pill-badge"
-                      onClick={() => {
-                        if (currentPM >= 1) {
-                          setCurrentPM(prev => prev - 1);
-                          const nextIndex = (activeFormIndex + 1) % forms.length;
-                          setActiveFormIndex(nextIndex);
-                          if (['druida', 'gigante_da_luz', 'guerreira_magica', 'alquimista'].includes(selectedKitId) && nextIndex > 0) {
-                            setIsTransformModalOpen(true);
-                          }
-                        } else {
-                          alert("PM insuficiente para mudar de forma (Custo: 1 PM).");
-                        }
-                      }}
-                      title="Clique para alternar de forma"
-                    >
-                      <TransformIcon size={13} />
-                      <span>{currentForm.name}</span>
-                    </button>
-                  )}
-
                   {/* Clean Kit Badge with Info Trigger */}
                   {currentKit && (
                     <button
