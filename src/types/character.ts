@@ -14,6 +14,13 @@ export type RollBonus = {
   costResource?: 'none' | 'PV' | 'PM' | 'PA';
 };
 
+export type CharacterVariantSelection = {
+  key: string;
+  label: string;
+  value?: string;
+  cost?: string;
+};
+
 export type CharacterForm = {
   id: string;
   name: string;
@@ -28,6 +35,7 @@ export type CharacterForm = {
   advantages?: string[];
   disadvantages?: string[];
   skills?: string[];
+  variantSelections?: Record<string, CharacterVariantSelection[]>;
 };
 
 export type CharacterLinkRelation = 'base' | 'form' | 'alternate';

@@ -1,0 +1,100 @@
+export const ADVANTAGE_VARIANT_OPTIONS: Record<string, Array<{ key: string; label: string; cost?: string }>> = {
+  ataque_especial: [
+    { key: 'potente', label: 'Potente' },
+    { key: 'potente_ii', label: 'Potente II' },
+    { key: 'perigoso', label: 'Perigoso' },
+    { key: 'preciso', label: 'Preciso' },
+    { key: 'choque', label: 'Choque' },
+    { key: 'titanico', label: 'Titânico' },
+  ],
+  defesa_especial: [
+    { key: 'tenaz', label: 'Tenaz' },
+    { key: 'tenaz_ii', label: 'Tenaz II' },
+    { key: 'blindada', label: 'Blindada' },
+    { key: 'esquiva', label: 'Esquiva' },
+    { key: 'bloqueio', label: 'Bloqueio' },
+    { key: 'titanica', label: 'Titânica' },
+  ],
+  alcance: [
+    { key: 'perto', label: 'Até Perto', cost: '1pt' },
+    { key: 'longe', label: 'Até Longe', cost: '2pt' },
+  ],
+  imune: [
+    { key: 'anfibio', label: 'Anfíbio' },
+    { key: 'resiliente', label: 'Resiliente' },
+  ],
+  sentido: [
+    { key: 'infravisao', label: 'Infravisão' },
+    { key: 'radar', label: 'Radar' },
+    { key: 'raio_x', label: 'Raio X' },
+  ],
+  inimigo: [
+    { key: 'tipo', label: 'Definir tipo de inimigo' },
+  ],
+  inventario: [
+    { key: 'nivel_1', label: 'Nível 1', cost: '1pt' },
+    { key: 'nivel_2', label: 'Nível 2', cost: '2pt' },
+    { key: 'nivel_3', label: 'Nível 3', cost: '3pt' },
+  ],
+  maestria: [
+    { key: 'pericia', label: 'Definir perícia' },
+  ],
+  mentor: [
+    { key: 'pericia', label: 'Definir perícia' },
+  ],
+  punicao: [
+    { key: 'leve', label: 'Leve', cost: '1pt' },
+    { key: 'grave', label: 'Grave', cost: '2pt' },
+  ],
+  transformacao: [
+    { key: 'forma_menor', label: 'Forma menor', cost: '1pt' },
+    { key: 'forma_maior', label: 'Forma maior', cost: '2pt' },
+  ],
+  artefato: [
+    { key: 'simples', label: 'Artefato simples' },
+    { key: 'maior', label: 'Artefato maior' },
+  ],
+  grimorio: [
+    { key: 'basico', label: 'Grimório básico' },
+    { key: 'avancado', label: 'Grimório avançado' },
+  ],
+};
+
+export const DISADVANTAGE_VARIANT_OPTIONS: Record<string, Array<{ key: string; label: string; cost?: string }>> = {
+  utensilio: [
+    { key: 'comum', label: 'Utensílio comum', cost: '-1pt' },
+    { key: 'vital', label: 'Utensílio vital', cost: '-2pt' },
+  ],
+  restricao: [
+    { key: 'leve', label: 'Restrição leve', cost: '-1pt' },
+    { key: 'grave', label: 'Restrição grave', cost: '-2pt' },
+  ],
+  fraqueza: [
+    { key: 'leve', label: 'Fraqueza leve', cost: '-1pt' },
+    { key: 'grave', label: 'Fraqueza grave', cost: '-2pt' },
+  ],
+  aura: [
+    { key: 'leve', label: 'Aura leve', cost: '-1pt' },
+    { key: 'grave', label: 'Aura grave', cost: '-2pt' },
+  ],
+  assombrado: [
+    { key: 'leve', label: 'Assombrado leve', cost: '-1pt' },
+    { key: 'grave', label: 'Assombrado grave', cost: '-2pt' },
+  ],
+  maldicao: [
+    { key: 'leve', label: 'Maldição leve', cost: '-1pt' },
+    { key: 'grave', label: 'Maldição grave', cost: '-2pt' },
+  ],
+  pacifista: [
+    { key: 'parcial', label: 'Pacifista parcial', cost: '-1pt' },
+    { key: 'total', label: 'Pacifista total', cost: '-2pt' },
+  ],
+  codigo: [
+    { key: 'conduta', label: 'Definir código' },
+  ],
+  transtorno: [
+    { key: 'fobia', label: 'Fobia' },
+    { key: 'mitomania', label: 'Mitomania' },
+    { key: 'compulsao', label: 'Compulsão' },
+  ],
+};
