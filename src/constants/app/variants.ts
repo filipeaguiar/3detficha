@@ -29,7 +29,8 @@ export const ADVANTAGE_VARIANT_OPTIONS: Record<string, Array<{ key: string; labe
     { key: 'raio_x', label: 'Raio X' },
   ],
   inimigo: [
-    { key: 'tipo', label: 'Definir tipo de inimigo' },
+    { key: 'comum', label: 'Inimigo comum', cost: '1pt' },
+    { key: 'maior', label: 'Inimigo maior', cost: '2pt' },
   ],
   inventario: [
     { key: 'nivel_1', label: 'Nível 1', cost: '1pt' },
@@ -51,12 +52,27 @@ export const ADVANTAGE_VARIANT_OPTIONS: Record<string, Array<{ key: string; labe
     { key: 'forma_maior', label: 'Forma maior', cost: '2pt' },
   ],
   artefato: [
-    { key: 'simples', label: 'Artefato simples' },
-    { key: 'maior', label: 'Artefato maior' },
+    { key: 'simples', label: 'Artefato simples', cost: '1pt' },
+    { key: 'maior', label: 'Artefato maior', cost: '2pt' },
+    { key: 'lendario', label: 'Artefato lendário', cost: '3pt' },
   ],
   grimorio: [
-    { key: 'basico', label: 'Grimório básico' },
-    { key: 'avancado', label: 'Grimório avançado' },
+    { key: 'basico', label: 'Grimório básico', cost: '1pt' },
+    { key: 'avancado', label: 'Grimório avançado', cost: '2pt' },
+    { key: 'supremo', label: 'Grimório supremo', cost: '3pt' },
+  ],
+  invisivel: [
+    { key: 'parcial', label: 'Invisibilidade parcial', cost: '1pt' },
+    { key: 'total', label: 'Invisibilidade total', cost: '2pt' },
+  ],
+  regeneracao: [
+    { key: 'leve', label: 'Regeneração leve', cost: '1pt' },
+    { key: 'forte', label: 'Regeneração forte', cost: '2pt' },
+  ],
+  riqueza: [
+    { key: 'rica', label: 'Riqueza', cost: '2pt' },
+    { key: 'muito_rica', label: 'Muita riqueza', cost: '4pt' },
+    { key: 'milionaria', label: 'Riqueza milionária', cost: '6pt' },
   ],
 };
 
@@ -90,11 +106,11 @@ export const DISADVANTAGE_VARIANT_OPTIONS: Record<string, Array<{ key: string; l
     { key: 'total', label: 'Pacifista total', cost: '-2pt' },
   ],
   codigo: [
-    { key: 'conduta', label: 'Definir código' },
+    { key: 'conduta', label: 'Definir código', cost: '-1pt' },
   ],
   transtorno: [
-    { key: 'fobia', label: 'Fobia' },
-    { key: 'mitomania', label: 'Mitomania' },
-    { key: 'compulsao', label: 'Compulsão' },
+    { key: 'fobia', label: 'Fobia', cost: '-1pt' },
+    { key: 'mitomania', label: 'Mitomania', cost: '-1pt' },
+    { key: 'compulsao', label: 'Compulsão', cost: '-1pt' },
   ],
 };
