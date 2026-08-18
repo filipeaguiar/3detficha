@@ -1,4 +1,5 @@
 import { ADVANTAGES_CATALOG, DISADVANTAGES_CATALOG } from '../constants/advantagesData';
+import { ADVANTAGE_VARIANT_OPTIONS, DISADVANTAGE_VARIANT_OPTIONS } from '../constants/app/variants';
 import type { CharacterForm, CharacterLinkGroup, CharacterSheet, KitPower, RollBonus } from '../types/character';
 
 export function normalizeRollBonus(raw: any): RollBonus {
@@ -190,6 +191,14 @@ export function getKitPowerModifier(power: KitPower) {
   } as const;
 }
 
+function getFirstNumericCost(cost?: string): number {
+  if (!cost) return 0;
+  const negativeMatch = cost.match(/-\d+/);
+  if (negativeMatch) return parseInt(negativeMatch[0], 10);
+  const positiveMatch = cost.match(/\d+/);
+  return positiveMatch ? parseInt(positiveMatch[0], 10) : 0;
+}
+
 export function calculatePoints(currentForm: CharacterForm): number {
   let total = currentForm.poder + currentForm.habilidade + currentForm.resistencia;
 
@@ -197,25 +206,21 @@ export function calculatePoints(currentForm: CharacterForm): number {
 
   if (currentForm.advantages) {
     currentForm.advantages.forEach((advId: string) => {
-      const adv = ADVANTAGES_CATALOG.find(a => a.id === advId);
-      if (adv) {
-        const match = adv.cost.match(/\d+/);
-        if (match) total += parseInt(match[0], 10);
-      }
+      const [baseId, variantKey] = advId.split('::');
+      const adv = ADVANTAGES_CATALOG.find(a => a.id === baseId);
+      const variant = variantKey ? ADVANTAGE_VARIANT_OPTIONS[baseId]?.find(v => v.key === variantKey) : undefined;
+      const numericCost = getFirstNumericCost(variant?.cost || adv?.cost);
+      total += numericCost;
     });
   }
 
   if (currentForm.disadvantages) {
     currentForm.disadvantages.forEach((disId: string) => {
-      const dis = DISADVANTAGES_CATALOG.find(d => d.id === disId);
-      if (dis) {
-        const match = dis.cost.match(/-\d+/);
-        if (match) total += parseInt(match[0], 10);
-        else {
-          const matchPos = dis.cost.match(/\d+/);
-          if (matchPos) total -= parseInt(matchPos[0], 10);
-        }
-      }
+      const [baseId, variantKey] = disId.split('::');
+      const dis = DISADVANTAGES_CATALOG.find(d => d.id === baseId);
+      const variant = variantKey ? DISADVANTAGE_VARIANT_OPTIONS[baseId]?.find(v => v.key === variantKey) : undefined;
+      const numericCost = getFirstNumericCost(variant?.cost || dis?.cost);
+      total += numericCost;
     });
   }
 
