@@ -7,6 +7,7 @@ import { ArrowLeftIcon, BedIcon, CheckIcon, ChevronDownIcon, ChevronUpIcon, Clos
 type AppModalsProps = {
   isDrawerOpen: boolean;
   setIsDrawerOpen: (open: boolean) => void;
+  isDrawerClosingFast: boolean;
   accentColor: string;
   currentForm: CharacterForm;
   characterName: string;
@@ -75,7 +76,7 @@ type AppModalsProps = {
 
 export default function AppModals(props: AppModalsProps) {
   const {
-    isDrawerOpen, setIsDrawerOpen, accentColor, currentForm, characterName, currentKit, setIsSheetsModalOpen,
+    isDrawerOpen, setIsDrawerOpen, isDrawerClosingFast, accentColor, currentForm, characterName, currentKit, setIsSheetsModalOpen,
     handleFullRest, handleQuickRest, handleResetScene, updateActiveSheet, soundOn, handleEdit,
     isKitSelectModalOpen, setIsKitSelectModalOpen, filteredKits, kitSearchQuery, setKitSearchQuery,
     selectedNucleoFilter, setSelectedNucleoFilter, selectedKitId, forms, activeFormIndex, updateActiveSheetForms,
@@ -92,7 +93,7 @@ export default function AppModals(props: AppModalsProps) {
     <>
       {isDrawerOpen && (
         <div className="drawer-backdrop fade-in" onClick={() => setIsDrawerOpen(false)}>
-          <div className="drawer-panel slide-right" onClick={(e) => e.stopPropagation()}>
+          <div className={`drawer-panel ${isDrawerClosingFast ? '' : 'slide-right'}`} onClick={(e) => e.stopPropagation()}>
             <div className="drawer-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
                 <div className="drawer-avatar-thumb" style={{ borderColor: accentColor }}>

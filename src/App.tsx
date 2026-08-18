@@ -19,6 +19,7 @@ export default function App() {
   
   // Hidden Drawer Menu state
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isDrawerClosingFast, setIsDrawerClosingFast] = useState(false);
 
   // Modals state
   const [isSheetsModalOpen, setIsSheetsModalOpen] = useState(false);
@@ -200,11 +201,17 @@ export default function App() {
   const { diceBoxRef, clearDiceTimeoutRef, clearDice } = useDiceBox(mode, accentColor);
 
   const handleEdit = () => {
+    setIsDrawerClosingFast(true);
     setIsDrawerOpen(false);
-    setMode('edit');
-    clearDice();
-    setIsModalOpen(false);
-    setIsClosing(false);
+    requestAnimationFrame(() => {
+      setMode('edit');
+      clearDice();
+      setIsModalOpen(false);
+      setIsClosing(false);
+      requestAnimationFrame(() => {
+        setIsDrawerClosingFast(false);
+      });
+    });
   };
 
   // Form management for active sheet
@@ -836,6 +843,7 @@ export default function App() {
       <AppModals
         isDrawerOpen={isDrawerOpen}
         setIsDrawerOpen={setIsDrawerOpen}
+        isDrawerClosingFast={isDrawerClosingFast}
         accentColor={accentColor}
         currentForm={currentForm}
         characterName={characterName}
