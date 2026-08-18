@@ -693,7 +693,7 @@ export default function App() {
   const [isKitSelectModalOpen, setIsKitSelectModalOpen] = useState(false);
   const [isKitInfoModalOpen, setIsKitInfoModalOpen] = useState(false);
   const [isPresetModalOpen, setIsPresetModalOpen] = useState(false);
-  const [isWildShapeModalOpen, setIsWildShapeModalOpen] = useState(false);
+  const [isTransformModalOpen, setIsTransformModalOpen] = useState(false);
   const [isEditingStats, setIsEditingStats] = useState(false);
   const [editingBonusId, setEditingBonusId] = useState<string | null>(null);
 
@@ -1728,7 +1728,7 @@ export default function App() {
                   <button
                     className="control-btn"
                     style={{ width: 'auto', padding: '0.2rem 0.6rem', fontSize: '0.75rem', borderColor: '#5EB05D', color: '#5EB05D' }}
-                    onClick={() => setIsWildShapeModalOpen(true)}
+                    onClick={() => setIsTransformModalOpen(true)}
                   >
                     Escolher Vantagens
                   </button>
@@ -1867,8 +1867,8 @@ export default function App() {
                       setCurrentPM(prev => prev - 1);
                       const nextIndex = (activeFormIndex + 1) % forms.length;
                       setActiveFormIndex(nextIndex);
-                      if (selectedKitId === 'druida' && nextIndex > 0) {
-                        setIsWildShapeModalOpen(true);
+                      if (['druida', 'gigante_da_luz', 'guerreira_magica', 'alquimista'].includes(selectedKitId) && nextIndex > 0) {
+                        setIsTransformModalOpen(true);
                       }
                     } else {
                       alert("PM insuficiente para mudar de forma (Custo: 1 PM).");
@@ -1924,8 +1924,8 @@ export default function App() {
                           setCurrentPM(prev => prev - 1);
                           const nextIndex = (activeFormIndex + 1) % forms.length;
                           setActiveFormIndex(nextIndex);
-                          if (selectedKitId === 'druida' && nextIndex > 0) {
-                            setIsWildShapeModalOpen(true);
+                          if (['druida', 'gigante_da_luz', 'guerreira_magica', 'alquimista'].includes(selectedKitId) && nextIndex > 0) {
+                            setIsTransformModalOpen(true);
                           }
                         } else {
                           alert("PM insuficiente para mudar de forma (Custo: 1 PM).");
@@ -2002,7 +2002,7 @@ export default function App() {
                   <button
                     className="kit-compact-power-btn available"
                     style={{ borderColor: '#5EB05D', color: '#5EB05D', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
-                    onClick={() => setIsWildShapeModalOpen(true)}
+                    onClick={() => setIsTransformModalOpen(true)}
                     title="Configurar as 2 vantagens extras da Forma Selvagem"
                   >
                     <LeafIcon size={14} />
@@ -2620,77 +2620,168 @@ export default function App() {
       )}
 
       {/* Modal de Seleção de Vantagens da Forma Selvagem (Druida) */}
-      {isWildShapeModalOpen && (
+      {/* Modal de Interação de Transformação (Dependente de Kit) */}
+      {isTransformModalOpen && (
         <div className="modal-overlay pop-in" style={{ zIndex: 370, alignItems: 'center' }} onClick={(e) => {
-          if (e.target === e.currentTarget) setIsWildShapeModalOpen(false);
+          if (e.target === e.currentTarget) setIsTransformModalOpen(false);
         }}>
           <div className="modal-content" style={{ 
             borderRadius: '4px',
-            borderTop: '2px solid #5EB05D',
-            borderBottom: '2px solid #5EB05D',
+            borderTop: '2px solid var(--accent-color)',
+            borderBottom: '2px solid var(--accent-color)',
             background: 'rgba(15, 26, 18, 0.95)',
-            boxShadow: '0 0 25px rgba(94, 176, 93, 0.3)',
+            boxShadow: '0 0 25px var(--accent-transparent)',
             maxWidth: '500px',
             width: '90%',
             maxHeight: '85vh',
             overflowY: 'auto'
           }}>
-            <button className="modal-close" onClick={() => setIsWildShapeModalOpen(false)}><CloseIcon size={18} /></button>
-            <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', marginBottom: '0.3rem', color: '#5EB05D', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <LeafIcon size={22} /> FORMA SELVAGEM: ESCOLHA 2 VANTAGENS
-            </h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.2rem' }}>
-              Pelo poder do Kit Druida, cada vez que entra em Forma Selvagem você adquire 2 vantagens gratuitas:
-            </p>
+            <button className="modal-close" onClick={() => setIsTransformModalOpen(false)}><CloseIcon size={18} /></button>
+            
+            {selectedKitId === 'druida' && (
+              <>
+                <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', marginBottom: '0.3rem', color: '#5EB05D', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <LeafIcon size={22} /> FORMA SELVAGEM: ESCOLHA 2 VANTAGENS
+                </h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.2rem' }}>
+                  Pelo poder do Kit Druida, cada vez que entra em Forma Selvagem você adquire 2 vantagens gratuitas:
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {DRUID_WILD_SHAPE_OPTIONS.map((opt) => {
+                    const currentSelected = currentForm.wildShapeAdvantages || [];
+                    const isChecked = currentSelected.includes(opt.name);
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {DRUID_WILD_SHAPE_OPTIONS.map((opt) => {
-                const currentSelected = currentForm.wildShapeAdvantages || [];
-                const isChecked = currentSelected.includes(opt.name);
-
-                return (
-                  <div
-                    key={opt.name}
-                    className={`wild-shape-card-item ${isChecked ? 'selected' : ''}`}
-                    onClick={() => {
-                      if (isChecked) {
-                        updateCurrentForm({ wildShapeAdvantages: currentSelected.filter(n => n !== opt.name) });
-                      } else {
-                        if (currentSelected.length >= 2) {
-                          updateCurrentForm({ wildShapeAdvantages: [currentSelected[1], opt.name] });
-                        } else {
-                          updateCurrentForm({ wildShapeAdvantages: [...currentSelected, opt.name] });
-                        }
-                      }
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontWeight: 'bold', color: isChecked ? '#5EB05D' : '#fff', fontSize: '1.1rem', fontFamily: 'Bebas Neue, sans-serif', letterSpacing: '0.5px' }}>
-                        {opt.name}
-                      </span>
-                      <span style={{ fontSize: '0.85rem', color: isChecked ? '#5EB05D' : 'var(--text-muted)' }}>
-                        {isChecked ? (
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                            <CheckIcon size={12} /> SELECIONADO
+                    return (
+                      <div
+                        key={opt.name}
+                        className={`wild-shape-card-item ${isChecked ? 'selected' : ''}`}
+                        onClick={() => {
+                          if (isChecked) {
+                            updateCurrentForm({ wildShapeAdvantages: currentSelected.filter(n => n !== opt.name) });
+                          } else {
+                            if (currentSelected.length >= 2) {
+                              updateCurrentForm({ wildShapeAdvantages: [currentSelected[1], opt.name] });
+                            } else {
+                              updateCurrentForm({ wildShapeAdvantages: [...currentSelected, opt.name] });
+                            }
+                          }
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontWeight: 'bold', color: isChecked ? '#5EB05D' : '#fff', fontSize: '1.1rem', fontFamily: 'Bebas Neue, sans-serif', letterSpacing: '0.5px' }}>
+                            {opt.name}
                           </span>
-                        ) : 'Clique p/ escolher'}
-                      </span>
-                    </div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                      {opt.desc}
+                          <span style={{ fontSize: '0.85rem', color: isChecked ? '#5EB05D' : 'var(--text-muted)' }}>
+                            {isChecked ? (
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                                <CheckIcon size={12} /> SELECIONADO
+                              </span>
+                            ) : 'Clique p/ escolher'}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                          {opt.desc}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <button className="btn-roll" style={{ marginTop: '1.5rem', backgroundColor: '#5EB05D', color: '#000' }} onClick={() => setIsTransformModalOpen(false)}>
+                  Confirmar Forma Selvagem
+                </button>
+              </>
+            )}
+
+            {selectedKitId === 'gigante_da_luz' && (
+              <>
+                <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', marginBottom: '0.3rem', color: '#FFD700', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <ZapIcon /> TRANSFORMAÇÃO GIGANTE
+                </h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.2rem' }}>
+                  Você entrou em Escala Kiodai! Sua forma recebe automaticamente as vantagens: <strong>Alcance</strong>, <strong>Golpe Final</strong> e <strong>Voo</strong>.
+                </p>
+                <button className="btn-roll" style={{ marginTop: '1rem', backgroundColor: '#FFD700', color: '#000' }} onClick={() => {
+                  updateCurrentForm({ wildShapeAdvantages: ['Alcance', 'Golpe Final', 'Voo'] });
+                  setIsTransformModalOpen(false);
+                }}>
+                  Entendido!
+                </button>
+              </>
+            )}
+
+            {selectedKitId === 'guerreira_magica' && (
+              <>
+                <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', marginBottom: '0.3rem', color: '#FF69B4', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <TransformIcon size={22} /> TRANSFORMAÇÃO RADIANTE
+                </h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.2rem' }}>
+                  Você vestiu seu traje mágico de combate! Nesta forma, você pode pagar <strong>2 PM</strong> para ter Ganho em um teste de Mística. Deseja investir PMs agora para garantir este Ganho na próxima rolagem?
+                </p>
+                <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                  <button className="btn-roll" style={{ flex: 1, backgroundColor: '#FF69B4', color: '#000' }} onClick={() => {
+                    if (currentPM >= 2) {
+                      setCurrentPM(prev => prev - 2);
+                      setManualBonusDice(1);
+                      setIsTransformModalOpen(false);
+                    } else {
+                      alert('PM insuficiente para ativar o bônus!');
+                    }
+                  }}>
+                    Ativar Ganho (-2 PM)
+                  </button>
+                  <button className="btn-roll" style={{ flex: 1, backgroundColor: 'transparent', border: '1px solid #FF69B4', color: '#FF69B4' }} onClick={() => setIsTransformModalOpen(false)}>
+                    Não, apenas transformar
+                  </button>
+                </div>
+              </>
+            )}
+
+            {selectedKitId === 'alquimista' && (
+              <>
+                <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', marginBottom: '0.3rem', color: '#9B59B6', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <TransformIcon size={22} /> DIAGRAMA PESSOAL
+                </h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.2rem' }}>
+                  Redistribua seus atributos base como quiser para esta forma (Limite total: {forms[0].poder + forms[0].habilidade + forms[0].resistencia}):
+                </p>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '4px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontWeight: 'bold' }}>Poder</span>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                      <button className="btn-square" onClick={() => updateCurrentForm({ poder: Math.max(0, currentForm.poder - 1) })} style={{ background: '#333', border: 'none', color: '#fff', width: '30px', height: '30px', borderRadius: '4px', cursor: 'pointer' }}>-</button>
+                      <span style={{ width: '20px', textAlign: 'center' }}>{currentForm.poder}</span>
+                      <button className="btn-square" onClick={() => updateCurrentForm({ poder: currentForm.poder + 1 })} style={{ background: '#333', border: 'none', color: '#fff', width: '30px', height: '30px', borderRadius: '4px', cursor: 'pointer' }}>+</button>
                     </div>
                   </div>
-                );
-              })}
-            </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontWeight: 'bold' }}>Habilidade</span>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                      <button className="btn-square" onClick={() => updateCurrentForm({ habilidade: Math.max(0, currentForm.habilidade - 1) })} style={{ background: '#333', border: 'none', color: '#fff', width: '30px', height: '30px', borderRadius: '4px', cursor: 'pointer' }}>-</button>
+                      <span style={{ width: '20px', textAlign: 'center' }}>{currentForm.habilidade}</span>
+                      <button className="btn-square" onClick={() => updateCurrentForm({ habilidade: currentForm.habilidade + 1 })} style={{ background: '#333', border: 'none', color: '#fff', width: '30px', height: '30px', borderRadius: '4px', cursor: 'pointer' }}>+</button>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontWeight: 'bold' }}>Resistência</span>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                      <button className="btn-square" onClick={() => updateCurrentForm({ resistencia: Math.max(0, currentForm.resistencia - 1) })} style={{ background: '#333', border: 'none', color: '#fff', width: '30px', height: '30px', borderRadius: '4px', cursor: 'pointer' }}>-</button>
+                      <span style={{ width: '20px', textAlign: 'center' }}>{currentForm.resistencia}</span>
+                      <button className="btn-square" onClick={() => updateCurrentForm({ resistencia: currentForm.resistencia + 1 })} style={{ background: '#333', border: 'none', color: '#fff', width: '30px', height: '30px', borderRadius: '4px', cursor: 'pointer' }}>+</button>
+                    </div>
+                  </div>
+                </div>
 
-            <button
-              className="btn-roll"
-              style={{ marginTop: '1.5rem', backgroundColor: '#5EB05D', color: '#000' }}
-              onClick={() => setIsWildShapeModalOpen(false)}
-            >
-              Confirmar Forma Selvagem
-            </button>
+                <div style={{ marginTop: '0.8rem', textAlign: 'center', fontSize: '0.85rem', color: (currentForm.poder + currentForm.habilidade + currentForm.resistencia) > (forms[0].poder + forms[0].habilidade + forms[0].resistencia) ? '#ff4d4d' : 'var(--text-muted)' }}>
+                  Total usado: {currentForm.poder + currentForm.habilidade + currentForm.resistencia} / {forms[0].poder + forms[0].habilidade + forms[0].resistencia}
+                </div>
+
+                <button className="btn-roll" style={{ marginTop: '1.5rem', backgroundColor: '#9B59B6', color: '#000' }} onClick={() => setIsTransformModalOpen(false)}>
+                  Confirmar Diagrama
+                </button>
+              </>
+            )}
+
           </div>
         </div>
       )}
