@@ -3,7 +3,7 @@ import { ADVANTAGES_CATALOG, DISADVANTAGES_CATALOG } from '../../constants/advan
 import { SKILLS_CATALOG } from '../../constants/skillsData';
 import { getBonusSubtitle } from '../../utils/character';
 import type { CharacterForm, CharacterKit, CharacterSheet, RollBonus } from '../../types/character';
-import { BookIcon, CameraIcon, CheckIcon, CloseIcon, LeafIcon, PencilIcon, PlusIcon, TabAdvantagesIcon, TabAttributesIcon, TabConceptIcon, TabSkillsIcon, TabTechniquesIcon, TrashIcon, UsersIcon } from '../common/Icons';
+import { BookIcon, CameraIcon, CheckIcon, CloseIcon, LeafIcon, PencilIcon, PlusIcon, TabAdvantagesIcon, TabAttributesIcon, TabConceptIcon, TabSkillsIcon, TabTechniquesIcon, TrashIcon, UsersIcon, WandSparklesIcon } from '../common/Icons';
 
 export type EditorTab = 'concept' | 'attributes' | 'advantages' | 'skills' | 'techniques';
 
@@ -335,7 +335,7 @@ export default function CharacterEditor(props: CharacterEditorProps) {
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                       <strong style={{ fontSize: '1.1rem', color: isSelected ? 'var(--accent-color)' : '#fff' }}>
-                        {isSelected && '✓ '} {adv.name}
+                        {isSelected && <CheckIcon size={14} />} {adv.name}
                       </strong>
                       <span style={{ fontSize: '0.8rem', background: isSelected ? 'var(--accent-color)' : 'var(--surface-hover)', color: isSelected ? '#000' : 'var(--text-muted)', border: '1px solid var(--border-color)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>{adv.cost}</span>
                     </div>
@@ -370,7 +370,7 @@ export default function CharacterEditor(props: CharacterEditorProps) {
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                       <strong style={{ fontSize: '1.1rem', color: isSelected ? '#ff4d4d' : '#fff' }}>
-                        {isSelected && '✓ '} {disadv.name}
+                        {isSelected && <CheckIcon size={14} />} {disadv.name}
                       </strong>
                       <span style={{ fontSize: '0.8rem', background: isSelected ? '#ff4d4d' : 'var(--surface-hover)', color: isSelected ? '#000' : 'var(--text-muted)', border: '1px solid var(--border-color)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>{disadv.cost}</span>
                     </div>
@@ -409,7 +409,7 @@ export default function CharacterEditor(props: CharacterEditorProps) {
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
                   <strong style={{ fontSize: '1.1rem', color: isSelected ? 'var(--accent-color)' : '#fff' }}>
-                    {isSelected && '✓ '} {skill.name}
+                    {isSelected && <CheckIcon size={14} />} {skill.name}
                   </strong>
                   <span style={{ fontSize: '0.7rem', background: isSelected ? 'var(--accent-color)' : 'var(--surface-hover)', color: isSelected ? '#000' : 'var(--text-muted)', border: '1px solid var(--border-color)', padding: '2px 4px', borderRadius: '4px', fontWeight: 'bold' }}>1pt</span>
                 </div>
@@ -473,7 +473,7 @@ export default function CharacterEditor(props: CharacterEditorProps) {
         </div>
         {selectedKitId === 'mago' && (
           <button className="bonus-add-btn" onClick={() => setIsPrepMagicModalOpen(true)} style={{ marginTop: '1rem', borderColor: '#33ccff', color: '#33ccff', width: '100%' }}>
-            🪄 Preparar Magia (Mago)
+            <WandSparklesIcon size={16} /> Preparar Magia (Mago)
           </button>
         )}
       </div>

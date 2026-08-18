@@ -3,7 +3,7 @@ import { SKILLS_CATALOG } from '../../constants/skillsData';
 import { getBonusSubtitle, getKitPowerModifier } from '../../utils/character';
 import type { CharacterForm, CharacterKit, KitPower, RollBonus } from '../../types/character';
 import SegmentedBar from '../common/SegmentedBar';
-import { CheckIcon, CubeIcon, HabilidadeIcon, InfoIcon, LeafIcon, MenuIcon, PoderIcon, ResistenciaIcon, TransformIcon } from '../common/Icons';
+import { CheckIcon, CubeIcon, HabilidadeIcon, InfoIcon, LeafIcon, MaskIcon, MenuIcon, PoderIcon, ResistenciaIcon, SkillsIcon, SparklesIcon, TransformIcon } from '../common/Icons';
 
 type PlayModeProps = {
   characterName: string;
@@ -211,15 +211,15 @@ export default function PlayMode(props: PlayModeProps) {
           <div style={{ marginTop: '1rem', display: 'flex', flexWrap: 'wrap', gap: '0.4rem', justifyContent: 'center' }}>
             {currentForm.advantages?.map(id => {
               const adv = ADVANTAGES_CATALOG.find(a => a.id === id);
-              return adv ? <button key={id} onClick={() => alert(`${adv.name}\n\nCusto: ${adv.cost}\n\n${adv.desc}`)} style={{ background: 'var(--accent-color)', border: 'none', color: '#000', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}>{adv.name}</button> : null;
+              return adv ? <button key={id} onClick={() => alert(`${adv.name}\n\nCusto: ${adv.cost}\n\n${adv.desc}`)} style={{ background: 'var(--accent-color)', border: 'none', color: '#000', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}><SparklesIcon size={12} />{adv.name}</button> : null;
             })}
             {currentForm.skills?.map(id => {
               const skill = SKILLS_CATALOG.find(a => a.id === id);
-              return skill ? <button key={id} onClick={() => alert(`${skill.name}\n\n${skill.desc}`)} style={{ background: '#33ccff', border: 'none', color: '#000', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}>{skill.name}</button> : null;
+              return skill ? <button key={id} onClick={() => alert(`${skill.name}\n\n${skill.desc}`)} style={{ background: '#33ccff', border: 'none', color: '#000', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}><SkillsIcon size={12} />{skill.name}</button> : null;
             })}
             {currentForm.disadvantages?.map(id => {
               const disadv = DISADVANTAGES_CATALOG.find(a => a.id === id);
-              return disadv ? <button key={id} onClick={() => alert(`${disadv.name}\n\nCusto: ${disadv.cost}\n\n${disadv.desc}`)} style={{ background: '#ff4d4d', border: 'none', color: '#fff', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}>{disadv.name}</button> : null;
+              return disadv ? <button key={id} onClick={() => alert(`${disadv.name}\n\nCusto: ${disadv.cost}\n\n${disadv.desc}`)} style={{ background: '#ff4d4d', border: 'none', color: '#fff', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}><MaskIcon size={12} />{disadv.name}</button> : null;
             })}
           </div>
         )}
