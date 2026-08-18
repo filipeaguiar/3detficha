@@ -37,6 +37,9 @@ export type CharacterForm = {
   maisMana: number;
   rollBonuses: RollBonus[];
   wildShapeAdvantages?: string[]; // Druid chosen advantages
+  advantages?: string[];
+  disadvantages?: string[];
+  skills?: string[];
 };
 
 export type CharacterSheet = {
@@ -1609,6 +1612,40 @@ export default function App() {
     return currentKit.powers.filter(p => p.type === 'per_scene' || p.type === 'per_session' || p.type === 'buff');
   }, [currentKit]);
 
+
+  // CALCULATOR
+  const calculatePoints = () => {
+    let total = poder + habilidade + resistencia;
+    
+    if (currentForm.skills) total += currentForm.skills.length;
+    
+    if (currentForm.advantages) {
+      currentForm.advantages.forEach((advId: string) => {
+        const adv = ADVANTAGES_CATALOG.find(a => a.id === advId);
+        if (adv) {
+          const match = adv.cost.match(/\d+/);
+          if (match) total += parseInt(match[0], 10);
+        }
+      });
+    }
+
+    if (currentForm.disadvantages) {
+      currentForm.disadvantages.forEach((disId: string) => {
+        const dis = DISADVANTAGES_CATALOG.find(d => d.id === disId);
+        if (dis) {
+          const match = dis.cost.match(/-\d+/);
+          if (match) total += parseInt(match[0], 10);
+          else {
+             const matchPos = dis.cost.match(/\d+/);
+             if (matchPos) total -= parseInt(matchPos[0], 10);
+          }
+        }
+      });
+    }
+    return total;
+  };
+
+  const totalPoints = calculatePoints();
   return (
     <>
       <div id="dice-box" style={{ visibility: mode === 'play' ? 'visible' : 'hidden' }}></div>
@@ -1633,6 +1670,14 @@ export default function App() {
             
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
               <h1 className="panel-title" style={{ margin: 0 }}>Cadastro da Ficha</h1>
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{ background: 'var(--surface-color)', padding: '0.4rem 0.8rem', borderRadius: 'var(--radius)', border: `1px solid ${totalPoints > 10 ? 'var(--danger-color)' : 'var(--border-color)'}` }}>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginRight: '0.5rem' }}>PONTOS:</span>
+                  <strong style={{ fontSize: '1.2rem', color: totalPoints > 10 ? 'var(--danger-color)' : 'var(--accent-color)', fontFamily: 'Bebas Neue, sans-serif' }}>
+                    {totalPoints} / 10
+                  </strong>
+                </div>
               <button
                 className="control-btn"
                 style={{ width: 'auto', padding: '0.4rem 0.8rem', fontSize: '0.85rem', borderColor: 'var(--accent-color)', color: 'var(--accent-color)' }}
@@ -1640,6 +1685,7 @@ export default function App() {
               >
                 <UsersIcon /> Trocar Ficha
               </button>
+              </div>
             </div>
             
             {/* Tabs Header */}
@@ -1916,30 +1962,76 @@ export default function App() {
                 <div>
                   <h3 style={{ color: 'var(--accent-color)', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>Vantagens</h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginTop: '1rem' }}>
-                    {ADVANTAGES_CATALOG.map(adv => (
-                      <div key={adv.id} style={{ background: 'var(--surface-hover)', padding: '1rem', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                          <strong style={{ fontSize: '1.1rem', color: '#fff' }}>{adv.name}</strong>
-                          <span style={{ fontSize: '0.8rem', background: 'var(--accent-color)', color: '#000', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>{adv.cost}</span>
+                    {ADVANTAGES_CATALOG.map(adv => {
+                      const isSelected = currentForm.advantages?.includes(adv.id);
+                      return (
+                        <div 
+                          key={adv.id} 
+                          onClick={() => {
+                            const current = currentForm.advantages || [];
+                            if (isSelected) {
+                              updateCurrentForm({ advantages: current.filter((id: string) => id !== adv.id) });
+                            } else {
+                              updateCurrentForm({ advantages: [...current, adv.id] });
+                            }
+                          }}
+                          style={{ 
+                            background: isSelected ? 'rgba(0, 255, 0, 0.1)' : 'var(--surface-hover)', 
+                            padding: '1rem', 
+                            borderRadius: '4px', 
+                            border: `1px solid ${isSelected ? 'var(--accent-color)' : 'var(--border-color)'}`,
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                            <strong style={{ fontSize: '1.1rem', color: isSelected ? 'var(--accent-color)' : '#fff' }}>
+                              {isSelected && '✓ '} {adv.name}
+                            </strong>
+                            <span style={{ fontSize: '0.8rem', background: isSelected ? 'var(--accent-color)' : 'var(--surface-hover)', color: isSelected ? '#000' : 'var(--text-muted)', border: '1px solid var(--border-color)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>{adv.cost}</span>
+                          </div>
+                          <p style={{ margin: 0, fontSize: '0.85rem', color: isSelected ? '#fff' : 'var(--text-muted)' }}>{adv.desc}</p>
                         </div>
-                        <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>{adv.desc}</p>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 
                 <div>
                   <h3 style={{ color: '#ff4d4d', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>Desvantagens</h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginTop: '1rem' }}>
-                    {DISADVANTAGES_CATALOG.map(disadv => (
-                      <div key={disadv.id} style={{ background: 'var(--surface-hover)', padding: '1rem', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                          <strong style={{ fontSize: '1.1rem', color: '#fff' }}>{disadv.name}</strong>
-                          <span style={{ fontSize: '0.8rem', background: '#ff4d4d', color: '#000', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>{disadv.cost}</span>
+                    {DISADVANTAGES_CATALOG.map(disadv => {
+                      const isSelected = currentForm.disadvantages?.includes(disadv.id);
+                      return (
+                        <div 
+                          key={disadv.id} 
+                          onClick={() => {
+                            const current = currentForm.disadvantages || [];
+                            if (isSelected) {
+                              updateCurrentForm({ disadvantages: current.filter((id: string) => id !== disadv.id) });
+                            } else {
+                              updateCurrentForm({ disadvantages: [...current, disadv.id] });
+                            }
+                          }}
+                          style={{ 
+                            background: isSelected ? 'rgba(255, 77, 77, 0.1)' : 'var(--surface-hover)', 
+                            padding: '1rem', 
+                            borderRadius: '4px', 
+                            border: `1px solid ${isSelected ? '#ff4d4d' : 'var(--border-color)'}`,
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                            <strong style={{ fontSize: '1.1rem', color: isSelected ? '#ff4d4d' : '#fff' }}>
+                              {isSelected && '✓ '} {disadv.name}
+                            </strong>
+                            <span style={{ fontSize: '0.8rem', background: isSelected ? '#ff4d4d' : 'var(--surface-hover)', color: isSelected ? '#000' : 'var(--text-muted)', border: '1px solid var(--border-color)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>{disadv.cost}</span>
+                          </div>
+                          <p style={{ margin: 0, fontSize: '0.85rem', color: isSelected ? '#fff' : 'var(--text-muted)' }}>{disadv.desc}</p>
                         </div>
-                        <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>{disadv.desc}</p>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -1951,12 +2043,38 @@ export default function App() {
                 <h2 className="panel-title" style={{ margin: 0 }}>Perícias</h2>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', maxHeight: '500px', overflowY: 'auto' }}>
-                {SKILLS_CATALOG.map(skill => (
-                  <div key={skill.id} style={{ background: 'var(--surface-hover)', padding: '1rem', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
-                    <strong style={{ display: 'block', fontSize: '1.1rem', color: '#fff', marginBottom: '0.4rem' }}>{skill.name}</strong>
-                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>{skill.desc}</p>
-                  </div>
-                ))}
+                {SKILLS_CATALOG.map(skill => {
+                  const isSelected = currentForm.skills?.includes(skill.id);
+                  return (
+                    <div 
+                      key={skill.id} 
+                      onClick={() => {
+                        const current = currentForm.skills || [];
+                        if (isSelected) {
+                          updateCurrentForm({ skills: current.filter((id: string) => id !== skill.id) });
+                        } else {
+                          updateCurrentForm({ skills: [...current, skill.id] });
+                        }
+                      }}
+                      style={{ 
+                        background: isSelected ? 'rgba(0, 255, 0, 0.1)' : 'var(--surface-hover)', 
+                        padding: '1rem', 
+                        borderRadius: '4px', 
+                        border: `1px solid ${isSelected ? 'var(--accent-color)' : 'var(--border-color)'}`,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                        <strong style={{ fontSize: '1.1rem', color: isSelected ? 'var(--accent-color)' : '#fff' }}>
+                          {isSelected && '✓ '} {skill.name}
+                        </strong>
+                        <span style={{ fontSize: '0.7rem', background: isSelected ? 'var(--accent-color)' : 'var(--surface-hover)', color: isSelected ? '#000' : 'var(--text-muted)', border: '1px solid var(--border-color)', padding: '2px 4px', borderRadius: '4px', fontWeight: 'bold' }}>1pt</span>
+                      </div>
+                      <p style={{ margin: 0, fontSize: '0.8rem', color: isSelected ? '#fff' : 'var(--text-muted)' }}>{skill.desc}</p>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
