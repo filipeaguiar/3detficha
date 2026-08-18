@@ -2,7 +2,7 @@ import ImageCropper from '../../ImageCropper';
 import { BONUS_PRESETS, DRUID_WILD_SHAPE_OPTIONS } from '../../constants/app/bonuses';
 import { KITS_CATALOG } from '../../constants/app/kits';
 import type { CharacterForm, CharacterKit, CharacterSheet, RollBonus, RollResult } from '../../types/character';
-import { ArrowLeftIcon, BedIcon, CheckIcon, ChevronDownIcon, ChevronUpIcon, CloseIcon, CopyIcon, LeafIcon, PencilIcon, PlusIcon, ResetIcon, SearchIcon, TransformIcon, TrashIcon, UsersIcon, VolumeIcon, VolumeXIcon, ZapIcon } from '../common/Icons';
+import { BedIcon, CheckIcon, ChevronDownIcon, ChevronUpIcon, CloseIcon, CopyIcon, LeafIcon, PencilIcon, PlusIcon, ResetIcon, SearchIcon, TransformIcon, TrashIcon, UsersIcon, VolumeIcon, VolumeXIcon, ZapIcon } from '../common/Icons';
 
 type AppModalsProps = {
   isDrawerOpen: boolean;
@@ -92,8 +92,8 @@ export default function AppModals(props: AppModalsProps) {
   return (
     <>
       {isDrawerOpen && (
-        <div className="drawer-backdrop fade-in" onClick={() => setIsDrawerOpen(false)}>
-          <div className={`drawer-panel ${isDrawerClosingFast ? '' : 'slide-right'}`} onClick={(e) => e.stopPropagation()}>
+        <div className="drawer-backdrop drawer-backdrop-underlay" onClick={() => setIsDrawerOpen(false)}>
+          <div className={`drawer-panel drawer-panel-right ${isDrawerClosingFast ? '' : 'slide-left-in'}`} onClick={(e) => e.stopPropagation()}>
             <div className="drawer-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
                 <div className="drawer-avatar-thumb" style={{ borderColor: accentColor }}>
@@ -117,7 +117,7 @@ export default function AppModals(props: AppModalsProps) {
               <button className="drawer-menu-item" onClick={() => updateActiveSheet({ soundOn: !soundOn })}><div className="drawer-item-icon" style={{ color: soundOn ? 'var(--accent-color)' : 'var(--text-muted)' }}>{soundOn ? <VolumeIcon /> : <VolumeXIcon />}</div><div className="drawer-item-content"><div className="drawer-item-title">Som dos Dados 3D</div><div className="drawer-item-subtitle">{soundOn ? 'Ativado (Clique para desativar)' : 'Desativado (Clique para ativar)'}</div></div></button>
               <button className="drawer-menu-item" onClick={handleEdit}><div className="drawer-item-icon"><PencilIcon /></div><div className="drawer-item-content"><div className="drawer-item-title">Editar Ficha</div><div className="drawer-item-subtitle">Modificar atributos, técnicas, avatar e kits</div></div></button>
             </div>
-            <div className="drawer-footer-hint" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}><ArrowLeftIcon size={14} /><span>Deslize para a esquerda para fechar</span></div>
+            <div className="drawer-footer-hint">Toque fora ou no botão de menu para fechar</div>
           </div>
         </div>
       )}

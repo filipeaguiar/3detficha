@@ -38,32 +38,6 @@ export default function App() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const playDiceSound = useDiceSound();
 
-  // Gesture detection for Swipe Right to open Drawer & Swipe Left to close
-  const touchStartPos = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartPos.current = {
-      x: e.touches[0].clientX,
-      y: e.touches[0].clientY
-    };
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    const deltaX = e.changedTouches[0].clientX - touchStartPos.current.x;
-    const deltaY = e.changedTouches[0].clientY - touchStartPos.current.y;
-
-    // Horizontal swipe threshold
-    if (Math.abs(deltaY) < 80) {
-      if (deltaX > 60 && !isDrawerOpen) {
-        // Swiped Right -> Open Drawer
-        setIsDrawerOpen(true);
-      } else if (deltaX < -50 && isDrawerOpen) {
-        // Swiped Left -> Close Drawer
-        setIsDrawerOpen(false);
-      }
-    }
-  };
-
   // Active Sheet properties
   const characterName = activeSheet.characterName;
   const selectedKitId = activeSheet.selectedKitId;
@@ -793,9 +767,7 @@ export default function App() {
       />
 
       <div 
-        className="app-container"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
+        className={`app-container ${mode === 'play' && isDrawerOpen ? 'app-container-drawer-open' : ''}`}
       >
         
         {mode === 'edit' && (

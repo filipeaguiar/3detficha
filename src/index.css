@@ -66,6 +66,11 @@ h1, h2, h3, h4, h5, h6 {
   padding: 0 2rem;
   z-index: 10;
   position: relative;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.app-container-drawer-open {
+  transform: translateX(280px);
 }
 
 @media (max-width: 768px) {
@@ -78,6 +83,10 @@ h1, h2, h3, h4, h5, h6 {
     padding: 0;
     margin: 0;
     overflow-x: hidden;
+  }
+
+  .app-container-drawer-open {
+    transform: translateX(76vw);
   }
   
   .panel {
@@ -1650,7 +1659,7 @@ input.stat-input:focus {
 }
 
 /* ==================================== */
-/* Hidden Drawer Menu & Swipe Styles    */
+/* Hidden Drawer Menu                    */
 /* ==================================== */
 .hud-menu-trigger {
   background: rgba(0, 0, 0, 0.6);
@@ -1679,39 +1688,45 @@ input.stat-input:focus {
 .drawer-backdrop {
   position: fixed;
   top: 0;
-  left: 0;
+  right: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
-  z-index: 450;
+  z-index: 8;
   display: flex;
-  justify-content: flex-start;
-  touch-action: manipulation;
+  justify-content: flex-end;
+  pointer-events: auto;
+}
+
+.drawer-backdrop-underlay {
+  background: transparent;
 }
 
 .drawer-panel {
   width: 320px;
   max-width: 85vw;
   height: 100%;
-  background: rgba(15, 18, 26, 0.98);
-  border-right: 2px solid var(--accent-color);
-  box-shadow: 5px 0 25px rgba(0, 0, 0, 0.8), 0 0 15px var(--accent-transparent);
+  background: linear-gradient(180deg, rgba(15, 18, 26, 0.98), rgba(10, 12, 18, 0.98));
+  border-left: 2px solid var(--accent-color);
+  box-shadow: -8px 0 25px rgba(0, 0, 0, 0.45), inset 0 0 18px rgba(255,255,255,0.03);
   display: flex;
   flex-direction: column;
   padding: 1.5rem 1.2rem;
-  z-index: 460;
+  z-index: 9;
   box-sizing: border-box;
   will-change: transform;
 }
 
-.slide-right {
-  animation: slideDrawerRight 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.drawer-panel-right {
+  margin-left: auto;
 }
 
-@keyframes slideDrawerRight {
+.slide-left-in {
+  animation: slideDrawerLeftIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideDrawerLeftIn {
   from {
-    transform: translateX(-100%);
+    transform: translateX(100%);
   }
   to {
     transform: translateX(0);
