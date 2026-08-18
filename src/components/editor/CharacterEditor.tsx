@@ -3,7 +3,7 @@ import { ADVANTAGES_CATALOG, DISADVANTAGES_CATALOG } from '../../constants/advan
 import { SKILLS_CATALOG } from '../../constants/skillsData';
 import { getBonusSubtitle } from '../../utils/character';
 import type { CharacterForm, CharacterKit, CharacterSheet, RollBonus } from '../../types/character';
-import { BookIcon, CameraIcon, CheckIcon, CloseIcon, LeafIcon, PencilIcon, PlusIcon, TrashIcon, UsersIcon } from '../common/Icons';
+import { BookIcon, CameraIcon, CheckIcon, CloseIcon, LeafIcon, PencilIcon, PlusIcon, TabAdvantagesIcon, TabAttributesIcon, TabConceptIcon, TabSkillsIcon, TabTechniquesIcon, TrashIcon, UsersIcon } from '../common/Icons';
 
 export type EditorTab = 'concept' | 'attributes' | 'advantages' | 'skills' | 'techniques';
 
@@ -42,12 +42,12 @@ type CharacterEditorProps = {
   setMode: (mode: 'edit' | 'play') => void;
 };
 
-const EDITOR_TABS: Array<{ id: EditorTab; label: string; icon: string }> = [
-  { id: 'concept', label: 'Conceito', icon: '👤' },
-  { id: 'attributes', label: 'Atributos', icon: '📊' },
-  { id: 'advantages', label: 'Vantagens', icon: '🎭' },
-  { id: 'skills', label: 'Perícias', icon: '🤹' },
-  { id: 'techniques', label: 'Técnicas', icon: '⚔️' }
+const EDITOR_TABS: Array<{ id: EditorTab; label: string; icon: React.ReactNode }> = [
+  { id: 'concept', label: 'Conceito', icon: <TabConceptIcon size={15} /> },
+  { id: 'attributes', label: 'Atributos', icon: <TabAttributesIcon size={15} /> },
+  { id: 'advantages', label: 'Vantagens', icon: <TabAdvantagesIcon size={15} /> },
+  { id: 'skills', label: 'Perícias', icon: <TabSkillsIcon size={15} /> },
+  { id: 'techniques', label: 'Técnicas', icon: <TabTechniquesIcon size={15} /> }
 ];
 
 export default function CharacterEditor(props: CharacterEditorProps) {
@@ -129,7 +129,7 @@ export default function CharacterEditor(props: CharacterEditorProps) {
               borderRadius: '4px 4px 0 0'
             }}
           >
-            <span>{tab.icon}</span>
+            <span className="editor-tab-icon" aria-hidden="true">{tab.icon}</span>
             {tab.label}
           </button>
         ))}

@@ -1183,6 +1183,18 @@ input.stat-input:focus {
   touch-action: manipulation;
 }
 
+.editor-tab-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.editor-tab-icon svg {
+  display: block;
+}
+
 .form-tab-btn:hover {
   color: var(--text-main);
   background: var(--surface-hover);
