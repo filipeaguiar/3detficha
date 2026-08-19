@@ -36,6 +36,6 @@
 - [x] Review all included archetypes against source text for naming, cost, granted package, and notes accuracy
 - [x] Validate UI/point behavior for no-archetype and no-kit characters
 - [x] Run lint and build
-- [ ] Commit implementation
-- [ ] Push to origin/master
-- [ ] Deploy to gh-pages
+- [x] Commit implementation
+- [x] Push to origin/master
+- [x] Deploy to gh-pages
