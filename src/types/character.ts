@@ -38,6 +38,7 @@ export type CharacterForm = {
   archetypeAdvantages?: string[];
   archetypeDisadvantages?: string[];
   archetypeSkills?: string[];
+  archetypeSelections?: Record<string, string[]>;
   variantSelections?: Record<string, CharacterVariantSelection[]>;
 };
 
@@ -58,6 +59,24 @@ export type ArchetypeEffect = {
   costResource?: 'none' | 'PV' | 'PM' | 'PA';
 };
 
+export type ArchetypeChoiceOption = {
+  id: string;
+  label: string;
+  grantsAdvantages?: string[];
+  grantsDisadvantages?: string[];
+  grantsSkills?: string[];
+  grantsEffects?: ArchetypeEffect[];
+};
+
+export type ArchetypeChoiceGroup = {
+  id: string;
+  label: string;
+  kind: 'advantage' | 'disadvantage' | 'skill' | 'variant' | 'effect';
+  min: number;
+  max: number;
+  options: ArchetypeChoiceOption[];
+};
+
 export type CharacterArchetype = {
   id: string;
   name: string;
@@ -69,6 +88,8 @@ export type CharacterArchetype = {
   grantedDisadvantages?: string[];
   grantedSkills?: string[];
   grantedEffects?: ArchetypeEffect[];
+  choiceGroups?: ArchetypeChoiceGroup[];
+  unsupportedNotes?: string[];
   notes?: string[];
 };
 

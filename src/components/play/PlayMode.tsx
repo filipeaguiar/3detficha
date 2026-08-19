@@ -10,6 +10,9 @@ import { CheckIcon, CloseIcon, DiceCountIcon, HabilidadeIcon, InfoIcon, LeafIcon
 type PlayModeProps = {
   characterName: string;
   currentKit: CharacterKit | null;
+  currentArchetypeName?: string;
+  currentArchetypeNotes?: string[];
+  currentArchetypeUnsupportedNotes?: string[];
   currentForm: CharacterForm;
   forms: CharacterForm[];
   activeFormIndex: number;
@@ -55,6 +58,9 @@ export default function PlayMode(props: PlayModeProps) {
   const {
     characterName,
     currentKit,
+    currentArchetypeName,
+    currentArchetypeNotes,
+    currentArchetypeUnsupportedNotes,
     currentForm,
     forms,
     activeFormIndex,
@@ -210,8 +216,9 @@ export default function PlayMode(props: PlayModeProps) {
           </button>
         </div>
 
-        {((currentForm.advantages && currentForm.advantages.length > 0) || (currentForm.disadvantages && currentForm.disadvantages.length > 0) || (currentForm.skills && currentForm.skills.length > 0)) && (
+        {(currentArchetypeName || (currentForm.advantages && currentForm.advantages.length > 0) || (currentForm.disadvantages && currentForm.disadvantages.length > 0) || (currentForm.skills && currentForm.skills.length > 0)) && (
           <div style={{ marginTop: '1rem', display: 'flex', flexWrap: 'wrap', gap: '0.4rem', justifyContent: 'center' }}>
+            {currentArchetypeName && <button onClick={() => setDetailModal({ title: `Arquétipo — ${currentArchetypeName}`, body: [...(currentArchetypeNotes || []), ...(currentArchetypeUnsupportedNotes || []).map(note => `Manual/Narrador: ${note}`)].join('\n\n') || 'Sem detalhes adicionais.', tone: 'technique' })} style={{ background: '#ffd166', border: 'none', color: '#000', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}><InfoIcon />{currentArchetypeName}</button>}
             {currentForm.advantages?.map(id => {
               const [baseId, variantKey] = id.split('::');
               const adv = ADVANTAGES_CATALOG.find(a => a.id === baseId);

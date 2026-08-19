@@ -69,15 +69,26 @@ export default function App() {
 
   const currentForm = useMemo(() => {
     const unique = (values?: string[]) => Array.from(new Set(values || []));
+    const selections = currentFormBase.archetypeSelections || {};
+    const selectedOptions = (currentArchetype?.choiceGroups || []).flatMap(group => {
+      const chosen = selections[group.id] || [];
+      return group.options.filter(option => chosen.includes(option.id));
+    });
+    const selectedAdvantages = selectedOptions.flatMap(option => option.grantsAdvantages || []);
+    const selectedDisadvantages = selectedOptions.flatMap(option => option.grantsDisadvantages || []);
+    const selectedSkills = selectedOptions.flatMap(option => option.grantsSkills || []);
+    const selectedEffects = selectedOptions.flatMap(option => option.grantsEffects || []);
     return {
       ...currentFormBase,
-      advantages: unique([...(currentFormBase.advantages || []), ...(currentArchetype?.grantedAdvantages || [])]),
-      disadvantages: unique([...(currentFormBase.disadvantages || []), ...(currentArchetype?.grantedDisadvantages || [])]),
-      skills: unique([...(currentFormBase.skills || []), ...(currentArchetype?.grantedSkills || [])]),
-      archetypeAdvantages: unique(currentArchetype?.grantedAdvantages),
-      archetypeDisadvantages: unique(currentArchetype?.grantedDisadvantages),
-      archetypeSkills: unique(currentArchetype?.grantedSkills),
-    };
+      advantages: unique([...(currentFormBase.advantages || []), ...(currentArchetype?.grantedAdvantages || []), ...selectedAdvantages]),
+      disadvantages: unique([...(currentFormBase.disadvantages || []), ...(currentArchetype?.grantedDisadvantages || []), ...selectedDisadvantages]),
+      skills: unique([...(currentFormBase.skills || []), ...(currentArchetype?.grantedSkills || []), ...selectedSkills]),
+      archetypeAdvantages: unique([...(currentArchetype?.grantedAdvantages || []), ...selectedAdvantages]),
+      archetypeDisadvantages: unique([...(currentArchetype?.grantedDisadvantages || []), ...selectedDisadvantages]),
+      archetypeSkills: unique([...(currentArchetype?.grantedSkills || []), ...selectedSkills]),
+      archetypeSelections: selections,
+      _archetypeSelectedEffects: selectedEffects,
+    } as typeof currentFormBase & { _archetypeSelectedEffects?: any[] };
   }, [currentFormBase, currentArchetype]);
 
   // Filtered kits for modal
@@ -97,6 +108,7 @@ export default function App() {
 
   // Kit Power Uses in Current Scene
   const [usedKitPowers, setUsedKitPowers] = useState<Record<string, number>>({});
+  const [usedArchetypeEffects, setUsedArchetypeEffects] = useState<Record<string, number>>({});
 
   // Current Form Attributes & Derived values
   const poder = currentForm.poder;
@@ -106,7 +118,7 @@ export default function App() {
   const maisMana = currentForm.maisMana;
   const rollBonuses = [
     ...(currentForm.rollBonuses || []),
-    ...((currentArchetype?.grantedEffects || []).map((effect) => ({
+    ...([...(currentArchetype?.grantedEffects || []), ...(((currentForm as any)._archetypeSelectedEffects) || [])].map((effect) => ({
       id: effect.id,
       name: effect.name,
       alias: '',
@@ -156,6 +168,20 @@ export default function App() {
   const activeBonusesList = useMemo(() => {
     return rollBonuses.filter(b => activeBonuses.has(b.id));
   }, [rollBonuses, activeBonuses]);
+
+  const passiveArchetypeSkillEffects = useMemo(() => {
+    const effects: Array<{ id: string; name: string; attribute: 'habilidade'; bonusType: 'attr_mod'; value: number; duration: 'scene' }> = [];
+    if (selectedArchetypeId === 'aberrante') effects.push({ id: 'arch_aberrante_deformidade_passive', name: 'Deformidade', attribute: 'habilidade', bonusType: 'attr_mod', value: 1, duration: 'scene' });
+    if (selectedArchetypeId === 'osteon') effects.push({ id: 'arch_osteon_memoria_passive', name: 'Memória Póstuma', attribute: 'habilidade', bonusType: 'attr_mod', value: 1, duration: 'scene' });
+    if (selectedArchetypeId === 'anao') effects.push({ id: 'arch_anao_ferro_fogo_passive', name: 'A Ferro e Fogo', attribute: 'habilidade', bonusType: 'attr_mod', value: 1, duration: 'scene' });
+    if (selectedArchetypeId === 'dahllan') effects.push({ id: 'arch_dahllan_empatia_passive', name: 'Empatia Selvagem', attribute: 'habilidade', bonusType: 'attr_mod', value: 1, duration: 'scene' });
+    if (selectedArchetypeId === 'elfo') effects.push({ id: 'arch_elfo_natureza_mistica_passive', name: 'Natureza Mística', attribute: 'habilidade', bonusType: 'attr_mod', value: 1, duration: 'scene' });
+    if (selectedArchetypeId === 'goblin') effects.push({ id: 'arch_goblin_espertalhao_passive', name: 'Espertalhão', attribute: 'habilidade', bonusType: 'attr_mod', value: 1, duration: 'scene' });
+    if (selectedArchetypeId === 'hynne') effects.push({ id: 'arch_hynne_encantador_passive', name: 'Encantador', attribute: 'habilidade', bonusType: 'attr_mod', value: 1, duration: 'scene' });
+    if (selectedArchetypeId === 'kemono') effects.push({ id: 'arch_kemono_percepcao_passive', name: 'Percepção Apurada', attribute: 'habilidade', bonusType: 'attr_mod', value: 1, duration: 'scene' });
+    if (selectedArchetypeId === 'minotauro') effects.push({ id: 'arch_minotauro_atletico_passive', name: 'Atlético', attribute: 'habilidade', bonusType: 'attr_mod', value: 1, duration: 'scene' });
+    return effects;
+  }, [currentForm.archetypeSelections, selectedArchetypeId]);
 
   // Kit Power Active Buffs (e.g. Frenesi de Combate P+3)
   const [activeKitBuffs, setActiveKitBuffs] = useState<Set<string>>(new Set());
@@ -421,6 +447,11 @@ export default function App() {
     const bonus = rollBonuses.find(b => b.id === id);
     if (!bonus) return;
 
+    if (id.startsWith('arch_')) {
+      if (usedArchetypeEffects[id]) return;
+      setUsedArchetypeEffects(prev => ({ ...prev, [id]: 1 }));
+    }
+
     if (id === 'kit_mago_bateria_de_mana') {
       if (!diceBoxRef.current || rolling) return;
       setRolling(true);
@@ -529,6 +560,7 @@ export default function App() {
 
   const handleResetScene = () => {
     setUsedKitPowers({});
+    setUsedArchetypeEffects({});
     setActiveKitBuffs(new Set());
     setActiveBonuses(prev => {
       const next = new Set<string>();
@@ -596,6 +628,11 @@ export default function App() {
     let flatBonusTotal = 0;
     let hasAutoCrit = false;
     const appliedBonuses: { name: string; alias?: string; desc: string; cost?: string }[] = [];
+
+    passiveArchetypeSkillEffects.forEach((effect) => {
+      attrModValue += effect.value;
+      appliedBonuses.push({ name: effect.name, desc: `+${effect.value} no Atributo (passivo do arquétipo)`, cost: '' });
+    });
 
     activeBonusesList.forEach(bonus => {
       let desc = '';
@@ -850,6 +887,9 @@ export default function App() {
           <PlayMode
             characterName={characterName}
             currentKit={currentKit}
+            currentArchetypeName={currentArchetype?.name}
+            currentArchetypeNotes={currentArchetype?.notes}
+            currentArchetypeUnsupportedNotes={currentArchetype?.unsupportedNotes}
             currentForm={currentForm}
             forms={forms}
             activeFormIndex={activeFormIndex}

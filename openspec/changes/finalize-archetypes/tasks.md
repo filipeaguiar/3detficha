@@ -1,0 +1,41 @@
+# Tasks
+
+- [x] Inventory the remaining unfinished archetype behavior per implemented base archetype
+- [x] Classify each remaining effect as automatable, partially automatable, or manual-only
+- [x] Extend archetype data model with explicit choice groups and unsupported/manual notes
+- [x] Extend character storage model to persist archetype-specific selections separately from free picks
+- [x] Add migration logic for new archetype selection fields without breaking existing saves
+- [x] Refactor point calculation to exclude archetype-granted content from extra cost while preserving archetype cost
+- [x] Refactor disadvantage allowance logic to keep archetype-granted disadvantages outside the normal cap
+- [x] Implement editor UI for archetype choice groups
+- [x] Implement locked rendering for archetype-granted advantages
+- [x] Implement locked rendering for archetype-granted disadvantages
+- [x] Implement locked rendering for archetype-granted skills
+- [x] Show unsupported/manual archetype effects clearly in editor UI
+- [x] Show archetype-granted passive package clearly in play/detail UI
+- [x] Ensure archetype changes remove stale granted content while preserving free selections
+- [x] Implement automatable Human effect (Mais Além) as a bounded once-per-scene gameplay effect
+- [x] Implement automatable Abissal effect (Desfavor) with correct target-side handling or explicit bounded approximation
+- [x] Implement automatable Celestial effect (Arrebatar) with ally-support semantics or explicit bounded approximation
+- [x] Implement automatable Centauro effect (Corpo Táurico) with proper scope limitations
+- [x] Implement automatable Medusa effect (Olhar Atordoante) with explicit bounded gameplay behavior
+- [x] Implement automatable Qareen effect (Desejos) with cost-reduction semantics where supported
+- [x] Implement selectable archetype choices for Alien talent
+- [x] Implement selectable archetype choices for Elfo impecável
+- [x] Implement selectable archetype choices for Fada magia delicada
+- [x] Implement selectable archetype choices for Kallyanach power/código options
+- [x] Implement selectable archetype choices for Kemono talent/cacoete
+- [x] Implement selectable archetype choices for Vampiro talent
+- [x] Implement selectable archetype choices for Ciborgue diretriz
+- [x] Implement selectable archetype choices for Aberrante deformidade focus
+- [x] Implement selectable archetype choices for Osteon memória póstuma focus
+- [x] Implement selectable archetype choices for Dahllan código specialization if needed
+- [x] Implement passive derived support for archetype skill-focused bonuses that map to existing catalog/perícia flows
+- [x] Mark incorporeal/stateful Fantasma behavior as manual until a dedicated subsystem exists, or implement a bounded state toggle if feasible
+- [x] Mark complex immunity/environment/dependency logic explicitly where not fully automated
+- [x] Review all included archetypes against source text for naming, cost, granted package, and notes accuracy
+- [x] Validate UI/point behavior for no-archetype and no-kit characters
+- [x] Run lint and build
+- [ ] Commit implementation
+- [ ] Push to origin/master
+- [ ] Deploy to gh-pages
