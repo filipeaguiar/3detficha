@@ -3,6 +3,7 @@ import { ARCHETYPES_CATALOG } from '../constants/app/archetypes';
 import { type TechniqueCatalogEntry } from '../constants/app/techniques';
 import { ADVANTAGE_VARIANT_OPTIONS, DISADVANTAGE_VARIANT_OPTIONS } from '../constants/app/variants';
 import { STRIKES_CATALOG } from '../constants/app/strikes';
+import type { StrikeCatalogEntry } from '../constants/app/strikes';
 import type { CharacterForm, CharacterLinkGroup, CharacterSheet, KitPower, RollBonus, XPCreditRule } from '../types/character';
 
 export function normalizeRollBonus(raw: any): RollBonus {
@@ -370,6 +371,24 @@ export function isTechniqueEligible(currentForm: CharacterForm, technique: Techn
 export function getKnownStrikes(currentForm: CharacterForm) {
   const selections = currentForm.strikeSelections || [];
   return selections.flatMap((selection) => selection.strikeIds.map((strikeId) => ({ acquisitionId: selection.acquisitionId, strike: STRIKES_CATALOG.find((entry) => entry.id === strikeId) })).filter((entry) => entry.strike));
+}
+
+export function createStrikeBonus(strike: StrikeCatalogEntry, acquisitionId: string): RollBonus {
+  return {
+    id: `strike_${acquisitionId}_${strike.id}`,
+    name: strike.name,
+    alias: '',
+    attribute: 'poder',
+    bonusType: strike.bonusType || 'none',
+    value: strike.value || 0,
+    duration: 'instant',
+    critThresholdMod: strike.critThresholdMod || 0,
+    autoCrit: strike.autoCrit || false,
+    extraDice: strike.extraDice || 0,
+    costValue: strike.costValue,
+    costResource: strike.costResource,
+    immediateAction: strike.immediateAction,
+  };
 }
 
 export function createTechniqueBonusFromCatalog(technique: TechniqueCatalogEntry, currentForm: CharacterForm): RollBonus {

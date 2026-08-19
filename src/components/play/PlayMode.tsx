@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ADVANTAGES_CATALOG, DISADVANTAGES_CATALOG } from '../../constants/advantagesData';
 import { ADVANTAGE_VARIANT_OPTIONS, DISADVANTAGE_VARIANT_OPTIONS } from '../../constants/app/variants';
 import { SKILLS_CATALOG } from '../../constants/skillsData';
-import { getActiveBonusVariant, getBonusSubtitle, getKnownStrikes, getKitPowerModifier } from '../../utils/character';
+import { createStrikeBonus, getActiveBonusVariant, getBonusSubtitle, getKnownStrikes, getKitPowerModifier } from '../../utils/character';
 import type { CharacterForm, CharacterKit, KitPower, RollBonus } from '../../types/character';
 import SegmentedBar from '../common/SegmentedBar';
 import { CheckIcon, CloseIcon, DiceCountIcon, HabilidadeIcon, InfoIcon, LeafIcon, MaskIcon, MenuIcon, PoderIcon, ResistenciaIcon, SkillsIcon, SparklesIcon, TransformIcon } from '../common/Icons';
@@ -54,6 +54,7 @@ type PlayModeProps = {
   handleRoll: (attrName: 'poder' | 'habilidade' | 'resistencia') => void;
   toggleActiveBonus: (id: string) => void;
   cycleBonusVariant: (id: string) => void;
+  activateStrike: (bonus: RollBonus) => void;
 };
 
 export default function PlayMode(props: PlayModeProps) {
@@ -105,6 +106,7 @@ export default function PlayMode(props: PlayModeProps) {
     handleRoll,
     toggleActiveBonus,
     cycleBonusVariant,
+    activateStrike,
   } = props;
 
   const knownStrikes = getKnownStrikes(currentForm);
@@ -283,7 +285,7 @@ export default function PlayMode(props: PlayModeProps) {
                 const comboLocked = hasCombo && comboActive && comboRemaining <= 0;
                 const alreadyUsed = comboUsedStrikeIds.includes(strike.id);
                 const subtitle = `${strike.description}${strike.costResource !== 'none' && strike.costValue ? ` [-${strike.costValue} ${strike.costResource}]` : ''}`;
-                return <button key={`${acquisitionId}:${strike.id}`} className={`bonus-toggle ${alreadyUsed ? 'active' : ''}`} disabled={(comboActive && (comboLocked || alreadyUsed)) || false} onClick={() => { if (hasCombo && comboActive) setComboUsedStrikeIds((prev) => prev.includes(strike.id) ? prev : [...prev, strike.id]); }} onContextMenu={(e) => { e.preventDefault(); setDetailModal({ title: strike.name, subtitle, body: strike.note, tone: 'technique' }); }} title={`${strike.name}: ${subtitle}`}><div className="bonus-toggle-header"><span className="bonus-toggle-label">{strike.name}</span>{hasCombo && comboActive ? <span className="bonus-attr-micro" style={{ background: alreadyUsed ? '#ffd166' : '#33ccff', color: '#000' }}>{alreadyUsed ? 'USADO' : comboUsedStrikeIds.length === 0 ? 'ABRE' : 'COMBO'}</span> : null}</div><span className="bonus-toggle-value">{subtitle}</span></button>;
+                return <button key={`${acquisitionId}:${strike.id}`} className={`bonus-toggle ${alreadyUsed ? 'active' : ''}`} disabled={(comboActive && (comboLocked || alreadyUsed)) || false} onClick={() => { activateStrike(createStrikeBonus(strike, acquisitionId)); if (hasCombo && comboActive) setComboUsedStrikeIds((prev) => prev.includes(strike.id) ? prev : [...prev, strike.id]); }} onContextMenu={(e) => { e.preventDefault(); setDetailModal({ title: strike.name, subtitle, body: strike.note, tone: 'technique' }); }} title={`${strike.name}: ${subtitle}`}><div className="bonus-toggle-header"><span className="bonus-toggle-label">{strike.name}</span>{hasCombo && comboActive ? <span className="bonus-attr-micro" style={{ background: alreadyUsed ? '#ffd166' : '#33ccff', color: '#000' }}>{alreadyUsed ? 'USADO' : comboUsedStrikeIds.length === 0 ? 'ABRE' : 'COMBO'}</span> : null}</div><span className="bonus-toggle-value">{subtitle}</span></button>;
               })}
             </div>
           </div>

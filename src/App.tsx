@@ -1025,6 +1025,10 @@ export default function App() {
             handleRoll={handleRoll}
             toggleActiveBonus={toggleActiveBonus}
             cycleBonusVariant={cycleBonusVariant}
+            activateStrike={(bonus) => {
+              updateCurrentFormForActiveIndex({ rollBonuses: [...rollBonuses.filter((b) => b.id !== bonus.id), bonus] });
+              void toggleActiveBonus(bonus.id);
+            }}
           />
         )}
       </div>
