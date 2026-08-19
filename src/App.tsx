@@ -129,7 +129,7 @@ export default function App() {
   const resistencia = currentForm.resistencia;
   const maisVida = currentForm.maisVida;
   const maisMana = currentForm.maisMana;
-  const rollBonuses = [
+  const rollBonuses = useMemo(() => [
     ...(currentForm.rollBonuses || []),
     ...([...(currentArchetype?.grantedEffects || []), ...(((currentForm as any)._archetypeSelectedEffects) || [])].map((effect) => ({
       id: effect.id,
@@ -161,7 +161,7 @@ export default function App() {
       costValue: effect.costValue || 0,
       costResource: effect.costResource || 'none',
     })))
-  ];
+  ], [currentForm, currentArchetype, currentKit]);
   const visibleRollBonuses = rollBonuses.filter(b => b.bonusType !== 'none' || b.critThresholdMod || b.extraDice || b.autoCrit || !b.id.startsWith('kit_'));
 
   // Cálculos Derivados (Máximos)
@@ -209,7 +209,7 @@ export default function App() {
     if (selectedArchetypeId === 'kemono') effects.push({ id: 'arch_kemono_percepcao_passive', name: 'Percepção Apurada', attribute: 'habilidade', bonusType: 'attr_mod', value: 1, duration: 'scene' });
     if (selectedArchetypeId === 'minotauro') effects.push({ id: 'arch_minotauro_atletico_passive', name: 'Atlético', attribute: 'habilidade', bonusType: 'attr_mod', value: 1, duration: 'scene' });
     return effects;
-  }, [currentForm.archetypeSelections, selectedArchetypeId]);
+  }, [selectedArchetypeId]);
 
   // Kit Power Active Buffs (e.g. Frenesi de Combate P+3)
   const [activeKitBuffs, setActiveKitBuffs] = useState<Set<string>>(new Set());
