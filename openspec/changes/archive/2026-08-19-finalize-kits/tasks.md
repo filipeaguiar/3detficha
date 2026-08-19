@@ -32,8 +32,8 @@
 
 - [x] 5.1 Review the implemented kit catalog against the source material used by the app
 - [x] 5.2 Run lint and build
-- [ ] 5.3 Commit implementation
-- [ ] 5.4 Push to origin/master
-- [ ] 5.5 Deploy to gh-pages
+- [x] 5.3 Commit implementation
+- [x] 5.4 Push to origin/master
+- [x] 5.5 Deploy to gh-pages
 - [ ] 5.6 Sync the kits spec to openspec/specs/kits/spec.md during archive
 - [ ] 5.7 Archive the completed finalize-kits change
