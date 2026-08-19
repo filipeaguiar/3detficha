@@ -314,6 +314,7 @@ export default function PlayMode(props: PlayModeProps) {
                     {bonus.alias && <span className="bonus-toggle-raw-name">{bonus.name}</span>}
                     <span className="bonus-toggle-value">{getBonusSubtitle(bonus)}</span>
                     {isPersistentAssisted && assistedConfig?.triggerCostValue ? <span className="bonus-toggle-raw-name">{assistedConfig.triggerLabel || 'Acionar'} [-{assistedConfig.triggerCostValue} {assistedConfig.triggerCostResource || 'PM'}]</span> : null}
+                    {isPersistentAssisted && typeof bonus.assistedState?.stockCount === 'number' ? <span className="bonus-toggle-raw-name">Estoque: {bonus.assistedState.stockCount}</span> : null}
                     {bonus.variants && bonus.variants.length > 1 ? <span className="bonus-toggle-raw-name" style={{ marginTop: '0.25rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}><button type="button" className="bonus-remove-btn" style={{ minWidth: 'auto' }} onClick={(e) => { e.stopPropagation(); cycleBonusVariant(bonus.id); }} title="Alternar variante">↻</button><span>{activeVariant?.label || 'Variante'}</span></span> : null}
                   </button>
                 );

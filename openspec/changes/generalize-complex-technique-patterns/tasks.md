@@ -7,12 +7,12 @@
 ## 2. Representative persistent-assisted techniques
 
 - [x] 2.1 Implement Desprezo using the persistent-assisted-effect pattern
-- [ ] 2.2 Implement Setas Infalíveis de Petrovna using the persistent-assisted-effect pattern
-- [ ] 2.3 Validate stock, follow-up cost, and assisted state disclosure in play mode
+- [x] 2.2 Implement Setas Infalíveis de Petrovna using the persistent-assisted-effect pattern
+- [x] 2.3 Validate stock, follow-up cost, and assisted state disclosure in play mode
 
 ## 3. Representative instant-roll / structured attack techniques
 
-- [ ] 3.1 Refine Rajada de Golpes using the generalized structured attack pattern
+- [x] 3.1 Refine Rajada de Golpes using the generalized structured attack pattern
 - [ ] 3.2 Refine Golpe Púrpura, Poeira Glacial, and Relâmpago using safe automation plus disclosure
 - [ ] 3.3 Keep unresolved outcome-dependent effects explicitly assisted in the UI
 

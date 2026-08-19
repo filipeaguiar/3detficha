@@ -565,6 +565,18 @@ export default function App() {
       return;
     }
 
+    if (bonus.persistentAssisted) {
+      if (bonus.assistedState?.active) {
+        const triggerCostValue = bonus.persistentAssisted.triggerCostValue || 0;
+        const triggerCostResource = bonus.persistentAssisted.triggerCostResource || 'none';
+        if (triggerCostResource === 'PM' && triggerCostValue > 0) setCurrentPM((p) => Math.max(0, p - triggerCostValue));
+        const nextStock = typeof bonus.assistedState?.stockCount === 'number' ? Math.max(0, bonus.assistedState.stockCount - 1) : bonus.assistedState?.stockCount;
+        updateRollBonus(bonus.id, { assistedState: { ...(bonus.assistedState || {}), active: bonus.persistentAssisted.kind === 'stock' ? nextStock !== 0 : true, stockCount: nextStock } });
+        return;
+      }
+      updateRollBonus(bonus.id, { assistedState: { ...(bonus.assistedState || {}), active: true, stockCount: bonus.persistentAssisted.stockCount } });
+    }
+
     setActiveBonuses(prev => {
       const next = new Set(prev);
       if (next.has(id)) {

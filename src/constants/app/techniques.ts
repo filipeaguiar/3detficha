@@ -540,7 +540,7 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     catalogId: 'setas_infaliveis_de_petrovna',
     name: 'Setas Infalíveis de Petrovna',
     alias: '',
-    description: 'Cria setas mágicas que acertam automaticamente.',
+    description: 'Prepara um conjunto de setas mágicas automáticas para disparo posterior assistido.',
     universal: false,
     requirements: { advantages: ['magia'] },
     attribute: 'habilidade',
@@ -554,6 +554,41 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     costResource: 'PM',
     xpCost: 10,
     xpCategory: 'common',
+    persistentAssisted: {
+      kind: 'stock',
+      initialCostValue: 1,
+      initialCostResource: 'PM',
+      stockCount: 1,
+      statusLabel: 'Setas preparadas',
+      triggerLabel: 'Disparar setas',
+      note: 'Cada ativação representa o preparo mínimo assistido. Em mesa, você pode preparar até H setas, manter um conjunto por vez e dispará-las depois dividindo entre alvos.'
+    }
+  },
+  {
+    catalogId: 'rajada_de_golpes',
+    name: 'Rajada de Golpes',
+    alias: '',
+    description: 'Sequência veloz de golpes com carga por movimentos no mesmo turno.',
+    universal: false,
+    requirements: { skills: ['luta'] },
+    attribute: 'poder',
+    bonusType: 'attr_mod',
+    value: 2,
+    duration: 'instant',
+    critThresholdMod: -1,
+    autoCrit: false,
+    extraDice: 0,
+    costValue: 3,
+    costResource: 'PM',
+    xpCost: 10,
+    xpCategory: 'common',
+    variantSelectionMode: 'cycle',
+    selectedVariantId: 'padrao',
+    variants: [
+      { id: 'padrao', label: 'Padrão', costValue: 3, costResource: 'PM', value: 2, bonusType: 'attr_mod', critThresholdMod: -1, note: 'Ataque com Poder +2 e crítico 5 ou 6.' },
+      { id: 'carga_1', label: 'Carga +1 mov.', costValue: 3, costResource: 'PM', value: 4, bonusType: 'attr_mod', critThresholdMod: -1, note: 'Gasta 1 movimento extra para +2 Poder no mesmo turno.' },
+      { id: 'carga_2', label: 'Carga +2 mov.', costValue: 3, costResource: 'PM', value: 6, bonusType: 'attr_mod', critThresholdMod: -1, note: 'Gasta 2 movimentos extras para +4 Poder total; respeite o limite real de Habilidade em mesa.' }
+    ]
   },
   {
     catalogId: 'desprezo',
