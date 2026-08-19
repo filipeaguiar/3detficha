@@ -7,7 +7,11 @@ export function useDiceBox(mode: 'edit' | 'play', accentColor: string) {
   const clearDiceTimeoutRef = useRef<any>(null);
 
   useEffect(() => {
-    if (mode === 'play' && !diceBoxRef.current) {
+    let isMounted = true;
+
+    if (mode === 'play' && !diceBoxRef.current && diceBoxRef.current !== 'initializing') {
+      diceBoxRef.current = 'initializing';
+
       const diceBox = new DiceBox('#dice-box', {
         assetPath: `${import.meta.env.BASE_URL}assets/`,
         theme: 'default',
@@ -18,12 +22,20 @@ export function useDiceBox(mode: 'edit' | 'play', accentColor: string) {
       });
 
       diceBox.init().then(() => {
+        if (!isMounted) return;
         diceBoxRef.current = diceBox;
         setTimeout(() => {
           window.dispatchEvent(new Event('resize'));
         }, 100);
+      }).catch((err: any) => {
+        console.error('Falha ao inicializar WebGL dos Dados:', err);
+        if (isMounted) diceBoxRef.current = null;
       });
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, [mode, accentColor]);
 
   useEffect(() => {
