@@ -1,5 +1,6 @@
 import { ADVANTAGES_CATALOG, DISADVANTAGES_CATALOG } from '../constants/advantagesData';
 import { ARCHETYPES_CATALOG } from '../constants/app/archetypes';
+import { type TechniqueCatalogEntry } from '../constants/app/techniques';
 import { ADVANTAGE_VARIANT_OPTIONS, DISADVANTAGE_VARIANT_OPTIONS } from '../constants/app/variants';
 import type { CharacterForm, CharacterLinkGroup, CharacterSheet, KitPower, RollBonus, XPCreditRule } from '../types/character';
 
@@ -332,6 +333,47 @@ export function calculatePoints(currentForm: CharacterForm, kitCost = 0, archety
   }
 
   return total;
+}
+
+export function isTechniqueEligible(currentForm: CharacterForm, technique: TechniqueCatalogEntry): { eligible: boolean; unmet: string[] } {
+  const unmet: string[] = [];
+  const requirements = technique.requirements || {};
+  const advantages = new Set(currentForm.advantages || []);
+  const skills = new Set(currentForm.skills || []);
+
+  (requirements.advantages || []).forEach((id) => {
+    if (![...advantages].some((value) => value === id || value.startsWith(`${id}::`))) unmet.push(`Vantagem: ${id}`);
+  });
+  (requirements.skills || []).forEach((id) => {
+    if (!skills.has(id)) unmet.push(`Perícia: ${id}`);
+  });
+  if ((requirements.anyOfAdvantages || []).length > 0 && !(requirements.anyOfAdvantages || []).some((id) => [...advantages].some((value) => value === id || value.startsWith(`${id}::`)))) unmet.push(`Uma destas vantagens: ${(requirements.anyOfAdvantages || []).join(', ')}`);
+  if ((requirements.anyOfSkills || []).length > 0 && !(requirements.anyOfSkills || []).some((id) => skills.has(id))) unmet.push(`Uma destas perícias: ${(requirements.anyOfSkills || []).join(', ')}`);
+
+  return { eligible: technique.universal || unmet.length === 0, unmet };
+}
+
+export function createTechniqueBonusFromCatalog(technique: TechniqueCatalogEntry, currentForm: CharacterForm): RollBonus {
+  const credits = getEligibleXPCreditSources(currentForm, technique.xpCategory || 'common');
+  const autoFunding = credits.filter((credit) => credit.remainingXP >= (technique.xpCost || 0)).map((credit) => credit.sourceId);
+  return {
+    id: Date.now().toString() + Math.random().toString().slice(2, 6),
+    name: technique.name,
+    alias: technique.alias || '',
+    attribute: technique.attribute,
+    bonusType: technique.bonusType,
+    value: technique.value,
+    duration: technique.duration,
+    attrSource: technique.attrSource,
+    critThresholdMod: technique.critThresholdMod,
+    autoCrit: technique.autoCrit,
+    extraDice: technique.extraDice,
+    costValue: technique.costValue,
+    costResource: technique.costResource,
+    xpCost: technique.xpCost,
+    xpCategory: technique.xpCategory,
+    fundedBySourceIds: technique.xpCategory === 'legendary' ? [] : autoFunding.slice(0, 1),
+  };
 }
 
 export function getArchetypeCost(archetypeId?: string): number {

@@ -3,7 +3,8 @@ import { HexColorPicker } from 'react-colorful';
 import { ADVANTAGES_CATALOG, DISADVANTAGES_CATALOG } from '../../constants/advantagesData';
 import { ARCHETYPES_CATALOG } from '../../constants/app/archetypes';
 import { SKILLS_CATALOG } from '../../constants/skillsData';
-import { getBonusSubtitle, getXPCreditSummary } from '../../utils/character';
+import { TECHNIQUES_CATALOG } from '../../constants/app/techniques';
+import { createTechniqueBonusFromCatalog, getBonusSubtitle, getXPCreditSummary, isTechniqueEligible } from '../../utils/character';
 import { ADVANTAGE_VARIANT_OPTIONS, DISADVANTAGE_VARIANT_OPTIONS } from '../../constants/app/variants';
 import type { CharacterArchetype, CharacterForm, CharacterKit, CharacterSheet, RollBonus } from '../../types/character';
 import { BookIcon, CameraIcon, CheckIcon, CloseIcon, LeafIcon, PencilIcon, PlusIcon, TabAdvantagesIcon, TabAttributesIcon, TabConceptIcon, TabSkillsIcon, TabTechniquesIcon, TrashIcon, UsersIcon, WandSparklesIcon } from '../common/Icons';
@@ -58,6 +59,9 @@ const EDITOR_TABS: Array<{ id: EditorTab; label: string; icon: React.ReactNode }
 
 export default function CharacterEditor(props: CharacterEditorProps) {
   const [advantageSearch, setAdvantageSearch] = useState('');
+  const [skillSearch, setSkillSearch] = useState('');
+  const [techniqueSearch, setTechniqueSearch] = useState('');
+  const [showUnavailableTechniques, setShowUnavailableTechniques] = useState(false);
 
   const {
     usingLinkedForms,
@@ -124,9 +128,17 @@ export default function CharacterEditor(props: CharacterEditorProps) {
   }, []);
 
   const normalizedAdvSearch = advantageSearch.trim().toLowerCase();
+  const normalizedSkillSearch = skillSearch.trim().toLowerCase();
+  const normalizedTechniqueSearch = techniqueSearch.trim().toLowerCase();
   const xpCredits = getXPCreditSummary(currentForm);
   const filteredAdvantages = expandedAdvantages.filter((adv) => normalizedAdvSearch === '' || adv.displayName.toLowerCase().includes(normalizedAdvSearch) || adv.desc.toLowerCase().includes(normalizedAdvSearch));
   const filteredDisadvantages = expandedDisadvantages.filter((disadv) => normalizedAdvSearch === '' || disadv.displayName.toLowerCase().includes(normalizedAdvSearch) || disadv.desc.toLowerCase().includes(normalizedAdvSearch));
+  const filteredSkills = SKILLS_CATALOG.filter((skill) => normalizedSkillSearch === '' || skill.name.toLowerCase().includes(normalizedSkillSearch) || skill.desc.toLowerCase().includes(normalizedSkillSearch));
+  const filteredTechniques = TECHNIQUES_CATALOG.filter((technique) => {
+    const eligibility = isTechniqueEligible(currentForm, technique);
+    const matchesSearch = normalizedTechniqueSearch === '' || technique.name.toLowerCase().includes(normalizedTechniqueSearch) || technique.description.toLowerCase().includes(normalizedTechniqueSearch);
+    return matchesSearch && (showUnavailableTechniques || eligibility.eligible);
+  });
 
   return (
     <div className="panel slide-up editor-panel" style={{ animationDelay: '0.1s', gridColumn: '1 / -1', maxWidth: '650px', margin: '0 auto', width: '100%' }}>
@@ -478,8 +490,11 @@ export default function CharacterEditor(props: CharacterEditorProps) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <h2 className="panel-title" style={{ margin: 0 }}>Perícias</h2>
         </div>
+        <div style={{ marginBottom: '1rem' }}>
+          <input type="text" className="input-number" value={skillSearch} onChange={(e) => setSkillSearch(e.target.value)} placeholder="Buscar perícias..." />
+        </div>
         <div className="editor-skills-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', maxHeight: '500px', overflowY: 'auto' }}>
-          {SKILLS_CATALOG.map(skill => {
+          {filteredSkills.map(skill => {
             const isSelected = currentForm.skills?.includes(skill.id);
             return (
               <div
@@ -514,6 +529,13 @@ export default function CharacterEditor(props: CharacterEditorProps) {
       <div style={{ display: activeTab === 'techniques' ? 'block' : 'none' }}>
         <h2 className="panel-title" style={{ marginTop: '2rem' }}>Técnicas & Bônus desta Forma</h2>
         {xpCredits.length > 0 && <div style={{ marginBottom: '1rem', display: 'grid', gap: '0.5rem' }}>{xpCredits.map((credit) => <div key={credit.sourceId} style={{ background: 'rgba(123,223,242,0.08)', border: '1px solid rgba(123,223,242,0.35)', borderRadius: '6px', padding: '0.65rem 0.8rem', fontSize: '0.82rem', color: 'var(--text-main)' }}><strong style={{ color: '#7bdff2' }}>{credit.label}</strong> • {credit.spentXP}/{credit.xpPerRank} XP usados • {credit.remainingXP} XP restantes</div>)}</div>}
+        <div style={{ display: 'grid', gap: '0.75rem', marginBottom: '1rem' }}>
+          <input type="text" className="input-number" value={techniqueSearch} onChange={(e) => setTechniqueSearch(e.target.value)} placeholder="Buscar técnicas..." />
+          <label className="checkbox-label" style={{ padding: '0.5rem 0.8rem' }}><input type="checkbox" className="checkbox-input" checked={showUnavailableTechniques} onChange={(e) => setShowUnavailableTechniques(e.target.checked)} /><span style={{ fontSize: '0.85rem' }}>Mostrar técnicas indisponíveis</span></label>
+          <div style={{ display: 'grid', gap: '0.5rem', maxHeight: '280px', overflowY: 'auto' }}>
+            {filteredTechniques.map((technique) => { const eligibility = isTechniqueEligible(currentForm, technique); return <div key={technique.catalogId} style={{ background: eligibility.eligible ? 'rgba(123,223,242,0.08)' : 'rgba(255,77,77,0.08)', border: `1px solid ${eligibility.eligible ? 'rgba(123,223,242,0.35)' : 'rgba(255,77,77,0.35)'}`, borderRadius: '6px', padding: '0.75rem' }}><div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', alignItems: 'center' }}><div><div style={{ fontWeight: 'bold', color: '#fff' }}>{technique.name} {technique.universal ? '• Universal' : ''}</div><div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>{technique.description}</div><div style={{ fontSize: '0.76rem', color: '#7bdff2', marginTop: '0.25rem' }}>XP {technique.xpCost || 0} • {technique.xpCategory || 'common'}</div>{!eligibility.eligible && <div style={{ fontSize: '0.76rem', color: '#ff8fab', marginTop: '0.25rem' }}>Faltando: {eligibility.unmet.join(' • ')}</div>}</div><button className="control-btn" disabled={!eligibility.eligible} style={{ width: 'auto', padding: '0.35rem 0.7rem', fontSize: '0.8rem', opacity: eligibility.eligible ? 1 : 0.5 }} onClick={() => updateCurrentForm({ rollBonuses: [...(currentForm.rollBonuses || []), createTechniqueBonusFromCatalog(technique, currentForm)] })}>Adicionar</button></div></div>; })}
+          </div>
+        </div>
         <div className="bonus-editor-list">
           {visibleRollBonuses.map((bonus) => (
             <div key={bonus.id} className="bonus-editor-row" style={{ justifyContent: 'space-between', padding: '0.8rem 1rem', cursor: 'pointer' }} onClick={(e) => {

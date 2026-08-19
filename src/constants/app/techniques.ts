@@ -1,0 +1,132 @@
+import type { RollBonus } from '../../types/character';
+
+export type TechniqueRequirement = {
+  advantages?: string[];
+  skills?: string[];
+  anyOfAdvantages?: string[];
+  anyOfSkills?: string[];
+};
+
+export type TechniqueCatalogEntry = Omit<RollBonus, 'id'> & {
+  catalogId: string;
+  description: string;
+  universal?: boolean;
+  requirements?: TechniqueRequirement;
+};
+
+export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
+  {
+    catalogId: 'barreira_mistica',
+    name: 'Barreira Mística',
+    alias: '',
+    description: 'Barreira defensiva mágica usada como reação.',
+    universal: false,
+    requirements: { advantages: ['magia'], skills: ['mistica'] },
+    attribute: 'habilidade',
+    bonusType: 'attr_mod',
+    value: 2,
+    duration: 'instant',
+    critThresholdMod: 0,
+    autoCrit: false,
+    extraDice: 0,
+    costValue: 2,
+    costResource: 'PM',
+    xpCost: 10,
+    xpCategory: 'common',
+  },
+  {
+    catalogId: 'raio_mistico',
+    name: 'Raio Místico',
+    alias: '',
+    description: 'Ataque mágico direto contra alvo Perto ou Longe.',
+    universal: false,
+    requirements: { advantages: ['magia'], skills: ['mistica'] },
+    attribute: 'habilidade',
+    bonusType: 'attr_mod',
+    value: 2,
+    duration: 'instant',
+    critThresholdMod: 0,
+    autoCrit: false,
+    extraDice: 0,
+    costValue: 2,
+    costResource: 'PM',
+    xpCost: 10,
+    xpCategory: 'common',
+  },
+  {
+    catalogId: 'bola_de_fogo',
+    name: 'Bola de Fogo',
+    alias: '',
+    description: 'Explosão mágica em área.',
+    universal: false,
+    requirements: { advantages: ['magia'], skills: ['mistica'] },
+    attribute: 'habilidade',
+    bonusType: 'flat',
+    value: 2,
+    duration: 'instant',
+    critThresholdMod: 0,
+    autoCrit: false,
+    extraDice: 0,
+    costValue: 3,
+    costResource: 'PM',
+    xpCost: 10,
+    xpCategory: 'common',
+  },
+  {
+    catalogId: 'grimorio_debilitante',
+    name: 'Grimório Debilitante',
+    alias: '',
+    description: 'Feitiço que enfraquece capacidades do alvo.',
+    universal: false,
+    requirements: { advantages: ['magia'], skills: ['mistica'] },
+    attribute: 'habilidade',
+    bonusType: 'none',
+    value: 0,
+    duration: 'instant',
+    critThresholdMod: 0,
+    autoCrit: false,
+    extraDice: -1,
+    costValue: 2,
+    costResource: 'PM',
+    xpCost: 10,
+    xpCategory: 'common',
+  },
+  {
+    catalogId: 'metamagia',
+    name: 'Metamagia',
+    alias: '',
+    description: 'Conjunto lendário para alterar o efeito de Magia e técnicas associadas.',
+    universal: false,
+    requirements: { advantages: ['magia'], skills: ['mistica'] },
+    attribute: 'habilidade',
+    bonusType: 'none',
+    value: 0,
+    duration: 'scene',
+    critThresholdMod: 0,
+    autoCrit: false,
+    extraDice: 0,
+    costValue: 5,
+    costResource: 'PM',
+    xpCost: 20,
+    xpCategory: 'legendary',
+  },
+  {
+    catalogId: 'golpes',
+    name: 'Golpes',
+    alias: '',
+    description: 'Conjunto de truques de combate acessível amplamente.',
+    universal: true,
+    requirements: {},
+    attribute: 'poder',
+    bonusType: 'attr_mod',
+    value: 1,
+    duration: 'instant',
+    critThresholdMod: 0,
+    autoCrit: false,
+    extraDice: 0,
+    costValue: 1,
+    costResource: 'PM',
+    xpCost: 10,
+    xpCategory: 'trick',
+  }
+];
