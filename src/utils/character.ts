@@ -71,7 +71,9 @@ export function loadInitialSheets(): { sheets: CharacterSheet[]; activeId: strin
           ...sheet,
           forms: (sheet.forms || []).map((f: any) => ({
             ...f,
-            rollBonuses: (f.rollBonuses || []).map(normalizeRollBonus)
+            rollBonuses: (f.rollBonuses || []).map(normalizeRollBonus),
+            archetypeSelections: f.archetypeSelections || {},
+            kitSelections: f.kitSelections || {},
           }))
         }));
         const activeId = savedActiveId || normalized[0].id;
@@ -93,7 +95,9 @@ export function loadInitialSheets(): { sheets: CharacterSheet[]; activeId: strin
         soundOn: parsed.soundOn ?? true,
         forms: Array.isArray(parsed.forms) && parsed.forms.length > 0 ? parsed.forms.map((f: any) => ({
           ...f,
-          rollBonuses: (f.rollBonuses || []).map(normalizeRollBonus)
+          rollBonuses: (f.rollBonuses || []).map(normalizeRollBonus),
+          archetypeSelections: f.archetypeSelections || {},
+          kitSelections: f.kitSelections || {},
         })) : [
           {
             id: 'base',
@@ -104,7 +108,9 @@ export function loadInitialSheets(): { sheets: CharacterSheet[]; activeId: strin
             maisVida: parsed.maisVida ?? 0,
             maisMana: parsed.maisMana ?? 0,
             rollBonuses: (parsed.rollBonuses || []).map(normalizeRollBonus),
-            wildShapeAdvantages: []
+            wildShapeAdvantages: [],
+            archetypeSelections: {},
+            kitSelections: {}
           }
         ]
       };
@@ -149,6 +155,18 @@ export function getBonusSubtitle(bonus: RollBonus): string {
 }
 
 export function getKitPowerModifier(power: KitPower) {
+  if (power.structuredEffect) {
+    return {
+      bonusType: power.structuredEffect.bonusType || 'none',
+      attribute: power.structuredEffect.attribute || 'any',
+      value: power.structuredEffect.value || 0,
+      extraDice: power.structuredEffect.extraDice || 0,
+      critThresholdMod: power.structuredEffect.critThresholdMod || 0,
+      autoCrit: !!power.structuredEffect.autoCrit,
+      duration: power.structuredEffect.duration || (power.type === 'buff' || power.type === 'per_scene' ? 'scene' : 'instant')
+    } as const;
+  }
+
   if (power.bonusType || power.value || power.extraDice || power.critThresholdMod) {
     return {
       bonusType: power.bonusType || 'attr_mod',

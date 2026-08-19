@@ -69,27 +69,40 @@ export default function App() {
 
   const currentForm = useMemo(() => {
     const unique = (values?: string[]) => Array.from(new Set(values || []));
-    const selections = currentFormBase.archetypeSelections || {};
-    const selectedOptions = (currentArchetype?.choiceGroups || []).flatMap(group => {
-      const chosen = selections[group.id] || [];
+    const archetypeSelections = currentFormBase.archetypeSelections || {};
+    const selectedArchetypeOptions = (currentArchetype?.choiceGroups || []).flatMap(group => {
+      const chosen = archetypeSelections[group.id] || [];
       return group.options.filter(option => chosen.includes(option.id));
     });
-    const selectedAdvantages = selectedOptions.flatMap(option => option.grantsAdvantages || []);
-    const selectedDisadvantages = selectedOptions.flatMap(option => option.grantsDisadvantages || []);
-    const selectedSkills = selectedOptions.flatMap(option => option.grantsSkills || []);
-    const selectedEffects = selectedOptions.flatMap(option => option.grantsEffects || []);
+    const selectedArchetypeAdvantages = selectedArchetypeOptions.flatMap(option => option.grantsAdvantages || []);
+    const selectedArchetypeDisadvantages = selectedArchetypeOptions.flatMap(option => option.grantsDisadvantages || []);
+    const selectedArchetypeSkills = selectedArchetypeOptions.flatMap(option => option.grantsSkills || []);
+    const selectedArchetypeEffects = selectedArchetypeOptions.flatMap(option => option.grantsEffects || []);
+
+    const kitSelections = currentFormBase.kitSelections || {};
+    const selectedKitOptions = (currentKit?.choiceGroups || []).flatMap(group => {
+      const chosen = kitSelections[group.id] || [];
+      return group.options.filter(option => chosen.includes(option.id));
+    });
+    const selectedKitAdvantages = selectedKitOptions.flatMap(option => option.grantsAdvantages || []);
+    const selectedKitDisadvantages = selectedKitOptions.flatMap(option => option.grantsDisadvantages || []);
+    const selectedKitSkills = selectedKitOptions.flatMap(option => option.grantsSkills || []);
+    const selectedKitEffects = selectedKitOptions.flatMap(option => option.grantsEffects || []);
+
     return {
       ...currentFormBase,
-      advantages: unique([...(currentFormBase.advantages || []), ...(currentArchetype?.grantedAdvantages || []), ...selectedAdvantages]),
-      disadvantages: unique([...(currentFormBase.disadvantages || []), ...(currentArchetype?.grantedDisadvantages || []), ...selectedDisadvantages]),
-      skills: unique([...(currentFormBase.skills || []), ...(currentArchetype?.grantedSkills || []), ...selectedSkills]),
-      archetypeAdvantages: unique([...(currentArchetype?.grantedAdvantages || []), ...selectedAdvantages]),
-      archetypeDisadvantages: unique([...(currentArchetype?.grantedDisadvantages || []), ...selectedDisadvantages]),
-      archetypeSkills: unique([...(currentArchetype?.grantedSkills || []), ...selectedSkills]),
-      archetypeSelections: selections,
-      _archetypeSelectedEffects: selectedEffects,
-    } as typeof currentFormBase & { _archetypeSelectedEffects?: any[] };
-  }, [currentFormBase, currentArchetype]);
+      advantages: unique([...(currentFormBase.advantages || []), ...(currentArchetype?.grantedAdvantages || []), ...selectedArchetypeAdvantages, ...(currentKit?.grantedAdvantages || []), ...selectedKitAdvantages]),
+      disadvantages: unique([...(currentFormBase.disadvantages || []), ...(currentArchetype?.grantedDisadvantages || []), ...selectedArchetypeDisadvantages, ...(currentKit?.grantedDisadvantages || []), ...selectedKitDisadvantages]),
+      skills: unique([...(currentFormBase.skills || []), ...(currentArchetype?.grantedSkills || []), ...selectedArchetypeSkills, ...(currentKit?.grantedSkills || []), ...selectedKitSkills]),
+      archetypeAdvantages: unique([...(currentArchetype?.grantedAdvantages || []), ...selectedArchetypeAdvantages]),
+      archetypeDisadvantages: unique([...(currentArchetype?.grantedDisadvantages || []), ...selectedArchetypeDisadvantages]),
+      archetypeSkills: unique([...(currentArchetype?.grantedSkills || []), ...selectedArchetypeSkills]),
+      archetypeSelections,
+      kitSelections,
+      _archetypeSelectedEffects: selectedArchetypeEffects,
+      _kitSelectedEffects: selectedKitEffects,
+    } as typeof currentFormBase & { _archetypeSelectedEffects?: any[]; _kitSelectedEffects?: any[] };
+  }, [currentFormBase, currentArchetype, currentKit]);
 
   // Filtered kits for modal
   const filteredKits = useMemo(() => {
@@ -119,6 +132,21 @@ export default function App() {
   const rollBonuses = [
     ...(currentForm.rollBonuses || []),
     ...([...(currentArchetype?.grantedEffects || []), ...(((currentForm as any)._archetypeSelectedEffects) || [])].map((effect) => ({
+      id: effect.id,
+      name: effect.name,
+      alias: '',
+      attribute: effect.attribute || 'any',
+      bonusType: effect.bonusType || 'none',
+      value: effect.value || 0,
+      duration: effect.duration || 'instant',
+      attrSource: 'poder' as const,
+      critThresholdMod: effect.critThresholdMod || 0,
+      autoCrit: effect.autoCrit || false,
+      extraDice: effect.extraDice || 0,
+      costValue: effect.costValue || 0,
+      costResource: effect.costResource || 'none',
+    }))),
+    ...([...(currentKit?.grantedEffects || []), ...(((currentForm as any)._kitSelectedEffects) || [])].map((effect) => ({
       id: effect.id,
       name: effect.name,
       alias: '',
@@ -887,6 +915,8 @@ export default function App() {
           <PlayMode
             characterName={characterName}
             currentKit={currentKit}
+            currentKitNotes={currentKit?.notes}
+            currentKitUnsupportedNotes={currentKit?.unsupportedNotes}
             currentArchetypeName={currentArchetype?.name}
             currentArchetypeNotes={currentArchetype?.notes}
             currentArchetypeUnsupportedNotes={currentArchetype?.unsupportedNotes}

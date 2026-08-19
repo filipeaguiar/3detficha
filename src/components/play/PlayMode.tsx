@@ -10,6 +10,8 @@ import { CheckIcon, CloseIcon, DiceCountIcon, HabilidadeIcon, InfoIcon, LeafIcon
 type PlayModeProps = {
   characterName: string;
   currentKit: CharacterKit | null;
+  currentKitNotes?: string[];
+  currentKitUnsupportedNotes?: string[];
   currentArchetypeName?: string;
   currentArchetypeNotes?: string[];
   currentArchetypeUnsupportedNotes?: string[];
@@ -58,6 +60,8 @@ export default function PlayMode(props: PlayModeProps) {
   const {
     characterName,
     currentKit,
+    currentKitNotes,
+    currentKitUnsupportedNotes,
     currentArchetypeName,
     currentArchetypeNotes,
     currentArchetypeUnsupportedNotes,
@@ -183,7 +187,7 @@ export default function PlayMode(props: PlayModeProps) {
             }
 
             return (
-              <button key={power.id} className={`kit-compact-power-btn ${isActiveBuff ? 'active-buff' : isAvailable ? 'available' : 'used'}`} onClick={() => handleUseKitPower(power)} title={`${power.name}: ${power.desc}`}>
+              <button key={power.id} className={`kit-compact-power-btn ${isActiveBuff ? 'active-buff' : isAvailable ? 'available' : 'used'}`} onClick={() => handleUseKitPower(power)} title={`${power.name}: ${power.desc}${power.unsupportedNotes?.length ? ` | Manual/Narrador: ${power.unsupportedNotes.join(' • ')}` : ''}`}>
                 <span className="power-btn-name">{power.name}</span>
                 <span className="power-btn-tag">{statusTag}</span>
               </button>
@@ -218,6 +222,7 @@ export default function PlayMode(props: PlayModeProps) {
 
         {(currentArchetypeName || (currentForm.advantages && currentForm.advantages.length > 0) || (currentForm.disadvantages && currentForm.disadvantages.length > 0) || (currentForm.skills && currentForm.skills.length > 0)) && (
           <div style={{ marginTop: '1rem', display: 'flex', flexWrap: 'wrap', gap: '0.4rem', justifyContent: 'center' }}>
+            {currentKit && <button onClick={() => setDetailModal({ title: `Kit — ${currentKit.name}`, body: [...(currentKitNotes || []), ...(currentKitUnsupportedNotes || []).map(note => `Manual/Narrador: ${note}`)].join('\n\n') || 'Sem detalhes adicionais.', tone: 'technique' })} style={{ background: '#7bdff2', border: 'none', color: '#000', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}><InfoIcon />{currentKit.name}</button>}
             {currentArchetypeName && <button onClick={() => setDetailModal({ title: `Arquétipo — ${currentArchetypeName}`, body: [...(currentArchetypeNotes || []), ...(currentArchetypeUnsupportedNotes || []).map(note => `Manual/Narrador: ${note}`)].join('\n\n') || 'Sem detalhes adicionais.', tone: 'technique' })} style={{ background: '#ffd166', border: 'none', color: '#000', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}><InfoIcon />{currentArchetypeName}</button>}
             {currentForm.advantages?.map(id => {
               const [baseId, variantKey] = id.split('::');

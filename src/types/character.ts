@@ -39,6 +39,7 @@ export type CharacterForm = {
   archetypeDisadvantages?: string[];
   archetypeSkills?: string[];
   archetypeSelections?: Record<string, string[]>;
+  kitSelections?: Record<string, string[]>;
   variantSelections?: Record<string, CharacterVariantSelection[]>;
 };
 
@@ -112,6 +113,39 @@ export type CharacterLinkGroup = {
   sheetIds: string[];
 };
 
+export type KitEffect = {
+  id: string;
+  name: string;
+  desc: string;
+  attribute?: 'any' | 'poder' | 'habilidade' | 'resistencia';
+  bonusType?: 'attr_mod' | 'flat' | 'full_attr' | 'none';
+  value?: number;
+  duration?: 'instant' | 'scene';
+  critThresholdMod?: number;
+  autoCrit?: boolean;
+  extraDice?: number;
+  costValue?: number;
+  costResource?: 'none' | 'PV' | 'PM' | 'PA';
+};
+
+export type KitChoiceOption = {
+  id: string;
+  label: string;
+  grantsAdvantages?: string[];
+  grantsDisadvantages?: string[];
+  grantsSkills?: string[];
+  grantsEffects?: KitEffect[];
+};
+
+export type KitChoiceGroup = {
+  id: string;
+  label: string;
+  kind: 'advantage' | 'disadvantage' | 'skill' | 'variant' | 'effect';
+  min: number;
+  max: number;
+  options: KitChoiceOption[];
+};
+
 export type KitPower = {
   id: string;
   name: string;
@@ -126,6 +160,8 @@ export type KitPower = {
   extraDice?: number;
   critThresholdMod?: number;
   autoCrit?: boolean;
+  structuredEffect?: KitEffect;
+  unsupportedNotes?: string[];
 };
 
 export type CharacterKit = {
@@ -134,6 +170,13 @@ export type CharacterKit = {
   exigencias: string;
   nucleos: string;
   powers: KitPower[];
+  grantedAdvantages?: string[];
+  grantedDisadvantages?: string[];
+  grantedSkills?: string[];
+  grantedEffects?: KitEffect[];
+  choiceGroups?: KitChoiceGroup[];
+  unsupportedNotes?: string[];
+  notes?: string[];
 };
 
 export type RollResultBonus = {
