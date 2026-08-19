@@ -3,7 +3,7 @@ import { HexColorPicker } from 'react-colorful';
 import { ADVANTAGES_CATALOG, DISADVANTAGES_CATALOG } from '../../constants/advantagesData';
 import { ARCHETYPES_CATALOG } from '../../constants/app/archetypes';
 import { SKILLS_CATALOG } from '../../constants/skillsData';
-import { getBonusSubtitle } from '../../utils/character';
+import { getBonusSubtitle, getXPCreditSummary } from '../../utils/character';
 import { ADVANTAGE_VARIANT_OPTIONS, DISADVANTAGE_VARIANT_OPTIONS } from '../../constants/app/variants';
 import type { CharacterArchetype, CharacterForm, CharacterKit, CharacterSheet, RollBonus } from '../../types/character';
 import { BookIcon, CameraIcon, CheckIcon, CloseIcon, LeafIcon, PencilIcon, PlusIcon, TabAdvantagesIcon, TabAttributesIcon, TabConceptIcon, TabSkillsIcon, TabTechniquesIcon, TrashIcon, UsersIcon, WandSparklesIcon } from '../common/Icons';
@@ -124,6 +124,7 @@ export default function CharacterEditor(props: CharacterEditorProps) {
   }, []);
 
   const normalizedAdvSearch = advantageSearch.trim().toLowerCase();
+  const xpCredits = getXPCreditSummary(currentForm);
   const filteredAdvantages = expandedAdvantages.filter((adv) => normalizedAdvSearch === '' || adv.displayName.toLowerCase().includes(normalizedAdvSearch) || adv.desc.toLowerCase().includes(normalizedAdvSearch));
   const filteredDisadvantages = expandedDisadvantages.filter((disadv) => normalizedAdvSearch === '' || disadv.displayName.toLowerCase().includes(normalizedAdvSearch) || disadv.desc.toLowerCase().includes(normalizedAdvSearch));
 
@@ -512,6 +513,7 @@ export default function CharacterEditor(props: CharacterEditorProps) {
 
       <div style={{ display: activeTab === 'techniques' ? 'block' : 'none' }}>
         <h2 className="panel-title" style={{ marginTop: '2rem' }}>Técnicas & Bônus desta Forma</h2>
+        {xpCredits.length > 0 && <div style={{ marginBottom: '1rem', display: 'grid', gap: '0.5rem' }}>{xpCredits.map((credit) => <div key={credit.sourceId} style={{ background: 'rgba(123,223,242,0.08)', border: '1px solid rgba(123,223,242,0.35)', borderRadius: '6px', padding: '0.65rem 0.8rem', fontSize: '0.82rem', color: 'var(--text-main)' }}><strong style={{ color: '#7bdff2' }}>{credit.label}</strong> • {credit.spentXP}/{credit.xpPerRank} XP usados • {credit.remainingXP} XP restantes</div>)}</div>}
         <div className="bonus-editor-list">
           {visibleRollBonuses.map((bonus) => (
             <div key={bonus.id} className="bonus-editor-row" style={{ justifyContent: 'space-between', padding: '0.8rem 1rem', cursor: 'pointer' }} onClick={(e) => {
@@ -540,6 +542,7 @@ export default function CharacterEditor(props: CharacterEditorProps) {
                 <div style={{ color: 'var(--accent-color)', fontSize: '0.85rem', marginTop: '2px' }}>
                   {getBonusSubtitle(bonus)}
                 </div>
+                {(bonus.xpCost || bonus.fundedBySourceIds?.length) ? <div style={{ color: '#7bdff2', fontSize: '0.75rem', marginTop: '2px' }}>XP: {bonus.xpCost || 0}{bonus.fundedBySourceIds?.length ? ` • Coberta por: ${bonus.fundedBySourceIds.join(', ')}` : ''}</div> : null}
               </div>
               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                 <button className="bonus-remove-btn" style={{ color: 'var(--text-muted)' }} onClick={() => setEditingBonusId(bonus.id)} title="Editar técnica">

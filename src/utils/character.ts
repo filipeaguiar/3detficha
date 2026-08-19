@@ -1,7 +1,7 @@
 import { ADVANTAGES_CATALOG, DISADVANTAGES_CATALOG } from '../constants/advantagesData';
 import { ARCHETYPES_CATALOG } from '../constants/app/archetypes';
 import { ADVANTAGE_VARIANT_OPTIONS, DISADVANTAGE_VARIANT_OPTIONS } from '../constants/app/variants';
-import type { CharacterForm, CharacterLinkGroup, CharacterSheet, KitPower, RollBonus } from '../types/character';
+import type { CharacterForm, CharacterLinkGroup, CharacterSheet, KitPower, RollBonus, XPCreditRule } from '../types/character';
 
 export function normalizeRollBonus(raw: any): RollBonus {
   const name = raw.name || raw.label || 'Bônus';
@@ -223,6 +223,44 @@ function getFirstNumericCost(cost?: string): number {
   return positiveMatch ? parseInt(positiveMatch[0], 10) : 0;
 }
 
+export function getXPCreditRules(currentForm: CharacterForm): XPCreditRule[] {
+  const rules: XPCreditRule[] = [];
+  (currentForm.advantages || []).forEach((advId: string) => {
+    const [baseId, variantKey] = advId.split('::');
+    if (baseId === 'grimorio') {
+      const rank = variantKey === 'supremo' ? 3 : variantKey === 'avancado' ? 2 : 1;
+      rules.push({ sourceId: advId, label: 'Grimório', xpPerRank: 10 * rank, allowedCategories: ['trick', 'common'] });
+    }
+  });
+  return rules;
+}
+
+export function getXPCreditSummary(currentForm: CharacterForm) {
+  const rules = getXPCreditRules(currentForm);
+  const budgets = new Map<string, number>();
+  rules.forEach(rule => budgets.set(rule.sourceId, rule.xpPerRank));
+
+  const techniques = (currentForm.rollBonuses || []).filter((bonus) => typeof bonus.xpCost === 'number' && bonus.xpCost > 0);
+  techniques.forEach((bonus) => {
+    const category = bonus.xpCategory || 'generic';
+    let remaining = bonus.xpCost || 0;
+    (bonus.fundedBySourceIds || []).forEach((sourceId) => {
+      const rule = rules.find(r => r.sourceId === sourceId && r.allowedCategories.includes(category));
+      if (!rule || remaining <= 0) return;
+      const available = budgets.get(sourceId) || 0;
+      const consumed = Math.min(available, remaining);
+      budgets.set(sourceId, available - consumed);
+      remaining -= consumed;
+    });
+  });
+
+  return rules.map(rule => ({
+    ...rule,
+    spentXP: rule.xpPerRank - (budgets.get(rule.sourceId) || 0),
+    remainingXP: budgets.get(rule.sourceId) || 0,
+  }));
+}
+
 export function calculatePoints(currentForm: CharacterForm, kitCost = 0, archetypeCost = 0): number {
   let total = currentForm.poder + currentForm.habilidade + currentForm.resistencia + kitCost + archetypeCost;
 
@@ -245,6 +283,27 @@ export function calculatePoints(currentForm: CharacterForm, kitCost = 0, archety
       const variant = variantKey ? DISADVANTAGE_VARIANT_OPTIONS[baseId]?.find(v => v.key === variantKey) : undefined;
       const numericCost = getFirstNumericCost(variant?.cost || dis?.cost);
       total += numericCost;
+    });
+  }
+
+  const rules = getXPCreditRules(currentForm);
+  const budgets = new Map<string, number>();
+  rules.forEach(rule => budgets.set(rule.sourceId, rule.xpPerRank));
+  if (currentForm.rollBonuses) {
+    currentForm.rollBonuses.forEach((bonus) => {
+      let remainingXP = bonus.xpCost || 0;
+      const category = bonus.xpCategory || 'generic';
+      if (remainingXP > 0) {
+        (bonus.fundedBySourceIds || []).forEach((sourceId) => {
+          const rule = rules.find(r => r.sourceId === sourceId && r.allowedCategories.includes(category));
+          if (!rule || remainingXP <= 0) return;
+          const available = budgets.get(sourceId) || 0;
+          const consumed = Math.min(available, remainingXP);
+          budgets.set(sourceId, available - consumed);
+          remainingXP -= consumed;
+        });
+        total += Math.max(0, Math.ceil(remainingXP / 10));
+      }
     });
   }
 

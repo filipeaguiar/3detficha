@@ -12,6 +12,9 @@ export type RollBonus = {
   extraDice?: number;
   costValue?: number;
   costResource?: 'none' | 'PV' | 'PM' | 'PA';
+  xpCost?: number;
+  xpCategory?: 'trick' | 'common' | 'legendary' | 'generic';
+  fundedBySourceIds?: string[];
 };
 
 export type CharacterVariantSelection = {
@@ -19,6 +22,13 @@ export type CharacterVariantSelection = {
   label: string;
   value?: string;
   cost?: string;
+};
+
+export type XPCreditRule = {
+  sourceId: string;
+  label: string;
+  xpPerRank: number;
+  allowedCategories: Array<'trick' | 'common' | 'legendary' | 'generic'>;
 };
 
 export type CharacterForm = {
