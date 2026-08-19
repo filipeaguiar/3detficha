@@ -365,7 +365,7 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     catalogId: 'area_de_batalha',
     name: 'Área de Batalha',
     alias: '',
-    description: 'Transporta combatentes para dimensão especial com vantagens escolhidas.',
+    description: 'Transporta combatentes para dimensão especial com pacote temporário e escolhas assistidas.',
     universal: false,
     requirements: { skills: ['mistica'] },
     attribute: 'habilidade',
@@ -379,6 +379,11 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     costResource: 'PM',
     xpCost: 10,
     xpCategory: 'common',
+    temporaryPackage: {
+      kind: 'temporary-package',
+      statusLabel: 'Área ativa',
+      note: 'Escolha em mesa duas vantagens de 1 ponto ou uma de 2 pontos. O app registra e exibe o pacote temporário, mas a resistência de oponentes e a aplicação completa das vantagens continuam assistidas.'
+    }
   },
   {
     catalogId: 'combo',
@@ -502,26 +507,7 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     catalogId: 'poeira_glacial',
     name: 'Poeira Glacial',
     alias: '',
-    description: 'Ataque de frio que pode congelar o alvo.',
-    universal: false,
-    requirements: { advantages: ['magia'] },
-    attribute: 'habilidade',
-    bonusType: 'attr_mod',
-    value: 2,
-    duration: 'instant',
-    critThresholdMod: 0,
-    autoCrit: false,
-    extraDice: -1,
-    costValue: 3,
-    costResource: 'PM',
-    xpCost: 10,
-    xpCategory: 'common',
-  },
-  {
-    catalogId: 'relampago',
-    name: 'Relâmpago',
-    alias: '',
-    description: 'Ataque elétrico que pode atordoar o alvo.',
+    description: 'Ataque de frio com suporte seguro ao bônus de Magia e congelamento assistido.',
     universal: false,
     requirements: { advantages: ['magia'] },
     attribute: 'habilidade',
@@ -535,6 +521,37 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     costResource: 'PM',
     xpCost: 10,
     xpCategory: 'common',
+    variantSelectionMode: 'cycle',
+    selectedVariantId: 'padrao',
+    variants: [
+      { id: 'padrao', label: 'Padrão', costValue: 3, costResource: 'PM', value: 2, bonusType: 'attr_mod', note: 'Ataque de frio padrão; se o alvo perder PV acima da Resistência, congela e sofre Perda por uma rodada.' },
+      { id: 'magia_reforcada', label: 'Magia Reforçada', costValue: 4, costResource: 'PM', value: 3, bonusType: 'attr_mod', note: 'Representa uso de Magia para reforçar o ataque; congelamento continua resolvido em mesa.' }
+    ]
+  },
+  {
+    catalogId: 'relampago',
+    name: 'Relâmpago',
+    alias: '',
+    description: 'Ataque elétrico com suporte seguro ao bônus de Magia e atordoamento assistido.',
+    universal: false,
+    requirements: { advantages: ['magia'] },
+    attribute: 'habilidade',
+    bonusType: 'attr_mod',
+    value: 2,
+    duration: 'instant',
+    critThresholdMod: 0,
+    autoCrit: false,
+    extraDice: 0,
+    costValue: 3,
+    costResource: 'PM',
+    xpCost: 10,
+    xpCategory: 'common',
+    variantSelectionMode: 'cycle',
+    selectedVariantId: 'padrao',
+    variants: [
+      { id: 'padrao', label: 'Padrão', costValue: 3, costResource: 'PM', value: 2, bonusType: 'attr_mod', note: 'Ataque elétrico padrão; se o alvo perder PV acima da Resistência, fica atordoado e concede Ganho por uma rodada.' },
+      { id: 'magia_reforcada', label: 'Magia Reforçada', costValue: 4, costResource: 'PM', value: 3, bonusType: 'attr_mod', note: 'Representa uso de Magia para reforçar o ataque; atordoamento continua resolvido em mesa.' }
+    ]
   },
   {
     catalogId: 'setas_infaliveis_de_petrovna',
@@ -589,6 +606,30 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
       { id: 'carga_1', label: 'Carga +1 mov.', costValue: 3, costResource: 'PM', value: 4, bonusType: 'attr_mod', critThresholdMod: -1, note: 'Gasta 1 movimento extra para +2 Poder no mesmo turno.' },
       { id: 'carga_2', label: 'Carga +2 mov.', costValue: 3, costResource: 'PM', value: 6, bonusType: 'attr_mod', critThresholdMod: -1, note: 'Gasta 2 movimentos extras para +4 Poder total; respeite o limite real de Habilidade em mesa.' }
     ]
+  },
+  {
+    catalogId: 'golpe_purpura',
+    name: 'Golpe Púrpura',
+    alias: '',
+    description: 'Ataque poderoso com crítico automático e arremesso assistido por críticos extras.',
+    universal: false,
+    requirements: { skills: ['luta'] },
+    attribute: 'poder',
+    bonusType: 'none',
+    value: 0,
+    duration: 'instant',
+    critThresholdMod: 0,
+    autoCrit: true,
+    extraDice: 0,
+    costValue: 3,
+    costResource: 'PM',
+    xpCost: 10,
+    xpCategory: 'common',
+    variants: [
+      { id: 'padrao', label: 'Padrão', costValue: 3, costResource: 'PM', autoCrit: true, note: 'Recebe um crítico automático. Se houver outro crítico, o alvo é arremessado; cada crítico extra aumenta a distância. Obstáculos e dano extra são resolvidos em mesa.' }
+    ],
+    selectedVariantId: 'padrao',
+    variantSelectionMode: 'cycle'
   },
   {
     catalogId: 'desprezo',

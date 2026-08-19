@@ -575,6 +575,12 @@ export default function App() {
         return;
       }
       updateRollBonus(bonus.id, { assistedState: { ...(bonus.assistedState || {}), active: true, stockCount: bonus.persistentAssisted.stockCount } });
+      return;
+    }
+
+    if (bonus.temporaryPackage) {
+      updateRollBonus(bonus.id, { assistedState: { ...(bonus.assistedState || {}), active: !bonus.assistedState?.active } });
+      return;
     }
 
     setActiveBonuses(prev => {

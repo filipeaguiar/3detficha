@@ -301,20 +301,24 @@ export default function PlayMode(props: PlayModeProps) {
                 const activeVariant = getActiveBonusVariant(bonus);
                 const isImmediate = !!(activeVariant?.immediateAction || bonus.immediateAction);
                 const isPersistentAssisted = !!(activeVariant?.persistentAssisted || bonus.persistentAssisted);
+                const isTemporaryPackage = !!(activeVariant?.temporaryPackage || bonus.temporaryPackage);
                 const assistedConfig = activeVariant?.persistentAssisted || bonus.persistentAssisted;
+                const temporaryConfig = activeVariant?.temporaryPackage || bonus.temporaryPackage;
                 return (
-                  <button key={bonus.id} className={`bonus-toggle ${isActive ? 'active' : ''}`} onClick={() => toggleActiveBonus(bonus.id)} onContextMenu={(e) => { e.preventDefault(); setDetailModal({ title: bonus.alias || bonus.name, subtitle: getBonusSubtitle(bonus), body: `${bonus.name !== (bonus.alias || bonus.name) ? `Base: ${bonus.name}\n\n` : ''}${activeVariant?.note || 'Técnica configurada nesta forma.'}`, tone: 'technique' }); }} title={`${bonus.alias || bonus.name}: ${getBonusSubtitle(bonus)}`}>
+                  <button key={bonus.id} className={`bonus-toggle ${isActive ? 'active' : ''}`} onClick={() => toggleActiveBonus(bonus.id)} onContextMenu={(e) => { e.preventDefault(); setDetailModal({ title: bonus.alias || bonus.name, subtitle: getBonusSubtitle(bonus), body: `${bonus.name !== (bonus.alias || bonus.name) ? `Base: ${bonus.name}\n\n` : ''}${activeVariant?.note || bonus.persistentAssisted?.note || bonus.temporaryPackage?.note || 'Técnica configurada nesta forma.'}`, tone: 'technique' }); }} title={`${bonus.alias || bonus.name}: ${getBonusSubtitle(bonus)}`}>
                     <div className="bonus-toggle-header">
                       <span className="bonus-toggle-label">{bonus.alias ? bonus.alias : bonus.name}</span>
                       {bonus.duration === 'scene' && <span className="bonus-attr-micro" style={{ background: '#33ccff', color: '#000' }}>CENA</span>}
                       {isImmediate && <span className="bonus-attr-micro" style={{ background: '#ffd166', color: '#000' }}>AÇÃO</span>}
                       {isPersistentAssisted && <span className="bonus-attr-micro" style={{ background: bonus.assistedState?.active ? '#7bd389' : '#ff8fab', color: '#000' }}>{bonus.assistedState?.active ? (assistedConfig?.statusLabel || 'ATIVO') : 'ASSISTIDO'}</span>}
+                      {isTemporaryPackage && <span className="bonus-attr-micro" style={{ background: bonus.assistedState?.active ? '#7bd389' : '#ffd166', color: '#000' }}>{bonus.assistedState?.active ? (temporaryConfig?.statusLabel || 'PACOTE') : 'PACOTE'}</span>}
                       {bonus.attribute !== 'any' && <span className="bonus-attr-micro" style={{ color: bonus.attribute === 'poder' ? '#FF9E00' : bonus.attribute === 'habilidade' ? '#894EC6' : '#5EB05D' }}>{bonus.attribute.charAt(0).toUpperCase()}</span>}
                     </div>
                     {bonus.alias && <span className="bonus-toggle-raw-name">{bonus.name}</span>}
                     <span className="bonus-toggle-value">{getBonusSubtitle(bonus)}</span>
                     {isPersistentAssisted && assistedConfig?.triggerCostValue ? <span className="bonus-toggle-raw-name">{assistedConfig.triggerLabel || 'Acionar'} [-{assistedConfig.triggerCostValue} {assistedConfig.triggerCostResource || 'PM'}]</span> : null}
                     {isPersistentAssisted && typeof bonus.assistedState?.stockCount === 'number' ? <span className="bonus-toggle-raw-name">Estoque: {bonus.assistedState.stockCount}</span> : null}
+                    {isTemporaryPackage ? <span className="bonus-toggle-raw-name">{bonus.assistedState?.active ? 'Pacote temporário registrado' : 'Toque para ativar/desativar o pacote assistido'}</span> : null}
                     {bonus.variants && bonus.variants.length > 1 ? <span className="bonus-toggle-raw-name" style={{ marginTop: '0.25rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}><button type="button" className="bonus-remove-btn" style={{ minWidth: 'auto' }} onClick={(e) => { e.stopPropagation(); cycleBonusVariant(bonus.id); }} title="Alternar variante">↻</button><span>{activeVariant?.label || 'Variante'}</span></span> : null}
                   </button>
                 );
