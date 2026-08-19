@@ -1,10 +1,17 @@
 import type { RollBonus } from '../../types/character';
+import { REMAINING_TECHNIQUES } from './remainingTechniques';
 
 export type TechniqueRequirement = {
   advantages?: string[];
+  exactAdvantages?: string[];
   skills?: string[];
+  techniques?: string[];
+  attributes?: Partial<Record<'poder' | 'habilidade' | 'resistencia', number>>;
+  anyAttributeMin?: number;
+  anyOfAttributes?: Partial<Record<'poder' | 'habilidade' | 'resistencia', number>>;
   anyOfAdvantages?: string[];
   anyOfSkills?: string[];
+  oneOf?: { advantages?: string[]; skills?: string[]; techniques?: string[] };
 };
 
 export type TechniqueCatalogEntry = Omit<RollBonus, 'id'> & {
@@ -38,7 +45,7 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     catalogId: 'dobrar_elemento',
     name: 'Dobrar Elemento',
     alias: '',
-    description: 'Controle elemental utilitário; não serve para causar dano direto.',
+    description: 'Controle elemental utilitário; cada elemento é um truque separado e não causa dano direto.',
     universal: true,
     requirements: {},
     attribute: 'habilidade',
@@ -47,11 +54,13 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     duration: 'instant',
     critThresholdMod: 0,
     autoCrit: false,
-    extraDice: -1,
-    costValue: 2,
+    extraDice: 0,
+    costValue: 1,
     costResource: 'PM',
     xpCost: 10,
     xpCategory: 'trick',
+    gameplayPattern: 'narrative',
+    tableNotes: ['O elemento escolhido deve ser registrado no nome/alias. Quantidade, presença do elemento e efeitos menores são decididos em mesa.'],
   },
   {
     catalogId: 'barreira_mistica',
@@ -61,7 +70,7 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     universal: false,
     requirements: { advantages: ['magia'], skills: ['mistica'] },
     attribute: 'habilidade',
-    bonusType: 'attr_mod',
+    bonusType: 'none',
     value: 0,
     duration: 'instant',
     critThresholdMod: 0,
@@ -70,7 +79,9 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     costValue: 1,
     costResource: 'PM',
     xpCost: 10,
-    xpCategory: 'common',
+    xpCategory: 'trick',
+    gameplayPattern: 'cycling-variant',
+    tableNotes: ['A barreira permanece até o próximo turno; efeitos contra atacante ou aliado são resolvidos em mesa.'],
     variantSelectionMode: 'cycle',
     selectedVariantId: 'base',
     variants: [
@@ -86,7 +97,7 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     universal: false,
     requirements: { advantages: ['magia'], skills: ['mistica'] },
     attribute: 'habilidade',
-    bonusType: 'attr_mod',
+    bonusType: 'none',
     value: 0,
     duration: 'instant',
     critThresholdMod: 0,
@@ -95,7 +106,8 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     costValue: 1,
     costResource: 'PM',
     xpCost: 10,
-    xpCategory: 'common',
+    xpCategory: 'trick',
+    gameplayPattern: 'cycling-variant',
     variantSelectionMode: 'cycle',
     selectedVariantId: 'base',
     variants: [
@@ -107,12 +119,12 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     catalogId: 'bola_de_fogo',
     name: 'Bola de Fogo',
     alias: '',
-    description: 'Explosão mágica em área.',
+    description: 'Explosão mágica em área; alvos Perto do alvo principal também são atingidos.',
     universal: false,
-    requirements: { advantages: ['magia'], skills: ['mistica'] },
+    requirements: { attributes: { habilidade: 2 }, advantages: ['magia'] },
     attribute: 'habilidade',
-    bonusType: 'flat',
-    value: 2,
+    bonusType: 'none',
+    value: 0,
     duration: 'instant',
     critThresholdMod: 0,
     autoCrit: false,
@@ -121,6 +133,8 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     costResource: 'PM',
     xpCost: 10,
     xpCategory: 'common',
+    gameplayPattern: 'fixed-modifier',
+    tableNotes: ['Todos os alvos da explosão sofrem Perda na defesa; bônus de Magia é declarado em mesa.'],
   },
   {
     catalogId: 'grimorio_debilitante',
@@ -128,7 +142,7 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     alias: '',
     description: 'Feitiço debilitante com efeitos escolhidos em mesa e duração/custo variáveis por modo.',
     universal: false,
-    requirements: { advantages: ['magia'], skills: ['mistica'] },
+    requirements: { advantages: ['magia'] },
     attribute: 'habilidade',
     bonusType: 'none',
     value: 0,
@@ -139,35 +153,49 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     costValue: 3,
     costResource: 'PM',
     xpCost: 10,
-    xpCategory: 'common',
+    xpCategory: 'trick',
+    gameplayPattern: 'cycling-variant',
     variantSelectionMode: 'cycle',
     selectedVariantId: 'luz_trevas',
     variants: [
-      { id: 'luz_trevas', label: 'Luz/Trevas', costValue: 3, costResource: 'PM', extraDice: -1, note: 'Ilumina ou escurece área Perto do alvo; efeitos visuais e duração duradoura declarados em mesa.' },
-      { id: 'pes_de_chumbo', label: 'Pés de Chumbo', costValue: 3, costResource: 'PM', extraDice: -1, note: 'Aumenta a gravidade no alvo; ele pode resistir com Resistência contra sua Habilidade.' },
-      { id: 'tempestade_mental', label: 'Tempestade Mental', costValue: 3, costResource: 'PM', extraDice: -1, note: 'Ataque que drena PM em vez de causar PV se superar a defesa.' },
-      { id: 'terreno_escorregadio', label: 'Terreno Escorregadio de Neo', costValue: 3, costResource: 'PM', extraDice: -1, note: 'Área escorregadia causa Perda ligada a movimentação; pode gastar 9PM para tornar duradoura.' },
-      { id: 'terreno_escorregadio_duradouro', label: 'Terreno Escorregadio Duradouro', costValue: 9, costResource: 'PM', extraDice: -1, note: 'Versão duradoura de Terreno Escorregadio de Neo.' }
+      { id: 'luz_trevas', label: 'Luz/Trevas', costValue: 3, costResource: 'PM', note: 'Ilumina ou escurece área Perto do alvo; Perdas visuais são aplicadas em mesa.' },
+      { id: 'pes_de_chumbo', label: 'Pés de Chumbo', costValue: 3, costResource: 'PM', note: 'Aumenta a gravidade no alvo; ele pode resistir com Resistência contra sua Habilidade.' },
+      { id: 'tempestade_mental', label: 'Tempestade Mental', costValue: 3, costResource: 'PM', note: 'Ataque que drena PM em vez de causar PV se superar a defesa.' },
+      { id: 'terreno_escorregadio', label: 'Terreno Escorregadio de Neo', costValue: 3, costResource: 'PM', note: 'Área escorregadia causa Perda ligada a movimentação por um turno e falhas causam queda.' },
+      { id: 'terreno_escorregadio_duradouro', label: 'Terreno Escorregadio Duradouro', costValue: 9, costResource: 'PM', note: 'Versão duradoura de Terreno Escorregadio de Neo.' }
     ]
   },
   {
     catalogId: 'metamagia',
     name: 'Metamagia',
     alias: '',
-    description: 'Conjunto lendário para alterar o efeito de Magia e técnicas associadas.',
+    description: 'Conjunto lendário de modificadores aplicados a Magia e técnicas que exigem Magia.',
     universal: false,
-    requirements: { advantages: ['magia'], skills: ['mistica'] },
+    requirements: { attributes: { habilidade: 5 }, advantages: ['magia', 'maestria'] },
     attribute: 'habilidade',
     bonusType: 'none',
     value: 0,
-    duration: 'scene',
+    duration: 'instant',
     critThresholdMod: 0,
     autoCrit: false,
     extraDice: 0,
-    costValue: 5,
-    costResource: 'PM',
+    costValue: 0,
+    costResource: 'none',
     xpCost: 20,
     xpCategory: 'legendary',
+    gameplayPattern: 'cycling-variant',
+    variantSelectionMode: 'cycle',
+    selectedVariantId: 'acelerar',
+    variants: [
+      { id: 'acelerar', label: 'Acelerar Magia', costValue: 5, costResource: 'PM', note: 'Diminui o tipo de ação da magia em um passo.' },
+      { id: 'alvo_extra', label: 'Alvo Extra', costValue: 1, costResource: 'PM', note: 'Adiciona um alvo e divide o efeito; máximo conforme Habilidade.' },
+      { id: 'duplicar', label: 'Duplicar Magia', note: 'Duplica a magia pagando novamente seu custo integral; conta como dois efeitos.' },
+      { id: 'estender', label: 'Estender Magia', costValue: 3, costResource: 'PM', note: 'Aumenta o alcance um passo; passos adicionais contam como novos efeitos.' },
+      { id: 'expandir_perto', label: 'Expandir — Perto', costValue: 3, costResource: 'PM', note: 'Afeta todos Perto do alvo.' },
+      { id: 'expandir_longe', label: 'Expandir — Longe', costValue: 9, costResource: 'PM', note: 'Afeta todos Longe do alvo e impõe Perdas defensivas em mesa.' },
+      { id: 'expandir_muito_longe', label: 'Expandir — Muito Longe', costValue: 15, costResource: 'PM', note: 'Afeta todos Muito Longe do alvo e impõe Perdas defensivas em mesa.' }
+    ],
+    tableNotes: ['Exige Maestria (Mística). Combinações, custo da magia base e limite de H efeitos são controlados em mesa.'],
   },
   {
     catalogId: 'golpes',
@@ -192,7 +220,7 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     catalogId: 'grimorio_irritante',
     name: 'Grimório Irritante',
     alias: '',
-    description: 'Magias irritantes e provocativas, com pouco efeito mecânico direto.',
+    description: 'Magias irritantes e provocativas, com efeitos escolhidos e resolvidos em mesa.',
     universal: false,
     requirements: { advantages: ['magia'] },
     attribute: 'habilidade',
@@ -201,7 +229,7 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     duration: 'instant',
     critThresholdMod: 0,
     autoCrit: false,
-    extraDice: -1,
+    extraDice: 0,
     costValue: 1,
     costResource: 'PM',
     xpCost: 10,
@@ -256,9 +284,9 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     variantSelectionMode: 'cycle',
     selectedVariantId: 'bomba_de_fumaca',
     variants: [
-      { id: 'bomba_de_fumaca', label: 'Bomba de Fumaça', costValue: 2, costResource: 'PM', extraDice: -1, note: 'Todos Perto ficam cegos por uma rodada, inclusive aliados.' },
+      { id: 'bomba_de_fumaca', label: 'Bomba de Fumaça', costValue: 2, costResource: 'PM', note: 'Todos Perto ficam cegos por uma rodada, inclusive aliados; Perda visual é aplicada em mesa.' },
       { id: 'corrida_ninja', label: 'Corrida Ninja', costValue: 2, costResource: 'PM', note: 'Dobra o deslocamento neste turno.' },
-      { id: 'estrepes', label: 'Estrepes', costValue: 2, costResource: 'PM', extraDice: -1, note: 'Alvo Perto sofre Perda em um teste à sua escolha até seu próximo turno.' },
+      { id: 'estrepes', label: 'Estrepes', costValue: 2, costResource: 'PM', note: 'Alvo Perto sofre Perda em um teste à sua escolha até seu próximo turno.' },
       { id: 'jutsu_de_troca', label: 'Jutsu de Troca', costValue: 2, costResource: 'PM', extraDice: 1, note: 'Como reação, troca de lugar com item próximo e recebe Ganho na defesa; apenas uma vez por rodada.' },
       { id: 'pipa_ninja', label: 'Pipa Ninja', costValue: 2, costResource: 'PM', note: 'Salta até Longe e voa por uma rodada; manutenção declarada em mesa.' }
     ]
@@ -277,10 +305,18 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     critThresholdMod: 0,
     autoCrit: false,
     extraDice: 0,
-    costValue: 1,
-    costResource: 'PM',
+    costValue: 0,
+    costResource: 'none',
     xpCost: 10,
     xpCategory: 'trick',
+    gameplayPattern: 'cycling-variant',
+    variantSelectionMode: 'cycle',
+    selectedVariantId: 'truque_simples',
+    variants: [
+      { id: 'truque_simples', label: 'Truque Simples', note: 'Cria, move, colore, limpa, suja, aquece ou esfria pequenos itens; teste de Mística.' },
+      { id: 'servo_feerico', label: 'Servo Feérico', costValue: 1, costResource: 'PM', note: 'Cria pequeno ser feérico para uma tarefa simples.' }
+    ],
+    tableNotes: ['Com Mística e Magia, esta técnica é adquirida sem gastar XP.'],
   },
   {
     catalogId: 'praga',
@@ -304,7 +340,7 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     selectedVariantId: 'menos_um_atributo',
     variants: [
       { id: 'menos_um_atributo', label: '-1 em atributo', costValue: 2, costResource: 'PM', note: 'Se vencer Poder contra Resistência do alvo, ele sofre -1 em testes de um atributo até o fim da cena.' },
-      { id: 'perda_em_teste', label: 'Perda em teste', costValue: 2, costResource: 'PM', extraDice: -1, note: 'Se vencer, o alvo sofre Perda em um único teste à sua escolha, até o fim da sessão.' },
+      { id: 'perda_em_teste', label: 'Perda em teste', costValue: 2, costResource: 'PM', note: 'Se vencer, o alvo sofre Perda em um único teste à sua escolha, até o fim da sessão.' },
       { id: 'custos_mais_caros', label: 'Custos +1PM', costValue: 2, costResource: 'PM', note: 'Se vencer, vantagens e técnicas do alvo custam +1PM até o fim da cena.' },
       { id: 'falha_critica_no_1', label: '1 vira falha crítica', costValue: 2, costResource: 'PM', note: 'Se vencer, qualquer resultado 1 do alvo causa falha crítica até o fim da cena.' }
     ]
@@ -315,7 +351,7 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     alias: '',
     description: 'Movimentos impossíveis por treinamento ou magia, com modos situacionais escolhidos em jogo.',
     universal: false,
-    requirements: { anyOfAdvantages: ['magia'], anyOfSkills: ['esporte', 'luta'] },
+    requirements: { oneOf: { advantages: ['magia'], skills: ['esporte', 'luta'] } },
     attribute: 'habilidade',
     bonusType: 'none',
     value: 0,
@@ -367,8 +403,8 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     alias: '',
     description: 'Transporta combatentes para dimensão especial com pacote temporário e escolhas assistidas.',
     universal: false,
-    requirements: { skills: ['mistica'] },
-    attribute: 'habilidade',
+    requirements: { skills: ['mistica'], anyOfAttributes: { poder: 2, habilidade: 2 } },
+    attribute: 'any',
     bonusType: 'none',
     value: 0,
     duration: 'scene',
@@ -379,11 +415,17 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     costResource: 'PM',
     xpCost: 10,
     xpCategory: 'common',
+    gameplayPattern: 'temporary-package',
     temporaryPackage: {
       kind: 'temporary-package',
       statusLabel: 'Área ativa',
-      note: 'Escolha em mesa duas vantagens de 1 ponto ou uma de 2 pontos. O app registra e exibe o pacote temporário, mas a resistência de oponentes e a aplicação completa das vantagens continuam assistidas.'
-    }
+      maintenanceCostValue: 1,
+      maintenanceCostResource: 'PM',
+      choiceBudget: 2,
+      maxChoices: 2,
+      note: 'Escolha duas vantagens de 1 ponto ou uma de 2 pontos. O app registra e exibe o pacote temporário, mas a resistência de oponentes e a aplicação completa das vantagens continuam assistidas.'
+    },
+    tableNotes: ['Oponentes podem resistir ao transporte. Custos reduzidos por vantagens já possuídas e ativações simultâneas são resolvidos em mesa.']
   },
   {
     catalogId: 'combo',
@@ -391,14 +433,14 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     alias: '',
     description: 'Permite encadear golpes diferentes no mesmo turno.',
     universal: false,
-    requirements: { skills: ['luta'] },
+    requirements: { attributes: { habilidade: 1 }, techniques: ['golpes'] },
     attribute: 'habilidade',
     bonusType: 'none',
     value: 0,
     duration: 'instant',
     critThresholdMod: 0,
     autoCrit: false,
-    extraDice: 1,
+    extraDice: 0,
     costValue: 0,
     costResource: 'none',
     xpCost: 10,
@@ -410,7 +452,7 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     alias: '',
     description: 'Concentra energia espiritual e dispara contra alvo Longe, com níveis de carga situacionais.',
     universal: false,
-    requirements: { anyOfAdvantages: ['magia'], anyOfSkills: ['luta'] },
+    requirements: { oneOf: { advantages: ['magia'], skills: ['luta'] } },
     attribute: 'poder',
     bonusType: 'attr_mod',
     value: 2,
@@ -465,7 +507,7 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     alias: '',
     description: 'Torna um alvo amigável, com uso mundano ou mágico reforçado.',
     universal: false,
-    requirements: { anyOfAdvantages: ['magia'], anyOfSkills: ['arte', 'influencia'] },
+    requirements: { oneOf: { advantages: ['magia'], skills: ['arte', 'influencia'] } },
     attribute: 'poder',
     bonusType: 'none',
     value: 0,
@@ -481,38 +523,40 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     selectedVariantId: 'padrao',
     variants: [
       { id: 'padrao', label: 'Padrão', costValue: 3, costResource: 'PM', note: 'Teste resistido de Poder contra Resistência; o alvo não pode agir agressivamente contra você.' },
-      { id: 'magia_reforcada', label: 'Magia Reforçada', costValue: 4, costResource: 'PM', extraDice: 1, note: 'Usando Magia, pode gastar mais PM para obter bônus no teste; esta variante representa um reforço mínimo seguro.' }
+      { id: 'magia_reforcada', label: 'Magia Reforçada', costValue: 4, costResource: 'PM', note: 'Usa Magia para receber bônus variável, declarado em mesa.' }
     ]
   },
   {
     catalogId: 'invocar_elemental',
     name: 'Invocar Elemental',
     alias: '',
-    description: 'Invoca criatura elemental que age como Ajudante.',
+    description: 'Invoca criatura elemental que age como Ajudante escolhido na conjuração.',
     universal: false,
-    requirements: { advantages: ['magia'] },
-    attribute: 'habilidade',
+    requirements: { attributes: { habilidade: 2 }, advantages: ['magia'] },
+    attribute: 'any',
     bonusType: 'none',
     value: 0,
     duration: 'scene',
     critThresholdMod: 0,
     autoCrit: false,
-    extraDice: 1,
+    extraDice: 0,
     costValue: 3,
     costResource: 'PM',
     xpCost: 10,
     xpCategory: 'common',
+    gameplayPattern: 'temporary-package',
+    temporaryPackage: { kind: 'temporary-package', statusLabel: 'Elemental invocado', note: 'O tipo de Ajudante é escolhido ao conjurar; custos e ações posteriores são resolvidos em mesa.' },
   },
   {
     catalogId: 'poeira_glacial',
     name: 'Poeira Glacial',
     alias: '',
-    description: 'Ataque de frio com suporte seguro ao bônus de Magia e congelamento assistido.',
+    description: 'Ataque de frio com bônus de Magia e congelamento assistidos.',
     universal: false,
-    requirements: { advantages: ['magia'] },
+    requirements: { attributes: { habilidade: 2 }, advantages: ['magia'] },
     attribute: 'habilidade',
-    bonusType: 'attr_mod',
-    value: 2,
+    bonusType: 'none',
+    value: 0,
     duration: 'instant',
     critThresholdMod: 0,
     autoCrit: false,
@@ -521,23 +565,24 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     costResource: 'PM',
     xpCost: 10,
     xpCategory: 'common',
+    gameplayPattern: 'cycling-variant',
     variantSelectionMode: 'cycle',
     selectedVariantId: 'padrao',
     variants: [
-      { id: 'padrao', label: 'Padrão', costValue: 3, costResource: 'PM', value: 2, bonusType: 'attr_mod', note: 'Ataque de frio padrão; se o alvo perder PV acima da Resistência, congela e sofre Perda por uma rodada.' },
-      { id: 'magia_reforcada', label: 'Magia Reforçada', costValue: 4, costResource: 'PM', value: 3, bonusType: 'attr_mod', note: 'Representa uso de Magia para reforçar o ataque; congelamento continua resolvido em mesa.' }
+      { id: 'padrao', label: 'Padrão', costValue: 3, costResource: 'PM', note: 'Se o alvo perder PV acima da Resistência, congela e sofre Perda por uma rodada.' },
+      { id: 'magia_reforcada', label: 'Magia Reforçada', costValue: 4, costResource: 'PM', note: 'Bônus variável de Magia e congelamento são declarados em mesa.' }
     ]
   },
   {
     catalogId: 'relampago',
     name: 'Relâmpago',
     alias: '',
-    description: 'Ataque elétrico com suporte seguro ao bônus de Magia e atordoamento assistido.',
+    description: 'Ataque elétrico com bônus de Magia e atordoamento assistidos.',
     universal: false,
-    requirements: { advantages: ['magia'] },
+    requirements: { attributes: { habilidade: 2 }, advantages: ['magia'] },
     attribute: 'habilidade',
-    bonusType: 'attr_mod',
-    value: 2,
+    bonusType: 'none',
+    value: 0,
     duration: 'instant',
     critThresholdMod: 0,
     autoCrit: false,
@@ -546,11 +591,12 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     costResource: 'PM',
     xpCost: 10,
     xpCategory: 'common',
+    gameplayPattern: 'cycling-variant',
     variantSelectionMode: 'cycle',
     selectedVariantId: 'padrao',
     variants: [
-      { id: 'padrao', label: 'Padrão', costValue: 3, costResource: 'PM', value: 2, bonusType: 'attr_mod', note: 'Ataque elétrico padrão; se o alvo perder PV acima da Resistência, fica atordoado e concede Ganho por uma rodada.' },
-      { id: 'magia_reforcada', label: 'Magia Reforçada', costValue: 4, costResource: 'PM', value: 3, bonusType: 'attr_mod', note: 'Representa uso de Magia para reforçar o ataque; atordoamento continua resolvido em mesa.' }
+      { id: 'padrao', label: 'Padrão', costValue: 3, costResource: 'PM', note: 'Se o alvo perder PV acima da Resistência, fica atordoado e concede Ganho por uma rodada.' },
+      { id: 'magia_reforcada', label: 'Magia Reforçada', costValue: 4, costResource: 'PM', note: 'Bônus variável de Magia e atordoamento são declarados em mesa.' }
     ]
   },
   {
@@ -559,7 +605,7 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     alias: '',
     description: 'Prepara um conjunto de setas mágicas automáticas para disparo posterior assistido.',
     universal: false,
-    requirements: { advantages: ['magia'] },
+    requirements: { attributes: { habilidade: 1 }, advantages: ['magia'] },
     attribute: 'habilidade',
     bonusType: 'flat',
     value: 1,
@@ -576,6 +622,10 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
       initialCostValue: 1,
       initialCostResource: 'PM',
       stockCount: 1,
+      stockMin: 1,
+      stockMaxAttribute: 'habilidade',
+      costPerStock: 1,
+      consumeAllOnTrigger: true,
       statusLabel: 'Setas preparadas',
       triggerLabel: 'Disparar setas',
       note: 'Cada ativação representa o preparo mínimo assistido. Em mesa, você pode preparar até H setas, manter um conjunto por vez e dispará-las depois dividindo entre alvos.'
@@ -587,7 +637,7 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     alias: '',
     description: 'Sequência veloz de golpes com carga por movimentos no mesmo turno.',
     universal: false,
-    requirements: { skills: ['luta'] },
+    requirements: { attributes: { habilidade: 2 }, skills: ['luta'] },
     attribute: 'poder',
     bonusType: 'attr_mod',
     value: 2,
@@ -613,7 +663,7 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     alias: '',
     description: 'Ataque poderoso com crítico automático e arremesso assistido por críticos extras.',
     universal: false,
-    requirements: { skills: ['luta'] },
+    requirements: { attributes: { poder: 3 }, skills: ['luta'] },
     attribute: 'poder',
     bonusType: 'none',
     value: 0,
@@ -631,13 +681,14 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     selectedVariantId: 'padrao',
     variantSelectionMode: 'cycle'
   },
+  ...REMAINING_TECHNIQUES,
   {
     catalogId: 'desprezo',
     name: 'Desprezo',
     alias: '',
     description: 'Ativa um desprezo duradouro e permite gastar PM depois para impor Perda no alvo.',
     universal: false,
-    requirements: { anyOfSkills: ['arte', 'influencia'] },
+    requirements: { attributes: { poder: 2 }, anyOfSkills: ['arte', 'influencia'] },
     attribute: 'poder',
     bonusType: 'none',
     value: 0,
@@ -660,4 +711,10 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
       note: 'Após vencer Poder contra Resistência em mesa, você pode gastar 1PM como reação para impor Perda em testes do alvo; ele pode tentar resistir de novo para encerrar.'
     }
   }
-];
+].map((rawTechnique) => {
+  const technique = rawTechnique as TechniqueCatalogEntry;
+  return {
+    ...technique,
+    gameplayPattern: technique.gameplayPattern || (technique.temporaryPackage ? 'temporary-package' : technique.persistentAssisted ? 'persistent-assisted' : technique.immediateAction ? 'immediate-action' : technique.variants?.length ? 'cycling-variant' : 'fixed-modifier'),
+  };
+}) as TechniqueCatalogEntry[];

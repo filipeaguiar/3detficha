@@ -5,6 +5,11 @@ export type PersistentAssistedConfig = {
   triggerCostValue?: number;
   triggerCostResource?: 'none' | 'PV' | 'PM' | 'PA';
   stockCount?: number;
+  stockMin?: number;
+  stockMaxAttribute?: 'poder' | 'habilidade' | 'resistencia';
+  stockMaxMultiplierAttribute?: 'poder' | 'habilidade' | 'resistencia';
+  costPerStock?: number;
+  consumeAllOnTrigger?: boolean;
   statusLabel?: string;
   triggerLabel?: string;
   note?: string;
@@ -13,6 +18,10 @@ export type PersistentAssistedConfig = {
 export type TemporaryPackageConfig = {
   kind: 'temporary-package';
   statusLabel?: string;
+  maintenanceCostValue?: number;
+  maintenanceCostResource?: 'none' | 'PV' | 'PM' | 'PA';
+  choiceBudget?: number;
+  maxChoices?: number;
   note?: string;
 };
 
@@ -33,6 +42,7 @@ export type RollBonusVariant = {
   extraDice?: number;
   critThresholdMod?: number;
   autoCrit?: boolean;
+  automaticCriticals?: number;
   note?: string;
   immediateAction?: ImmediateActionConfig;
   persistentAssisted?: PersistentAssistedConfig;
@@ -55,12 +65,16 @@ export type RollBonus = {
   attrSource?: 'poder' | 'habilidade' | 'resistencia';
   critThresholdMod?: number;
   autoCrit?: boolean;
+  automaticCriticals?: number;
   extraDice?: number;
   costValue?: number;
   costResource?: 'none' | 'PV' | 'PM' | 'PA';
   xpCost?: number;
   xpCategory?: 'trick' | 'common' | 'legendary' | 'generic';
   fundedBySourceIds?: string[];
+  sourceCatalogId?: string;
+  gameplayPattern?: 'fixed-modifier' | 'cycling-variant' | 'immediate-action' | 'persistent-assisted' | 'temporary-package' | 'narrative';
+  tableNotes?: string[];
   variants?: RollBonusVariant[];
   selectedVariantId?: string;
   variantSelectionMode?: 'cycle' | 'table-declared';
@@ -71,6 +85,8 @@ export type RollBonus = {
     active?: boolean;
     remainingUses?: number;
     stockCount?: number;
+    configuredStock?: number;
+    packageChoices?: string[];
   };
 };
 

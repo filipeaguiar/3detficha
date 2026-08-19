@@ -2,6 +2,7 @@ import { useEffect, useState, useRef, useMemo } from 'react';
 import { useDiceSound } from './useDiceSound';
 
 import { ARCHETYPES_CATALOG } from './constants/app/archetypes';
+import { ADVANTAGES_CATALOG } from './constants/advantagesData';
 import { KITS_CATALOG } from './constants/app/kits';
 import { calculatePoints, getActiveBonusVariant, getArchetypeCost, getKitPowerModifier } from './utils/character';
 import type { CharacterForm, CharacterSheet, ImmediateActionConfig, KitPower, RollBonus, RollResult } from './types/character';
@@ -170,7 +171,7 @@ export default function App() {
       immediateAction: (effect as any).immediateAction,
     })))
   ], [currentForm, currentArchetype, currentKit]);
-  const visibleRollBonuses = rollBonuses.filter(b => b.bonusType !== 'none' || b.critThresholdMod || b.extraDice || b.autoCrit || !b.id.startsWith('kit_'));
+  const visibleRollBonuses = rollBonuses.filter(b => b.bonusType !== 'none' || b.critThresholdMod || b.extraDice || b.autoCrit || b.automaticCriticals || !b.id.startsWith('kit_'));
 
   // Cálculos Derivados (Máximos)
   const maxPV = (resistencia * 5) + (maisVida * 10);
@@ -238,7 +239,9 @@ export default function App() {
   const calculatedCritRange = useMemo(() => {
     let totalCritMod = 0;
     activeBonusesList.forEach(b => {
-      if (b.critThresholdMod) totalCritMod += b.critThresholdMod;
+      const variant = getActiveBonusVariant(b);
+      const modifier = typeof variant?.critThresholdMod === 'number' ? variant.critThresholdMod : b.critThresholdMod;
+      if (modifier) totalCritMod += modifier;
     });
     activeKitBuffsList.forEach(k => {
       if (k.mod.critThresholdMod) totalCritMod += k.mod.critThresholdMod;
@@ -251,7 +254,9 @@ export default function App() {
   const calculatedTotalExtraDice = useMemo(() => {
     let extra = manualBonusDice;
     activeBonusesList.forEach(b => {
-      if (b.extraDice) extra += b.extraDice;
+      const variant = getActiveBonusVariant(b);
+      const extraDice = typeof variant?.extraDice === 'number' ? variant.extraDice : b.extraDice;
+      if (extraDice) extra += extraDice;
     });
     activeKitBuffsList.forEach(k => {
       if (k.mod.extraDice) extra += k.mod.extraDice;
@@ -467,7 +472,10 @@ export default function App() {
   };
 
   const removeRollBonus = (id: string) => {
-    updateCurrentFormForActiveIndex({ rollBonuses: rollBonuses.filter(b => b.id !== id) });
+    updateCurrentFormForActiveIndex({
+      rollBonuses: rollBonuses.filter(b => b.id !== id),
+      strikeSelections: (currentForm.strikeSelections || []).filter((selection) => selection.acquisitionId !== id),
+    });
     setActiveBonuses(prev => {
       const next = new Set(prev);
       next.delete(id);
@@ -545,6 +553,32 @@ export default function App() {
     }
   };
 
+  const spendResource = (resource: 'none' | 'PV' | 'PM' | 'PA' | undefined, value: number) => {
+    if (!resource || resource === 'none' || value <= 0) return;
+    if (resource === 'PM') setCurrentPM((current) => Math.max(0, current - value));
+    if (resource === 'PV') setCurrentPV((current) => Math.max(0, current - value));
+    if (resource === 'PA') setCurrentPA((current) => Math.max(0, current - value));
+  };
+
+  const endAssistedBonus = (id: string) => {
+    const bonus = rollBonuses.find((entry) => entry.id === id);
+    if (!bonus) return;
+    updateRollBonus(id, { assistedState: { ...(bonus.assistedState || {}), active: false, stockCount: bonus.persistentAssisted?.kind === 'stock' ? 0 : bonus.assistedState?.stockCount } });
+    setActiveBonuses((current) => { const next = new Set(current); next.delete(id); return next; });
+  };
+
+  const configureAssistedBonus = (id: string, updates: NonNullable<RollBonus['assistedState']>) => {
+    const bonus = rollBonuses.find((entry) => entry.id === id);
+    if (!bonus) return;
+    updateRollBonus(id, { assistedState: { ...(bonus.assistedState || {}), ...updates } });
+  };
+
+  const maintainTemporaryPackage = (id: string) => {
+    const bonus = rollBonuses.find((entry) => entry.id === id);
+    if (!bonus?.temporaryPackage || !bonus.assistedState?.active) return;
+    spendResource(bonus.temporaryPackage.maintenanceCostResource, bonus.temporaryPackage.maintenanceCostValue || 0);
+  };
+
   const toggleActiveBonus = async (id: string) => {
     const bonus = rollBonuses.find(b => b.id === id);
     if (!bonus) return;
@@ -566,20 +600,47 @@ export default function App() {
     }
 
     if (bonus.persistentAssisted) {
+      const config = bonus.persistentAssisted;
       if (bonus.assistedState?.active) {
-        const triggerCostValue = bonus.persistentAssisted.triggerCostValue || 0;
-        const triggerCostResource = bonus.persistentAssisted.triggerCostResource || 'none';
-        if (triggerCostResource === 'PM' && triggerCostValue > 0) setCurrentPM((p) => Math.max(0, p - triggerCostValue));
-        const nextStock = typeof bonus.assistedState?.stockCount === 'number' ? Math.max(0, bonus.assistedState.stockCount - 1) : bonus.assistedState?.stockCount;
-        updateRollBonus(bonus.id, { assistedState: { ...(bonus.assistedState || {}), active: bonus.persistentAssisted.kind === 'stock' ? nextStock !== 0 : true, stockCount: nextStock } });
+        spendResource(config.triggerCostResource, config.triggerCostValue || 0);
+        if (config.kind === 'stock') {
+          const currentStock = bonus.assistedState.stockCount || 0;
+          const nextStock = config.consumeAllOnTrigger ? 0 : Math.max(0, currentStock - 1);
+          updateRollBonus(bonus.id, { assistedState: { ...(bonus.assistedState || {}), active: nextStock > 0, stockCount: nextStock } });
+        }
         return;
       }
-      updateRollBonus(bonus.id, { assistedState: { ...(bonus.assistedState || {}), active: true, stockCount: bonus.persistentAssisted.stockCount } });
+      const configuredStock = bonus.assistedState?.configuredStock ?? config.stockCount ?? config.stockMin ?? 0;
+      if (config.kind === 'stock' && configuredStock <= 0) {
+        alert('Configure um estoque válido antes de ativar esta técnica.');
+        return;
+      }
+      const initialCost = config.costPerStock ? configuredStock * config.costPerStock : (config.initialCostValue || 0);
+      spendResource(config.initialCostResource, initialCost);
+      if (bonus.sourceCatalogId === 'setas_infaliveis_de_petrovna') {
+        (currentForm.rollBonuses || []).filter((entry) => entry.sourceCatalogId === 'setas_infaliveis_de_petrovna' && entry.id !== bonus.id && entry.assistedState?.active).forEach((entry) => updateRollBonus(entry.id, { assistedState: { ...(entry.assistedState || {}), active: false, stockCount: 0 } }));
+      }
+      updateRollBonus(bonus.id, { assistedState: { ...(bonus.assistedState || {}), active: true, stockCount: configuredStock, configuredStock } });
       return;
     }
 
     if (bonus.temporaryPackage) {
-      updateRollBonus(bonus.id, { assistedState: { ...(bonus.assistedState || {}), active: !bonus.assistedState?.active } });
+      const becomingActive = !bonus.assistedState?.active;
+      if (becomingActive && bonus.sourceCatalogId === 'area_de_batalha') {
+        const packageCost = (bonus.assistedState?.packageChoices || []).reduce((sum, advantageId) => sum + Number(ADVANTAGES_CATALOG.find((advantage) => advantage.id === advantageId)?.cost.match(/^\d+/)?.[0] || 0), 0);
+        if (packageCost !== 2) {
+          alert('Configure um pacote de exatamente 2 pontos para esta Área de Batalha.');
+          return;
+        }
+      }
+      if (becomingActive) spendResource(activeVariant?.costResource || bonus.costResource, typeof activeVariant?.costValue === 'number' ? activeVariant.costValue : (bonus.costValue || 0));
+      updateRollBonus(bonus.id, { assistedState: { ...(bonus.assistedState || {}), active: becomingActive } });
+      setActiveBonuses((current) => { const next = new Set(current); if (becomingActive) next.add(id); else next.delete(id); return next; });
+      return;
+    }
+
+    if (bonus.gameplayPattern === 'narrative') {
+      spendResource(activeVariant?.costResource || bonus.costResource, typeof activeVariant?.costValue === 'number' ? activeVariant.costValue : (bonus.costValue || 0));
       return;
     }
 
@@ -649,6 +710,9 @@ export default function App() {
     setUsedKitPowers({});
     setUsedArchetypeEffects({});
     setActiveKitBuffs(new Set());
+    updateCurrentFormForActiveIndex({
+      rollBonuses: (currentForm.rollBonuses || []).map((bonus) => bonus.assistedState ? { ...bonus, assistedState: { ...bonus.assistedState, active: false, stockCount: bonus.persistentAssisted?.kind === 'stock' ? 0 : bonus.assistedState.stockCount } } : bonus)
+    });
     setActiveBonuses(prev => {
       const next = new Set<string>();
       rollBonuses.forEach(b => {
@@ -713,7 +777,7 @@ export default function App() {
 
     let attrModValue = 0;
     let flatBonusTotal = 0;
-    let hasAutoCrit = false;
+    let automaticCriticalCount = 0;
     const appliedBonuses: { name: string; alias?: string; desc: string; cost?: string }[] = [];
 
     passiveArchetypeSkillEffects.forEach((effect) => {
@@ -728,6 +792,7 @@ export default function App() {
       const effectiveValue = typeof activeVariant?.value === 'number' ? activeVariant.value : bonus.value;
       const effectiveCritThresholdMod = typeof activeVariant?.critThresholdMod === 'number' ? activeVariant.critThresholdMod : bonus.critThresholdMod;
       const effectiveAutoCrit = typeof activeVariant?.autoCrit === 'boolean' ? activeVariant.autoCrit : bonus.autoCrit;
+      const effectiveAutomaticCriticals = typeof activeVariant?.automaticCriticals === 'number' ? activeVariant.automaticCriticals : (bonus.automaticCriticals || 0);
       const effectiveExtraDice = typeof activeVariant?.extraDice === 'number' ? activeVariant.extraDice : bonus.extraDice;
       const effectiveCostResource = activeVariant?.costResource || bonus.costResource;
       const effectiveCostValue = typeof activeVariant?.costValue === 'number' ? activeVariant.costValue : bonus.costValue;
@@ -748,9 +813,10 @@ export default function App() {
         const critValue = Math.max(4, 6 + effectiveCritThresholdMod);
         desc += desc ? ` | Crítico ${critValue}+` : `Crítico ${critValue}+`;
       }
-      if (effectiveAutoCrit) {
-        hasAutoCrit = true;
-        desc += desc ? ' | Crítico Automático' : 'Crítico Automático';
+      if (effectiveAutoCrit || effectiveAutomaticCriticals > 0) {
+        automaticCriticalCount += Math.max(effectiveAutoCrit ? 1 : 0, effectiveAutomaticCriticals);
+        const count = Math.max(effectiveAutoCrit ? 1 : 0, effectiveAutomaticCriticals);
+        desc += desc ? ` | ${count} Crítico${count > 1 ? 's' : ''} Automático${count > 1 ? 's' : ''}` : `${count} Crítico${count > 1 ? 's' : ''} Automático${count > 1 ? 's' : ''}`;
       }
       if (effectiveExtraDice) {
         desc += desc ? ` | ${effectiveExtraDice > 0 ? '+' : ''}${effectiveExtraDice}D` : `${effectiveExtraDice > 0 ? '+' : ''}${effectiveExtraDice}D`;
@@ -788,7 +854,7 @@ export default function App() {
         desc += desc ? ` | Crítico ${critValue}+` : `Crítico ${critValue}+`;
       }
       if (mod.autoCrit) {
-        hasAutoCrit = true;
+        automaticCriticalCount += 1;
         desc += desc ? ' | Crítico Automático' : 'Crítico Automático';
       }
       if (mod.extraDice) {
@@ -854,7 +920,7 @@ export default function App() {
       if (isCriticalFail) {
         rolledCrits = 0;
       }
-      const autoCrits = hasAutoCrit && !isCriticalFail ? 1 : 0;
+      const autoCrits = !isCriticalFail ? automaticCriticalCount : 0;
       const criticals = rolledCrits + autoCrits;
 
       const finalTotal = diceSum + totalEffectiveAttribute + (totalEffectiveAttribute * criticals) + flatBonusTotal;
@@ -1049,6 +1115,9 @@ export default function App() {
               updateCurrentFormForActiveIndex({ rollBonuses: [...rollBonuses.filter((b) => b.id !== bonus.id), bonus] });
               void toggleActiveBonus(bonus.id);
             }}
+            configureAssistedBonus={configureAssistedBonus}
+            endAssistedBonus={endAssistedBonus}
+            maintainTemporaryPackage={maintainTemporaryPackage}
           />
         )}
       </div>
