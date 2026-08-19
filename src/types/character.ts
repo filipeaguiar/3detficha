@@ -113,6 +113,7 @@ export type CharacterForm = {
   resistencia: number;
   maisVida: number;
   maisMana: number;
+  maisAcao?: number;
   rollBonuses: RollBonus[];
   wildShapeAdvantages?: string[];
   advantages?: string[];

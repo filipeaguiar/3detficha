@@ -41,6 +41,7 @@ type CharacterEditorProps = {
   resistencia: number;
   maisVida: number;
   maisMana: number;
+  maisAcao: number;
   visibleRollBonuses: RollBonus[];
   setEditingBonusId: (id: string | null) => void;
   removeRollBonus: (id: string) => void;
@@ -94,6 +95,7 @@ export default function CharacterEditor(props: CharacterEditorProps) {
     resistencia,
     maisVida,
     maisMana,
+    maisAcao,
     visibleRollBonuses,
     setEditingBonusId,
     removeRollBonus,
@@ -366,13 +368,17 @@ export default function CharacterEditor(props: CharacterEditorProps) {
         </div>
 
         <div className="stats-grid">
-          <div className="stat-box edit-stat-box" style={{ '--btn-color': '#5EB05D', borderColor: '#5EB05D' } as React.CSSProperties}>
-            <div className="stat-title" style={{ color: '#5EB05D' }}>+Vida (Níveis)</div>
-            <input type="number" className="stat-input stat-value" style={{ color: '#5EB05D' }} min="0" max="10" value={maisVida} onChange={(e) => updateCurrentForm({ maisVida: Number(e.target.value) })} />
+          <div className="stat-box edit-stat-box" style={{ '--btn-color': '#FF9E00', borderColor: '#FF9E00' } as React.CSSProperties}>
+            <div className="stat-title" style={{ color: '#FF9E00' }}>+Ação (Níveis)</div>
+            <input type="number" className="stat-input stat-value" style={{ color: '#FF9E00' }} min="0" max="10" value={maisAcao} onChange={(e) => updateCurrentForm({ maisAcao: Number(e.target.value) })} />
           </div>
           <div className="stat-box edit-stat-box" style={{ '--btn-color': '#894EC6', borderColor: '#894EC6' } as React.CSSProperties}>
             <div className="stat-title" style={{ color: '#894EC6' }}>+Mana (Níveis)</div>
             <input type="number" className="stat-input stat-value" style={{ color: '#894EC6' }} min="0" max="10" value={maisMana} onChange={(e) => updateCurrentForm({ maisMana: Number(e.target.value) })} />
+          </div>
+          <div className="stat-box edit-stat-box" style={{ '--btn-color': '#5EB05D', borderColor: '#5EB05D' } as React.CSSProperties}>
+            <div className="stat-title" style={{ color: '#5EB05D' }}>+Vida (Níveis)</div>
+            <input type="number" className="stat-input stat-value" style={{ color: '#5EB05D' }} min="0" max="10" value={maisVida} onChange={(e) => updateCurrentForm({ maisVida: Number(e.target.value) })} />
           </div>
         </div>
 

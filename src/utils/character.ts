@@ -68,6 +68,7 @@ export function createDefaultSheet(): CharacterSheet {
         resistencia: 2,
         maisVida: 0,
         maisMana: 0,
+        maisAcao: 0,
         rollBonuses: [],
         wildShapeAdvantages: []
       }
@@ -89,6 +90,7 @@ export function loadInitialSheets(): { sheets: CharacterSheet[]; activeId: strin
           ...sheet,
           forms: (sheet.forms || []).map((f: any) => ({
             ...f,
+            maisAcao: f.maisAcao ?? 0,
             rollBonuses: (f.rollBonuses || []).map(normalizeRollBonus),
             archetypeSelections: f.archetypeSelections || {},
             kitSelections: f.kitSelections || {},
@@ -113,6 +115,7 @@ export function loadInitialSheets(): { sheets: CharacterSheet[]; activeId: strin
         soundOn: parsed.soundOn ?? true,
         forms: Array.isArray(parsed.forms) && parsed.forms.length > 0 ? parsed.forms.map((f: any) => ({
           ...f,
+          maisAcao: f.maisAcao ?? 0,
           rollBonuses: (f.rollBonuses || []).map(normalizeRollBonus),
           archetypeSelections: f.archetypeSelections || {},
           kitSelections: f.kitSelections || {},
@@ -125,6 +128,7 @@ export function loadInitialSheets(): { sheets: CharacterSheet[]; activeId: strin
             resistencia: parsed.resistencia ?? 1,
             maisVida: parsed.maisVida ?? 0,
             maisMana: parsed.maisMana ?? 0,
+            maisAcao: parsed.maisAcao ?? 0,
             rollBonuses: (parsed.rollBonuses || []).map(normalizeRollBonus),
             wildShapeAdvantages: [],
             archetypeSelections: {},
@@ -321,7 +325,7 @@ export function getXPCreditSummary(currentForm: CharacterForm) {
 }
 
 export function calculatePoints(currentForm: CharacterForm, kitCost = 0, archetypeCost = 0): number {
-  let total = currentForm.poder + currentForm.habilidade + currentForm.resistencia + kitCost + archetypeCost;
+  let total = currentForm.poder + currentForm.habilidade + currentForm.resistencia + kitCost + archetypeCost + (currentForm.maisVida || 0) + (currentForm.maisMana || 0) + (currentForm.maisAcao || 0);
 
   if (currentForm.skills) total += currentForm.skills.length;
 

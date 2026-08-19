@@ -130,6 +130,7 @@ export default function App() {
   const resistencia = currentForm.resistencia;
   const maisVida = currentForm.maisVida;
   const maisMana = currentForm.maisMana;
+  const maisAcao = currentForm.maisAcao || 0;
   const rollBonuses = useMemo(() => [
     ...(currentForm.rollBonuses || []),
     ...([...(currentArchetype?.grantedEffects || []), ...(((currentForm as any)._archetypeSelectedEffects) || [])].map((effect): RollBonus => ({
@@ -174,9 +175,9 @@ export default function App() {
   const visibleRollBonuses = rollBonuses.filter(b => b.bonusType !== 'none' || b.critThresholdMod || b.extraDice || b.autoCrit || b.automaticCriticals || !b.id.startsWith('kit_'));
 
   // Cálculos Derivados (Máximos)
-  const maxPV = (resistencia * 5) + (maisVida * 10);
-  const maxPM = (habilidade * 5) + (maisMana * 10);
-  const maxPA = poder * 1;
+  const maxPV = Math.max(1, (resistencia * 5) + (maisVida * 10));
+  const maxPM = Math.max(1, (habilidade * 5) + (maisMana * 10));
+  const maxPA = Math.max(1, (poder * 1) + (maisAcao * 2));
 
   // Valores Atuais (Controláveis)
   const [currentPV, setCurrentPV] = useState(maxPV);
@@ -733,10 +734,10 @@ export default function App() {
     setIsDrawerOpen(false);
   };
 
-  // Descanso Rápido (Recupera 50% de PV e PM, reseta usos de cena)
+  // Descanso Rápido (Recupera R em PV e H em PM, reseta usos de cena)
   const handleQuickRest = () => {
-    const recoverPV = Math.max(1, Math.ceil(maxPV / 2));
-    const recoverPM = Math.max(1, Math.ceil(maxPM / 2));
+    const recoverPV = Math.max(1, resistencia);
+    const recoverPM = Math.max(1, habilidade);
     setCurrentPV(p => Math.min(maxPV, p + recoverPV));
     setCurrentPM(p => Math.min(maxPM, p + recoverPM));
     handleResetScene();
@@ -1046,6 +1047,7 @@ export default function App() {
             resistencia={resistencia}
             maisVida={maisVida}
             maisMana={maisMana}
+            maisAcao={maisAcao}
             visibleRollBonuses={visibleRollBonuses}
             setEditingBonusId={setEditingBonusId}
             removeRollBonus={removeRollBonus}
