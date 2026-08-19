@@ -840,9 +840,16 @@ export default function App() {
       const finalTotal = diceSum + totalEffectiveAttribute + (totalEffectiveAttribute * criticals) + flatBonusTotal;
 
       const instantBonuses = activeBonusesList.filter(b => b.duration === 'instant');
-      const costPV = instantBonuses.filter(b => b.costResource === 'PV').reduce((sum, b) => sum + (b.costValue || 0), 0);
-      const costPM = instantBonuses.filter(b => b.costResource === 'PM').reduce((sum, b) => sum + (b.costValue || 0), 0);
-      const costPA = instantBonuses.filter(b => b.costResource === 'PA').reduce((sum, b) => sum + (b.costValue || 0), 0);
+      const instantBonusCosts = instantBonuses.map((b) => {
+        const activeVariant = getActiveBonusVariant(b);
+        return {
+          resource: activeVariant?.costResource || b.costResource,
+          value: typeof activeVariant?.costValue === 'number' ? activeVariant.costValue : (b.costValue || 0),
+        };
+      });
+      const costPV = instantBonusCosts.filter(b => b.resource === 'PV').reduce((sum, b) => sum + (b.value || 0), 0);
+      const costPM = instantBonusCosts.filter(b => b.resource === 'PM').reduce((sum, b) => sum + (b.value || 0), 0);
+      const costPA = instantBonusCosts.filter(b => b.resource === 'PA').reduce((sum, b) => sum + (b.value || 0), 0);
 
       if (costPV > 0) setCurrentPV(prev => Math.max(0, prev - costPV));
       if (costPM > 0) {
@@ -896,9 +903,16 @@ export default function App() {
   };
 
   const instantActiveBonuses = activeBonusesList.filter(b => b.duration === 'instant');
-  const totalCostPV = instantActiveBonuses.filter(b => b.costResource === 'PV').reduce((sum, b) => sum + (b.costValue || 0), 0);
-  const totalCostPM = Math.max(0, instantActiveBonuses.filter(b => b.costResource === 'PM').reduce((sum, b) => sum + (b.costValue || 0), 0) - temporaryPM);
-  const totalCostPA = instantActiveBonuses.filter(b => b.costResource === 'PA').reduce((sum, b) => sum + (b.costValue || 0), 0);
+  const instantActiveBonusCosts = instantActiveBonuses.map((b) => {
+    const activeVariant = getActiveBonusVariant(b);
+    return {
+      resource: activeVariant?.costResource || b.costResource,
+      value: typeof activeVariant?.costValue === 'number' ? activeVariant.costValue : (b.costValue || 0),
+    };
+  });
+  const totalCostPV = instantActiveBonusCosts.filter(b => b.resource === 'PV').reduce((sum, b) => sum + (b.value || 0), 0);
+  const totalCostPM = Math.max(0, instantActiveBonusCosts.filter(b => b.resource === 'PM').reduce((sum, b) => sum + (b.value || 0), 0) - temporaryPM);
+  const totalCostPA = instantActiveBonusCosts.filter(b => b.resource === 'PA').reduce((sum, b) => sum + (b.value || 0), 0);
 
   // Active actionable kit powers (powers that can be tapped in gameplay)
   const activeKitActionPowers = useMemo(() => {
