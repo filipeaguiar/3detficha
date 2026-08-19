@@ -18,6 +18,11 @@ export type RollBonusVariant = {
   immediateAction?: ImmediateActionConfig;
 };
 
+export type StrikeSelection = {
+  acquisitionId: string;
+  strikeIds: string[];
+};
+
 export type RollBonus = {
   id: string;
   name: string;
@@ -75,6 +80,7 @@ export type CharacterForm = {
   archetypeSelections?: Record<string, string[]>;
   kitSelections?: Record<string, string[]>;
   variantSelections?: Record<string, CharacterVariantSelection[]>;
+  strikeSelections?: StrikeSelection[];
 };
 
 export type CharacterLinkRelation = 'base' | 'form' | 'alternate';

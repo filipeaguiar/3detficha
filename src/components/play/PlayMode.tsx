@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ADVANTAGES_CATALOG, DISADVANTAGES_CATALOG } from '../../constants/advantagesData';
 import { ADVANTAGE_VARIANT_OPTIONS, DISADVANTAGE_VARIANT_OPTIONS } from '../../constants/app/variants';
 import { SKILLS_CATALOG } from '../../constants/skillsData';
-import { getActiveBonusVariant, getBonusSubtitle, getKitPowerModifier } from '../../utils/character';
+import { getActiveBonusVariant, getBonusSubtitle, getKnownStrikes, getKitPowerModifier } from '../../utils/character';
 import type { CharacterForm, CharacterKit, KitPower, RollBonus } from '../../types/character';
 import SegmentedBar from '../common/SegmentedBar';
 import { CheckIcon, CloseIcon, DiceCountIcon, HabilidadeIcon, InfoIcon, LeafIcon, MaskIcon, MenuIcon, PoderIcon, ResistenciaIcon, SkillsIcon, SparklesIcon, TransformIcon } from '../common/Icons';
@@ -58,6 +58,7 @@ type PlayModeProps = {
 
 export default function PlayMode(props: PlayModeProps) {
   const [detailModal, setDetailModal] = useState<{ title: string; subtitle?: string; body: string; tone: 'advantage' | 'skill' | 'disadvantage' | 'technique' } | null>(null);
+  const [comboUsedStrikeIds, setComboUsedStrikeIds] = useState<string[]>([]);
   const {
     characterName,
     currentKit,
@@ -104,6 +105,10 @@ export default function PlayMode(props: PlayModeProps) {
     toggleActiveBonus,
     cycleBonusVariant,
   } = props;
+
+  const knownStrikes = getKnownStrikes(currentForm);
+  const hasCombo = (currentForm.rollBonuses || []).some((bonus) => bonus.name === 'Combo');
+  const comboRemaining = Math.max(0, habilidade - comboUsedStrikeIds.length);
 
   return (
     <div style={{ gridColumn: '1 / -1', maxWidth: '600px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -266,6 +271,22 @@ export default function PlayMode(props: PlayModeProps) {
             </span>
           </button>
         </div>
+
+        {knownStrikes.length > 0 && (
+          <div className="form-group" style={{ marginBottom: '1rem' }}>
+            <h2 className="panel-title" style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Golpes</h2>
+            {hasCombo && <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', gap: '0.75rem', flexWrap: 'wrap' }}><div style={{ fontSize: '0.85rem', color: '#ffd166' }}>Combo: {comboUsedStrikeIds.length > 0 ? `${comboRemaining} extras restantes` : 'pronto para iniciar'}{comboUsedStrikeIds.length > 0 ? ` • usados: ${comboUsedStrikeIds.length}` : ''}</div><div style={{ display: 'flex', gap: '0.5rem' }}><button className="control-btn" style={{ width: 'auto', padding: '0.3rem 0.6rem', fontSize: '0.78rem' }} onClick={() => setComboUsedStrikeIds([])}>Resetar Combo</button></div></div>}
+            <div className="bonus-toggles-grid">
+              {knownStrikes.map(({ acquisitionId, strike }) => {
+                if (!strike) return null;
+                const disabledByCombo = hasCombo && comboUsedStrikeIds.length > 0 && comboRemaining <= 0;
+                const alreadyUsed = comboUsedStrikeIds.includes(strike.id);
+                const subtitle = `${strike.description}${strike.costResource !== 'none' && strike.costValue ? ` [-${strike.costValue} ${strike.costResource}]` : ''}`;
+                return <button key={`${acquisitionId}:${strike.id}`} className={`bonus-toggle ${alreadyUsed ? 'active' : ''}`} disabled={disabledByCombo || alreadyUsed} onClick={() => { if (hasCombo) setComboUsedStrikeIds((prev) => prev.includes(strike.id) ? prev : [...prev, strike.id]); }} onContextMenu={(e) => { e.preventDefault(); setDetailModal({ title: strike.name, subtitle, body: strike.note, tone: 'technique' }); }} title={`${strike.name}: ${subtitle}`}><div className="bonus-toggle-header"><span className="bonus-toggle-label">{strike.name}</span>{hasCombo && alreadyUsed ? <span className="bonus-attr-micro" style={{ background: '#ffd166', color: '#000' }}>USADO</span> : null}</div><span className="bonus-toggle-value">{subtitle}</span></button>;
+              })}
+            </div>
+          </div>
+        )}
 
         {visibleRollBonuses.length > 0 && (
           <div className="form-group">

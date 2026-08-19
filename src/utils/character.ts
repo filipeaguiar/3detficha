@@ -2,6 +2,7 @@ import { ADVANTAGES_CATALOG, DISADVANTAGES_CATALOG } from '../constants/advantag
 import { ARCHETYPES_CATALOG } from '../constants/app/archetypes';
 import { type TechniqueCatalogEntry } from '../constants/app/techniques';
 import { ADVANTAGE_VARIANT_OPTIONS, DISADVANTAGE_VARIANT_OPTIONS } from '../constants/app/variants';
+import { STRIKES_CATALOG } from '../constants/app/strikes';
 import type { CharacterForm, CharacterLinkGroup, CharacterSheet, KitPower, RollBonus, XPCreditRule } from '../types/character';
 
 export function normalizeRollBonus(raw: any): RollBonus {
@@ -364,6 +365,11 @@ export function isTechniqueEligible(currentForm: CharacterForm, technique: Techn
   if ((requirements.anyOfSkills || []).length > 0 && !(requirements.anyOfSkills || []).some((id) => skills.has(id))) unmet.push(`Uma destas perícias: ${(requirements.anyOfSkills || []).join(', ')}`);
 
   return { eligible: technique.universal || unmet.length === 0, unmet };
+}
+
+export function getKnownStrikes(currentForm: CharacterForm) {
+  const selections = currentForm.strikeSelections || [];
+  return selections.flatMap((selection) => selection.strikeIds.map((strikeId) => ({ acquisitionId: selection.acquisitionId, strike: STRIKES_CATALOG.find((entry) => entry.id === strikeId) })).filter((entry) => entry.strike));
 }
 
 export function createTechniqueBonusFromCatalog(technique: TechniqueCatalogEntry, currentForm: CharacterForm): RollBonus {
