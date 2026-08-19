@@ -43,6 +43,21 @@ export type CharacterForm = {
 
 export type CharacterLinkRelation = 'base' | 'form' | 'alternate';
 
+export type ArchetypeEffect = {
+  id: string;
+  name: string;
+  desc: string;
+  attribute?: 'any' | 'poder' | 'habilidade' | 'resistencia';
+  bonusType?: 'attr_mod' | 'flat' | 'full_attr' | 'none';
+  value?: number;
+  duration?: 'instant' | 'scene';
+  critThresholdMod?: number;
+  autoCrit?: boolean;
+  extraDice?: number;
+  costValue?: number;
+  costResource?: 'none' | 'PV' | 'PM' | 'PA';
+};
+
 export type CharacterArchetype = {
   id: string;
   name: string;
@@ -53,6 +68,7 @@ export type CharacterArchetype = {
   grantedAdvantages?: string[];
   grantedDisadvantages?: string[];
   grantedSkills?: string[];
+  grantedEffects?: ArchetypeEffect[];
   notes?: string[];
 };
 

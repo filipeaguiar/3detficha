@@ -104,7 +104,24 @@ export default function App() {
   const resistencia = currentForm.resistencia;
   const maisVida = currentForm.maisVida;
   const maisMana = currentForm.maisMana;
-  const rollBonuses = currentForm.rollBonuses;
+  const rollBonuses = [
+    ...(currentForm.rollBonuses || []),
+    ...((currentArchetype?.grantedEffects || []).map((effect) => ({
+      id: effect.id,
+      name: effect.name,
+      alias: '',
+      attribute: effect.attribute || 'any',
+      bonusType: effect.bonusType || 'none',
+      value: effect.value || 0,
+      duration: effect.duration || 'instant',
+      attrSource: 'poder' as const,
+      critThresholdMod: effect.critThresholdMod || 0,
+      autoCrit: effect.autoCrit || false,
+      extraDice: effect.extraDice || 0,
+      costValue: effect.costValue || 0,
+      costResource: effect.costResource || 'none',
+    })))
+  ];
   const visibleRollBonuses = rollBonuses.filter(b => b.bonusType !== 'none' || b.critThresholdMod || b.extraDice || b.autoCrit || !b.id.startsWith('kit_'));
 
   // Cálculos Derivados (Máximos)

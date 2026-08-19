@@ -16,6 +16,9 @@ export const ARCHETYPES_CATALOG: CharacterArchetype[] = [
     group: 'Base',
     desc: 'O arquétipo humano é o padrão para personagens sem outro povo específico.',
     traits: ['Mais Além'],
+    grantedEffects: [
+      { id: 'arch_humano_mais_alem', name: 'Mais Além', desc: 'Gaste 2PM para ter Ganho em um teste.', attribute: 'any', bonusType: 'none', extraDice: 1, duration: 'instant', costValue: 2, costResource: 'PM' },
+    ],
     notes: ['Uma vez por cena, pode gastar 2PM para ter Ganho em um teste.'],
   },
   {
@@ -37,6 +40,9 @@ export const ARCHETYPES_CATALOG: CharacterArchetype[] = [
     traits: ['Desfavor'],
     grantedAdvantages: ['agil'],
     grantedDisadvantages: ['infame'],
+    grantedEffects: [
+      { id: 'arch_abissal_desfavor', name: 'Desfavor', desc: 'Gaste 3PM para impor Perda ao alvo até o próximo turno.', attribute: 'poder', bonusType: 'none', extraDice: -1, duration: 'instant', costValue: 3, costResource: 'PM' },
+    ],
   },
   {
     id: 'alien',
@@ -77,6 +83,9 @@ export const ARCHETYPES_CATALOG: CharacterArchetype[] = [
     traits: ['Arrebatar'],
     grantedAdvantages: ['carismatico'],
     grantedDisadvantages: ['codigo::heroico'],
+    grantedEffects: [
+      { id: 'arch_celestial_arrebatar', name: 'Arrebatar', desc: 'Gaste 3PM para conceder Ganho no teste de um aliado.', attribute: 'any', bonusType: 'none', extraDice: 1, duration: 'instant', costValue: 3, costResource: 'PM' },
+    ],
   },
   {
     id: 'centauro',
@@ -87,6 +96,9 @@ export const ARCHETYPES_CATALOG: CharacterArchetype[] = [
     traits: ['Corpo Táurico'],
     grantedAdvantages: ['vigoroso'],
     grantedDisadvantages: ['diferente'],
+    grantedEffects: [
+      { id: 'arch_centauro_corpo_taurico', name: 'Corpo Táurico', desc: 'Gaste 1PM para crítico 5+ em esforço físico, iniciativa, correr ou perseguir.', attribute: 'any', bonusType: 'none', critThresholdMod: -1, duration: 'instant', costValue: 1, costResource: 'PM' },
+    ],
   },
   {
     id: 'ciborgue',
@@ -195,6 +207,9 @@ export const ARCHETYPES_CATALOG: CharacterArchetype[] = [
     traits: ['Olhar Atordoante'],
     grantedAdvantages: ['carismatico'],
     grantedDisadvantages: ['fracote'],
+    grantedEffects: [
+      { id: 'arch_medusa_olhar', name: 'Olhar Atordoante', desc: 'Gaste 3PM para atordoar um alvo Perto.', attribute: 'poder', bonusType: 'none', extraDice: -1, duration: 'instant', costValue: 3, costResource: 'PM' },
+    ],
   },
   {
     id: 'minotauro',
@@ -234,6 +249,9 @@ export const ARCHETYPES_CATALOG: CharacterArchetype[] = [
     traits: ['Desejos'],
     grantedAdvantages: ['carismatico', 'magia'],
     grantedDisadvantages: ['codigo'],
+    grantedEffects: [
+      { id: 'arch_qareen_desejos', name: 'Desejos', desc: 'Magias para atender desejos têm custo reduzido.', attribute: 'any', bonusType: 'none', duration: 'scene', costValue: 0, costResource: 'none' },
+    ],
     notes: ['Código da Gratidão.'],
   },
   {
