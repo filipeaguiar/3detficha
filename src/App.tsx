@@ -54,7 +54,7 @@ export default function App() {
       }))
     : activeSheet.forms;
 
-  const currentForm = linkedSheets.length > 1
+  const currentFormBase = linkedSheets.length > 1
     ? (linkedSheets[activeFormIndex]?.forms[0] || linkedSheets[0]?.forms[0] || activeSheet.forms[0])
     : (forms[activeFormIndex] || forms[0]);
 
@@ -66,6 +66,19 @@ export default function App() {
   const currentArchetype = useMemo(() => {
     return ARCHETYPES_CATALOG.find(a => a.id === selectedArchetypeId) || ARCHETYPES_CATALOG[0] || null;
   }, [selectedArchetypeId]);
+
+  const currentForm = useMemo(() => {
+    const unique = (values?: string[]) => Array.from(new Set(values || []));
+    return {
+      ...currentFormBase,
+      advantages: unique([...(currentFormBase.advantages || []), ...(currentArchetype?.grantedAdvantages || [])]),
+      disadvantages: unique([...(currentFormBase.disadvantages || []), ...(currentArchetype?.grantedDisadvantages || [])]),
+      skills: unique([...(currentFormBase.skills || []), ...(currentArchetype?.grantedSkills || [])]),
+      archetypeAdvantages: unique(currentArchetype?.grantedAdvantages),
+      archetypeDisadvantages: unique(currentArchetype?.grantedDisadvantages),
+      archetypeSkills: unique(currentArchetype?.grantedSkills),
+    };
+  }, [currentFormBase, currentArchetype]);
 
   // Filtered kits for modal
   const filteredKits = useMemo(() => {
@@ -760,7 +773,7 @@ export default function App() {
   }, [currentKit]);
 
 
-  const totalPoints = calculatePoints(currentForm, currentKit ? 1 : 0, getArchetypeCost(selectedArchetypeId));
+  const totalPoints = calculatePoints(currentFormBase, currentKit ? 1 : 0, getArchetypeCost(selectedArchetypeId));
   return (
     <>
       <div id="dice-box" style={{ visibility: mode === 'play' ? 'visible' : 'hidden' }}></div>

@@ -397,26 +397,28 @@ export default function CharacterEditor(props: CharacterEditorProps) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginTop: '1rem' }}>
               {filteredAdvantages.map(adv => {
                 const isSelected = currentForm.advantages?.includes(adv.variantId);
+                const isGranted = currentForm.archetypeAdvantages?.includes(adv.variantId);
                 return (
                   <div
                     key={adv.variantId}
                     onClick={() => {
-                      const current = currentForm.advantages || [];
+                      if (isGranted) return;
+                      const current = currentForm.advantages?.filter((id: string) => !currentForm.archetypeAdvantages?.includes(id)) || [];
                       if (isSelected) updateCurrentForm({ advantages: current.filter((id: string) => id !== adv.variantId) });
                       else updateCurrentForm({ advantages: [...current, adv.variantId] });
                     }}
                     style={{
-                      background: isSelected ? 'rgba(0, 255, 0, 0.1)' : 'var(--surface-hover)',
+                      background: isGranted ? 'rgba(51, 204, 255, 0.12)' : isSelected ? 'rgba(0, 255, 0, 0.1)' : 'var(--surface-hover)',
                       padding: '1rem',
                       borderRadius: '4px',
-                      border: `1px solid ${isSelected ? 'var(--accent-color)' : 'var(--border-color)'}`,
+                      border: `1px solid ${isGranted ? '#33ccff' : isSelected ? 'var(--accent-color)' : 'var(--border-color)'}`,
                       cursor: 'pointer',
                       transition: 'all 0.2s'
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                       <strong style={{ fontSize: '1.1rem', color: isSelected ? 'var(--accent-color)' : '#fff' }}>
-                        {isSelected && <CheckIcon size={14} />} {adv.displayName}
+                        {(isSelected || isGranted) && <CheckIcon size={14} />} {adv.displayName} {isGranted ? '• Arquétipo' : ''}
                       </strong>
                       <span style={{ fontSize: '0.8rem', background: isSelected ? 'var(--accent-color)' : 'var(--surface-hover)', color: isSelected ? '#000' : 'var(--text-muted)', border: '1px solid var(--border-color)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>{adv.displayCost}</span>
                     </div>
@@ -432,26 +434,28 @@ export default function CharacterEditor(props: CharacterEditorProps) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginTop: '1rem' }}>
               {filteredDisadvantages.map(disadv => {
                 const isSelected = currentForm.disadvantages?.includes(disadv.variantId);
+                const isGranted = currentForm.archetypeDisadvantages?.includes(disadv.variantId);
                 return (
                   <div
                     key={disadv.variantId}
                     onClick={() => {
-                      const current = currentForm.disadvantages || [];
+                      if (isGranted) return;
+                      const current = currentForm.disadvantages?.filter((id: string) => !currentForm.archetypeDisadvantages?.includes(id)) || [];
                       if (isSelected) updateCurrentForm({ disadvantages: current.filter((id: string) => id !== disadv.variantId) });
                       else updateCurrentForm({ disadvantages: [...current, disadv.variantId] });
                     }}
                     style={{
-                      background: isSelected ? 'rgba(255, 77, 77, 0.1)' : 'var(--surface-hover)',
+                      background: isGranted ? 'rgba(51, 204, 255, 0.12)' : isSelected ? 'rgba(255, 77, 77, 0.1)' : 'var(--surface-hover)',
                       padding: '1rem',
                       borderRadius: '4px',
-                      border: `1px solid ${isSelected ? '#ff4d4d' : 'var(--border-color)'}`,
+                      border: `1px solid ${isGranted ? '#33ccff' : isSelected ? '#ff4d4d' : 'var(--border-color)'}`,
                       cursor: 'pointer',
                       transition: 'all 0.2s'
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                       <strong style={{ fontSize: '1.1rem', color: isSelected ? '#ff4d4d' : '#fff' }}>
-                        {isSelected && <CheckIcon size={14} />} {disadv.displayName}
+                        {(isSelected || isGranted) && <CheckIcon size={14} />} {disadv.displayName} {isGranted ? '• Arquétipo' : ''}
                       </strong>
                       <span style={{ fontSize: '0.8rem', background: isSelected ? '#ff4d4d' : 'var(--surface-hover)', color: isSelected ? '#000' : 'var(--text-muted)', border: '1px solid var(--border-color)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>{disadv.displayCost}</span>
                     </div>
