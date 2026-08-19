@@ -766,9 +766,7 @@ export default function App() {
         style={{ display: 'none' }}
       />
 
-      <div 
-        className={`app-container ${mode === 'play' && isDrawerOpen ? 'app-container-drawer-open' : ''}`}
-      >
+      <div className="app-container">
         
         {mode === 'edit' && (
           <CharacterEditor
