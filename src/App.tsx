@@ -4,7 +4,7 @@ import { useDiceSound } from './useDiceSound';
 import { ARCHETYPES_CATALOG } from './constants/app/archetypes';
 import { KITS_CATALOG } from './constants/app/kits';
 import { calculatePoints, getActiveBonusVariant, getArchetypeCost, getKitPowerModifier } from './utils/character';
-import type { CharacterForm, CharacterSheet, KitPower, RollBonus, RollResult } from './types/character';
+import type { CharacterForm, CharacterSheet, ImmediateActionConfig, KitPower, RollBonus, RollResult } from './types/character';
 import { useCharacterSheets } from './hooks/useCharacterSheets';
 import { useDiceBox } from './hooks/useDiceBox';
 import CharacterEditor from './components/editor/CharacterEditor';
@@ -148,6 +148,7 @@ export default function App() {
       variants: undefined,
       selectedVariantId: undefined,
       variantSelectionMode: undefined,
+      immediateAction: (effect as any).immediateAction,
     }))),
     ...([...(currentKit?.grantedEffects || []), ...(((currentForm as any)._kitSelectedEffects) || [])].map((effect): RollBonus => ({
       id: effect.id,
@@ -166,6 +167,7 @@ export default function App() {
       variants: undefined,
       selectedVariantId: undefined,
       variantSelectionMode: undefined,
+      immediateAction: (effect as any).immediateAction,
     })))
   ], [currentForm, currentArchetype, currentKit]);
   const visibleRollBonuses = rollBonuses.filter(b => b.bonusType !== 'none' || b.critThresholdMod || b.extraDice || b.autoCrit || !b.id.startsWith('kit_'));
@@ -179,11 +181,13 @@ export default function App() {
   const [currentPV, setCurrentPV] = useState(maxPV);
   const [currentPM, setCurrentPM] = useState(maxPM);
   const [currentPA, setCurrentPA] = useState(maxPA);
+  const [temporaryPM, setTemporaryPM] = useState(0);
 
   useEffect(() => {
     setCurrentPV(maxPV);
     setCurrentPM(maxPM);
     setCurrentPA(maxPA);
+    setTemporaryPM(0);
   }, [activeFormIndex, activeCharacterId, maxPV, maxPM, maxPA]);
 
   // Modificadores manuais de rolagem
@@ -488,6 +492,57 @@ export default function App() {
     });
   };
 
+  const executeImmediateAction = async (sourceName: string, action: ImmediateActionConfig) => {
+    if (!diceBoxRef.current || rolling) return;
+    setRolling(true);
+    setResult(null);
+
+    try {
+      if (soundOn) {
+        const snd = new Audio('/sounds/dice-roll.mp3');
+        snd.play().catch(e => console.log('Audio play failed', e));
+      }
+
+      diceBoxRef.current.updateConfig({ themeColor: accentColor });
+      diceBoxRef.current.clear();
+
+      const diceResults = await diceBoxRef.current.roll('1d6');
+      const dResult = diceResults[0];
+      const rollTotal = dResult.value;
+      const total = action.rollFormula === '1d6+h' ? rollTotal + habilidade : rollTotal;
+
+      setTimeout(() => {
+        if (diceBoxRef.current) diceBoxRef.current.clear();
+
+        if (action.kind === 'recover_pm') {
+          setCurrentPM(prev => Math.min(maxPM, prev + total));
+        } else if (action.kind === 'grant_temporary_pm') {
+          setTemporaryPM(total);
+        }
+
+        setResult({
+          rolls: [rollTotal],
+          diceSum: rollTotal,
+          criticals: 0,
+          isCriticalFail: false,
+          finalTotal: total,
+          usedAttributeName: action.resultLabel || sourceName,
+          baseAttributeValue: action.rollFormula === '1d6+h' ? habilidade : 0,
+          attrBonusValue: 0,
+          totalEffectiveAttribute: action.rollFormula === '1d6+h' ? habilidade : 0,
+          flatBonusTotal: 0,
+          critRangeUsed: 6,
+          appliedBonuses: [{ name: sourceName, desc: action.kind === 'recover_pm' ? `Recuperou ${total} PM.` : `Armazenou ${total} PM temporário até a próxima rolagem.` }]
+        });
+        setIsModalOpen(true);
+        setRolling(false);
+      }, 1500);
+    } catch (e) {
+      console.error(e);
+      setRolling(false);
+    }
+  };
+
   const toggleActiveBonus = async (id: string) => {
     const bonus = rollBonuses.find(b => b.id === id);
     if (!bonus) return;
@@ -498,55 +553,13 @@ export default function App() {
       setUsedArchetypeEffects(prev => ({ ...prev, [id]: 1 }));
     }
 
-    if (id === 'kit_mago_bateria_de_mana') {
-      if (!diceBoxRef.current || rolling) return;
-      setRolling(true);
-      setResult(null);
-
-      try {
-        if (soundOn) {
-          const snd = new Audio('/sounds/dice-roll.mp3');
-          snd.play().catch(e => console.log('Audio play failed', e));
-        }
-
-        diceBoxRef.current.updateConfig({
-          themeColor: accentColor,
-        });
-
-        diceBoxRef.current.clear();
-        
-        const diceResults = await diceBoxRef.current.roll('1d6');
-        const dResult = diceResults[0];
-        
-        const rollTotal = dResult.value;
-        const total = rollTotal + habilidade;
-
-        setTimeout(() => {
-          if (diceBoxRef.current) diceBoxRef.current.clear();
-          
-          setCurrentPM(prev => Math.min(maxPM, prev + total));
-
-          setResult({
-            rolls: [rollTotal],
-            diceSum: rollTotal,
-            criticals: 0,
-            isCriticalFail: false,
-            finalTotal: total,
-            usedAttributeName: 'Bateria de Mana (PM)',
-            baseAttributeValue: habilidade,
-            attrBonusValue: 0,
-            totalEffectiveAttribute: habilidade,
-            flatBonusTotal: 0,
-            critRangeUsed: 6,
-            appliedBonuses: [{ name: 'Bateria de Mana', desc: `Recuperou ${total} PM.` }]
-          });
-          setIsModalOpen(true);
-          setRolling(false);
-        }, 1500);
-      } catch(e) {
-        console.error(e);
-        setRolling(false);
+    const immediateAction = activeVariant?.immediateAction || bonus.immediateAction;
+    if (immediateAction) {
+      if (immediateAction.kind === 'grant_temporary_pm' && temporaryPM > 0) {
+        alert('Você ainda possui mana temporária pendente para a próxima rolagem.');
+        return;
       }
+      await executeImmediateAction(bonus.alias || bonus.name, immediateAction);
       return;
     }
 
@@ -570,7 +583,13 @@ export default function App() {
   };
 
   // Kit power usage
-  const handleUseKitPower = (power: KitPower) => {
+  const handleUseKitPower = async (power: KitPower) => {
+    if (selectedKitId === 'mago' && power.id === 'mago_bateria_de_mana') {
+      await executeImmediateAction(power.name, { kind: 'recover_pm', rollFormula: '1d6+h', resultLabel: 'Bateria de Mana (PM)' });
+      setUsedKitPowers(prev => ({ ...prev, [power.id]: (prev[power.id] || 0) + 1 }));
+      return;
+    }
+
     const mod = getKitPowerModifier(power);
     const isBuff = power.type === 'buff' || mod.bonusType !== 'none' || mod.extraDice !== 0 || mod.critThresholdMod !== 0;
 
@@ -820,15 +839,19 @@ export default function App() {
 
       const finalTotal = diceSum + totalEffectiveAttribute + (totalEffectiveAttribute * criticals) + flatBonusTotal;
 
-      // Deduct resource costs for instant bonuses
       const instantBonuses = activeBonusesList.filter(b => b.duration === 'instant');
       const costPV = instantBonuses.filter(b => b.costResource === 'PV').reduce((sum, b) => sum + (b.costValue || 0), 0);
       const costPM = instantBonuses.filter(b => b.costResource === 'PM').reduce((sum, b) => sum + (b.costValue || 0), 0);
       const costPA = instantBonuses.filter(b => b.costResource === 'PA').reduce((sum, b) => sum + (b.costValue || 0), 0);
-      
+
       if (costPV > 0) setCurrentPV(prev => Math.max(0, prev - costPV));
-      if (costPM > 0) setCurrentPM(prev => Math.max(0, prev - costPM));
+      if (costPM > 0) {
+        const tempSpent = Math.min(temporaryPM, costPM);
+        const remainingPMCost = Math.max(0, costPM - tempSpent);
+        if (remainingPMCost > 0) setCurrentPM(prev => Math.max(0, prev - remainingPMCost));
+      }
       if (costPA > 0) setCurrentPA(prev => Math.max(0, prev - costPA));
+      if (temporaryPM > 0) setTemporaryPM(0);
 
       // Auto-deactivate instant bonuses
       setActiveBonuses(prev => {
@@ -874,7 +897,7 @@ export default function App() {
 
   const instantActiveBonuses = activeBonusesList.filter(b => b.duration === 'instant');
   const totalCostPV = instantActiveBonuses.filter(b => b.costResource === 'PV').reduce((sum, b) => sum + (b.costValue || 0), 0);
-  const totalCostPM = instantActiveBonuses.filter(b => b.costResource === 'PM').reduce((sum, b) => sum + (b.costValue || 0), 0);
+  const totalCostPM = Math.max(0, instantActiveBonuses.filter(b => b.costResource === 'PM').reduce((sum, b) => sum + (b.costValue || 0), 0) - temporaryPM);
   const totalCostPA = instantActiveBonuses.filter(b => b.costResource === 'PA').reduce((sum, b) => sum + (b.costValue || 0), 0);
 
   // Active actionable kit powers (powers that can be tapped in gameplay)
@@ -955,7 +978,7 @@ export default function App() {
             selectedKitId={selectedKitId}
             accentColor={accentColor}
             currentPV={currentPV}
-            currentPM={currentPM}
+            currentPM={currentPM + temporaryPM}
             currentPA={currentPA}
             maxPV={maxPV}
             maxPM={maxPM}

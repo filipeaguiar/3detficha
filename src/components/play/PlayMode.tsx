@@ -274,11 +274,13 @@ export default function PlayMode(props: PlayModeProps) {
               {visibleRollBonuses.map((bonus) => {
                 const isActive = activeBonuses.has(bonus.id);
                 const activeVariant = getActiveBonusVariant(bonus);
+                const isImmediate = !!(activeVariant?.immediateAction || bonus.immediateAction);
                 return (
                   <button key={bonus.id} className={`bonus-toggle ${isActive ? 'active' : ''}`} onClick={() => toggleActiveBonus(bonus.id)} onContextMenu={(e) => { e.preventDefault(); setDetailModal({ title: bonus.alias || bonus.name, subtitle: getBonusSubtitle(bonus), body: `${bonus.name !== (bonus.alias || bonus.name) ? `Base: ${bonus.name}\n\n` : ''}${activeVariant?.note || 'Técnica configurada nesta forma.'}`, tone: 'technique' }); }} title={`${bonus.alias || bonus.name}: ${getBonusSubtitle(bonus)}`}>
                     <div className="bonus-toggle-header">
                       <span className="bonus-toggle-label">{bonus.alias ? bonus.alias : bonus.name}</span>
                       {bonus.duration === 'scene' && <span className="bonus-attr-micro" style={{ background: '#33ccff', color: '#000' }}>CENA</span>}
+                      {isImmediate && <span className="bonus-attr-micro" style={{ background: '#ffd166', color: '#000' }}>AÇÃO</span>}
                       {bonus.attribute !== 'any' && <span className="bonus-attr-micro" style={{ color: bonus.attribute === 'poder' ? '#FF9E00' : bonus.attribute === 'habilidade' ? '#894EC6' : '#5EB05D' }}>{bonus.attribute.charAt(0).toUpperCase()}</span>}
                     </div>
                     {bonus.alias && <span className="bonus-toggle-raw-name">{bonus.name}</span>}

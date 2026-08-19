@@ -1,3 +1,9 @@
+export type ImmediateActionConfig = {
+  kind: 'recover_pm' | 'grant_temporary_pm';
+  rollFormula: '1d6' | '1d6+h';
+  resultLabel?: string;
+};
+
 export type RollBonusVariant = {
   id: string;
   label: string;
@@ -9,6 +15,7 @@ export type RollBonusVariant = {
   critThresholdMod?: number;
   autoCrit?: boolean;
   note?: string;
+  immediateAction?: ImmediateActionConfig;
 };
 
 export type RollBonus = {
@@ -31,6 +38,7 @@ export type RollBonus = {
   variants?: RollBonusVariant[];
   selectedVariantId?: string;
   variantSelectionMode?: 'cycle' | 'table-declared';
+  immediateAction?: ImmediateActionConfig;
 };
 
 export type CharacterVariantSelection = {

@@ -340,7 +340,7 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     catalogId: 'absorver_mana',
     name: 'Absorver Mana',
     alias: '',
-    description: 'Absorve mana do ambiente em vez de gastar energia própria.',
+    description: 'Absorve mana do ambiente e a guarda temporariamente até a próxima rolagem.',
     universal: false,
     requirements: { skills: ['mistica'] },
     attribute: 'habilidade',
@@ -354,6 +354,12 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     costResource: 'none',
     xpCost: 10,
     xpCategory: 'common',
+    variantSelectionMode: 'cycle',
+    selectedVariantId: 'movimento',
+    variants: [
+      { id: 'movimento', label: 'Movimento', note: 'Rola 1D PM temporário; dura até a próxima rolagem e não pode ser reabsorvido antes disso.', immediateAction: { kind: 'grant_temporary_pm', rollFormula: '1d6', resultLabel: 'Absorver Mana (Movimento)' } },
+      { id: 'acao', label: 'Ação', note: 'Rola 1D + H PM temporário; dura até a próxima rolagem e não pode ser reabsorvido antes disso.', immediateAction: { kind: 'grant_temporary_pm', rollFormula: '1d6+h', resultLabel: 'Absorver Mana (Ação)' } }
+    ]
   },
   {
     catalogId: 'area_de_batalha',
