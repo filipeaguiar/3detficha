@@ -54,13 +54,13 @@ export function useDiceBox(mode: 'edit' | 'play', accentColor: string) {
     const textColor = luminance > 0.5 ? '#000000' : '#ffffff';
     document.documentElement.style.setProperty('--accent-text-color', textColor);
 
-    if (diceBoxRef.current) {
+    if (diceBoxRef.current && diceBoxRef.current !== 'initializing') {
       diceBoxRef.current.updateConfig({ themeColor: accentColor });
     }
   }, [accentColor]);
 
   const clearDice = () => {
-    if (diceBoxRef.current) diceBoxRef.current.clear();
+    if (diceBoxRef.current && diceBoxRef.current !== 'initializing') diceBoxRef.current.clear();
     if (clearDiceTimeoutRef.current) clearTimeout(clearDiceTimeoutRef.current);
   };
 

@@ -501,7 +501,7 @@ export default function App() {
   };
 
   const executeImmediateAction = async (sourceName: string, action: ImmediateActionConfig) => {
-    if (!diceBoxRef.current || rolling) return;
+    if (!diceBoxRef.current || diceBoxRef.current === 'initializing' || rolling) return;
     setRolling(true);
     setResult(null);
 
@@ -522,7 +522,7 @@ export default function App() {
       const total = typeof capValue === 'number' ? Math.min(rawTotal, Math.max(0, capValue)) : rawTotal;
 
       setTimeout(() => {
-        if (diceBoxRef.current) diceBoxRef.current.clear();
+        if (diceBoxRef.current && diceBoxRef.current !== 'initializing') diceBoxRef.current.clear();
 
         if (action.kind === 'recover_pm') {
           setCurrentPM(prev => Math.min(maxPM, prev + total));
@@ -750,7 +750,7 @@ export default function App() {
   };
 
   const handleRoll = async (attrName: 'poder' | 'habilidade' | 'resistencia') => {
-    if (!diceBoxRef.current || rolling) return;
+    if (!diceBoxRef.current || diceBoxRef.current === 'initializing' || rolling) return;
     if (!allowedAttributes[attrName]) return;
 
     setRolling(true);
@@ -894,7 +894,7 @@ export default function App() {
       const diceResults = await diceBoxRef.current.roll(`${diceCount}d6`);
       
       clearDiceTimeoutRef.current = setTimeout(() => {
-        if (diceBoxRef.current) diceBoxRef.current.clear();
+        if (diceBoxRef.current && diceBoxRef.current !== 'initializing') diceBoxRef.current.clear();
       }, 3000);
       
       let rolls: number[] = [];
