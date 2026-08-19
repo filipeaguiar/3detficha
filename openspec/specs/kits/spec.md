@@ -1,5 +1,8 @@
-## ADDED Requirements
+# kits Specification
 
+## Purpose
+Definir kits como uma camada própria de regras, com custo único, escolhas internas persistidas, efeitos compatíveis com o motor atual e divulgação explícita do que permanece manual.
+## Requirements
 ### Requirement: Kits must be fully modeled as a distinct rules layer
 The system SHALL treat kits as a first-class rules layer separate from free-picked advantages, disadvantages, skills, and archetypes.
 
@@ -56,3 +59,12 @@ The system SHALL allow a valid character to have no selected kit.
 - **THEN** the character remains valid
 - **AND** no kit cost is applied
 - **AND** no kit package is injected
+
+### Requirement: Option-tab improvements must remain consistent with structured kit flows
+The system SHALL keep kit-related editor flows compatible with the improved filtering and guided selection behavior.
+
+#### Scenario: User edits character options with a selected kit
+- **WHEN** the player navigates improved option tabs
+- **THEN** kit-related choices and disclosures remain visible and functional
+- **AND** the new filtering UX does not hide or break structured kit data
+

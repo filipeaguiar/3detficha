@@ -1,5 +1,8 @@
-## ADDED Requirements
+# app-component-modularity Specification
 
+## Purpose
+Preservar a composição modular da aplicação, separando responsabilidades entre componentes, hooks, tipos, constantes e utilitários sem alterar o comportamento observável da ficha e do modo de jogo.
+## Requirements
 ### Requirement: Composição modular da aplicação
 A aplicação SHALL manter cada área principal da interface em um módulo React com responsabilidade nomeada, incluindo edição da ficha, experiência de jogo, navegação ou drawer e modais. `App.tsx` SHALL atuar como ponto de composição de alto nível e não SHALL conter a implementação JSX detalhada dessas áreas.
 
@@ -58,3 +61,11 @@ A refatoração MUST preservar as chaves e o formato aceito do armazenamento loc
 #### Scenario: Build de produção
 - **WHEN** lint e build são executados após a modularização
 - **THEN** o projeto passa pelas verificações sem adicionar dependências de produção para suportar a nova organização
+
+### Requirement: Modular editor contracts must support per-tab filters and derived eligibility state
+The editor modules SHALL support separate filter state and derived eligibility state for each option-selection area.
+
+#### Scenario: Editor tab manages its own filtering and gating
+- **WHEN** a selectable tab is rendered
+- **THEN** it can receive or derive its own filter state and eligibility data without collapsing unrelated tab behavior into the root component
+
