@@ -219,6 +219,9 @@ export default function CharacterEditor(props: CharacterEditorProps) {
               <strong style={{ color: '#fff' }}>{currentArchetype.name}</strong> • {currentArchetype.group} • {currentArchetype.cost}pt
               <div style={{ marginTop: '0.25rem' }}>{currentArchetype.desc}</div>
               {currentArchetype.traits.length > 0 && <div style={{ marginTop: '0.25rem' }}><strong style={{ color: 'var(--text-main)' }}>Traços:</strong> {currentArchetype.traits.join(', ')}</div>}
+              {currentArchetype.grantedAdvantages && currentArchetype.grantedAdvantages.length > 0 && <div style={{ marginTop: '0.25rem' }}><strong style={{ color: 'var(--text-main)' }}>Vantagens base:</strong> {currentArchetype.grantedAdvantages.join(', ')}</div>}
+              {currentArchetype.grantedDisadvantages && currentArchetype.grantedDisadvantages.length > 0 && <div style={{ marginTop: '0.25rem' }}><strong style={{ color: 'var(--text-main)' }}>Desvantagens base:</strong> {currentArchetype.grantedDisadvantages.join(', ')}</div>}
+              {currentArchetype.notes && currentArchetype.notes.length > 0 && <div style={{ marginTop: '0.25rem' }}><strong style={{ color: 'var(--text-main)' }}>Notas:</strong> {currentArchetype.notes.join(' • ')}</div>}
             </div>
           )}
         </div>

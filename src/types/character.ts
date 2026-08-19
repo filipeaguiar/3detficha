@@ -35,6 +35,9 @@ export type CharacterForm = {
   advantages?: string[];
   disadvantages?: string[];
   skills?: string[];
+  archetypeAdvantages?: string[];
+  archetypeDisadvantages?: string[];
+  archetypeSkills?: string[];
   variantSelections?: Record<string, CharacterVariantSelection[]>;
 };
 
@@ -47,6 +50,10 @@ export type CharacterArchetype = {
   group: string;
   desc: string;
   traits: string[];
+  grantedAdvantages?: string[];
+  grantedDisadvantages?: string[];
+  grantedSkills?: string[];
+  notes?: string[];
 };
 
 export type CharacterSheet = {
