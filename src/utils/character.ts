@@ -235,6 +235,30 @@ export function getXPCreditRules(currentForm: CharacterForm): XPCreditRule[] {
   return rules;
 }
 
+export function getEligibleXPCreditSources(currentForm: CharacterForm, category: 'trick' | 'common' | 'legendary' | 'generic', excludeBonusId?: string) {
+  const rules = getXPCreditRules(currentForm);
+  const budgets = new Map<string, number>();
+  rules.forEach(rule => budgets.set(rule.sourceId, rule.xpPerRank));
+
+  const techniques = (currentForm.rollBonuses || []).filter((bonus) => bonus.id !== excludeBonusId && typeof bonus.xpCost === 'number' && bonus.xpCost > 0);
+  techniques.forEach((bonus) => {
+    const bonusCategory = bonus.xpCategory || 'generic';
+    let remaining = bonus.xpCost || 0;
+    (bonus.fundedBySourceIds || []).forEach((sourceId) => {
+      const rule = rules.find(r => r.sourceId === sourceId && r.allowedCategories.includes(bonusCategory));
+      if (!rule || remaining <= 0) return;
+      const available = budgets.get(sourceId) || 0;
+      const consumed = Math.min(available, remaining);
+      budgets.set(sourceId, available - consumed);
+      remaining -= consumed;
+    });
+  });
+
+  return rules
+    .filter(rule => rule.allowedCategories.includes(category))
+    .map(rule => ({ ...rule, remainingXP: budgets.get(rule.sourceId) || 0 }));
+}
+
 export function getXPCreditSummary(currentForm: CharacterForm) {
   const rules = getXPCreditRules(currentForm);
   const budgets = new Map<string, number>();
