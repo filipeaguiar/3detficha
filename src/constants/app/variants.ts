@@ -112,6 +112,7 @@ export const DISADVANTAGE_VARIANT_OPTIONS: Record<string, Array<{ key: string; l
     { key: 'justica', label: 'Código de Justiça', cost: '-1pt' },
     { key: 'pacifismo', label: 'Código de Pacifismo', cost: '-1pt' },
     { key: 'lealdade', label: 'Código de Lealdade', cost: '-1pt' },
+    { key: 'dahllan', label: 'Código Dahllan', cost: '-1pt' },
   ],
   transtorno: [
     { key: 'fobia', label: 'Fobia', cost: '-1pt' },

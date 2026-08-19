@@ -480,7 +480,7 @@ export const ALL_KITS = [
       {
         "id": "druida_dadiva_da_natureza",
         "name": "Dádiva da natureza",
-        "desc": "Animais (e plantas!) ajudam em suas tarefas. Uma vez por cena, você pode usar Animais para substituir qualquer outra perícia. Você pode pagar 3PM para cada nova uti- lização na mes- ma cena. Código Dahllan (–1 pt) Não consumir produ- tos de origem animal. Nun- ca atacar um animal, nem deixar de prestar ajuda a um animal em dificuldade. Elementalista",
+        "desc": "Animais (e plantas!) ajudam em suas tarefas. Uma vez por cena, você pode usar Animais para substituir qualquer outra perícia. Você pode pagar 3PM para cada nova utilização na mesma cena.",
         "type": "per_scene",
         "maxUsesPerScene": 1,
         "repeatCostPM": 3

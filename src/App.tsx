@@ -16,7 +16,7 @@ export default function App() {
   const { characterSheets, activeCharacterId, activeSheet, saveAllSheets, updateActiveSheet, updateCurrentForm } = useCharacterSheets();
 
   const [mode, setMode] = useState<'edit' | 'play'>('play');
-  const [activeTab, setActiveTab] = useState<'concept' | 'attributes' | 'advantages' | 'skills' | 'techniques'>('concept');
+  const [activeTab, setActiveTab] = useState<'concept' | 'attributes' | 'advantages' | 'disadvantages' | 'skills' | 'techniques'>('concept');
   const [activeFormIndex, setActiveFormIndex] = useState<number>(0);
   
   // Hidden Drawer Menu state
