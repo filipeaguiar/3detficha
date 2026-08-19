@@ -1,3 +1,21 @@
+export type PersistentAssistedConfig = {
+  kind: 'repeatable-trigger' | 'stock';
+  initialCostValue?: number;
+  initialCostResource?: 'none' | 'PV' | 'PM' | 'PA';
+  triggerCostValue?: number;
+  triggerCostResource?: 'none' | 'PV' | 'PM' | 'PA';
+  stockCount?: number;
+  statusLabel?: string;
+  triggerLabel?: string;
+  note?: string;
+};
+
+export type TemporaryPackageConfig = {
+  kind: 'temporary-package';
+  statusLabel?: string;
+  note?: string;
+};
+
 export type ImmediateActionConfig = {
   kind: 'recover_pm' | 'grant_temporary_pm';
   rollFormula: '1d6' | '1d6+h';
@@ -17,6 +35,8 @@ export type RollBonusVariant = {
   autoCrit?: boolean;
   note?: string;
   immediateAction?: ImmediateActionConfig;
+  persistentAssisted?: PersistentAssistedConfig;
+  temporaryPackage?: TemporaryPackageConfig;
 };
 
 export type StrikeSelection = {
@@ -45,6 +65,13 @@ export type RollBonus = {
   selectedVariantId?: string;
   variantSelectionMode?: 'cycle' | 'table-declared';
   immediateAction?: ImmediateActionConfig;
+  persistentAssisted?: PersistentAssistedConfig;
+  temporaryPackage?: TemporaryPackageConfig;
+  assistedState?: {
+    active?: boolean;
+    remainingUses?: number;
+    stockCount?: number;
+  };
 };
 
 export type CharacterVariantSelection = {

@@ -414,6 +414,10 @@ export function createTechniqueBonusFromCatalog(technique: TechniqueCatalogEntry
     variants: technique.variants,
     selectedVariantId: technique.selectedVariantId,
     variantSelectionMode: technique.variantSelectionMode,
+    immediateAction: technique.immediateAction,
+    persistentAssisted: technique.persistentAssisted,
+    temporaryPackage: technique.temporaryPackage,
+    assistedState: technique.persistentAssisted ? { active: false, remainingUses: undefined, stockCount: technique.persistentAssisted.stockCount } : undefined,
   };
 }
 

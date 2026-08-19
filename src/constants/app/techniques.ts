@@ -554,5 +554,34 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     costResource: 'PM',
     xpCost: 10,
     xpCategory: 'common',
+  },
+  {
+    catalogId: 'desprezo',
+    name: 'Desprezo',
+    alias: '',
+    description: 'Ativa um desprezo duradouro e permite gastar PM depois para impor Perda no alvo.',
+    universal: false,
+    requirements: { anyOfSkills: ['arte', 'influencia'] },
+    attribute: 'poder',
+    bonusType: 'none',
+    value: 0,
+    duration: 'scene',
+    critThresholdMod: 0,
+    autoCrit: false,
+    extraDice: 0,
+    costValue: 2,
+    costResource: 'PM',
+    xpCost: 10,
+    xpCategory: 'common',
+    persistentAssisted: {
+      kind: 'repeatable-trigger',
+      initialCostValue: 2,
+      initialCostResource: 'PM',
+      triggerCostValue: 1,
+      triggerCostResource: 'PM',
+      statusLabel: 'Desprezo ativo',
+      triggerLabel: 'Causar Perda',
+      note: 'Após vencer Poder contra Resistência em mesa, você pode gastar 1PM como reação para impor Perda em testes do alvo; ele pode tentar resistir de novo para encerrar.'
+    }
   }
 ];
