@@ -60,7 +60,7 @@ export default function App() {
 
   // Selected Kit Info
   const currentKit = useMemo(() => {
-    return KITS_CATALOG.find(k => k.id === selectedKitId) || KITS_CATALOG[0] || null;
+    return KITS_CATALOG.find(k => k.id === selectedKitId) || null;
   }, [selectedKitId]);
 
   const currentArchetype = useMemo(() => {
@@ -293,7 +293,7 @@ export default function App() {
     const newSheet: CharacterSheet = {
       id: 'char_' + Date.now(),
       characterName: 'Novo Herói',
-      selectedKitId: 'guerreiro',
+      selectedKitId: '',
       selectedArchetypeId: 'humano',
       accentColor: '#FF9E00',
       soundOn: true,

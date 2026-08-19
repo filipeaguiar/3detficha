@@ -37,7 +37,7 @@ export function createDefaultSheet(): CharacterSheet {
   return {
     id: 'char_default',
     characterName: 'Dahllan Druida',
-    selectedKitId: 'druida',
+    selectedKitId: '',
     selectedArchetypeId: 'humano',
     accentColor: '#5EB05D',
     soundOn: true,
@@ -87,7 +87,7 @@ export function loadInitialSheets(): { sheets: CharacterSheet[]; activeId: strin
       const migratedSheet: CharacterSheet = {
         id: 'char_' + Date.now(),
         characterName: parsed.characterName || 'Personagem',
-        selectedKitId: parsed.selectedKitId || 'druida',
+        selectedKitId: parsed.selectedKitId || '',
         selectedArchetypeId: parsed.selectedArchetypeId || 'humano',
         accentColor: parsed.accentColor || '#ff0066',
         soundOn: parsed.soundOn ?? true,

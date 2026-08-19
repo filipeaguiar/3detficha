@@ -231,7 +231,7 @@ export default function CharacterEditor(props: CharacterEditorProps) {
               style={{ width: 'auto', padding: '0.2rem 0.6rem', fontSize: '0.75rem', borderColor: 'var(--accent-color)', color: 'var(--accent-color)' }}
               onClick={() => setIsKitSelectModalOpen(true)}
             >
-              Alterar Kit (60 Opções)
+              Alterar Kit
             </button>
           </div>
 
@@ -253,7 +253,7 @@ export default function CharacterEditor(props: CharacterEditorProps) {
             </div>
           ) : (
             <button className="control-btn" style={{ width: '100%', padding: '0.6rem' }} onClick={() => setIsKitSelectModalOpen(true)}>
-              Selecionar Kit
+              Selecionar Kit (Opcional)
             </button>
           )}
         </div>

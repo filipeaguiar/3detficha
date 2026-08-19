@@ -131,6 +131,13 @@ export default function AppModals(props: AppModalsProps) {
             <div className="kit-search-container"><SearchIcon /><input type="text" placeholder="Buscar por nome, perícia ou poder..." value={kitSearchQuery} onChange={(e) => setKitSearchQuery(e.target.value)} className="kit-search-input" />{kitSearchQuery && <button className="kit-search-clear" onClick={() => setKitSearchQuery('')}><CloseIcon size={14} /></button>}</div>
             <div className="kit-nucleo-chips">{[{ id: 'all', label: 'Todos' }, { id: 'Arcas', label: 'Era das Arcas' }, { id: 'Galáxia', label: 'Guerra da Galáxia' }, { id: 'ALPHA', label: 'Tormenta ALPHA' }, { id: 'UniPotência', label: 'UniPotência' }, { id: 'ARSENAL', label: 'Operação ARSENAL' }].map(chip => <button key={chip.id} className={`kit-chip-btn ${selectedNucleoFilter === chip.id ? 'active' : ''}`} onClick={() => setSelectedNucleoFilter(chip.id)}>{chip.label}</button>)}</div>
             <div className="kit-cards-scroll-list">
+              <div className={`kit-card-option ${selectedKitId === '' ? 'selected' : ''}`} onClick={() => {
+                const updatedForms = [...forms];
+                const cleanedBonuses = updatedForms[activeFormIndex].rollBonuses.filter(b => !b.id.startsWith('kit_'));
+                updatedForms[activeFormIndex] = { ...updatedForms[activeFormIndex], rollBonuses: cleanedBonuses };
+                updateActiveSheetForms('', updatedForms);
+                setIsKitSelectModalOpen(false);
+              }}><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><span style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.25rem', color: selectedKitId === '' ? 'var(--accent-color)' : '#fff', letterSpacing: '0.5px' }}>Sem Kit</span><span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', background: 'var(--bg-color)', padding: '2px 6px', borderRadius: '3px' }}>0 pt</span></div><div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>Personagem sem caminho profissional definido. Nenhum poder de kit é aplicado.</div></div>
               {filteredKits.map((kit) => {
                 const isSelected = kit.id === selectedKitId;
                 return <div key={kit.id} className={`kit-card-option ${isSelected ? 'selected' : ''}`} onClick={() => {
