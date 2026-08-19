@@ -313,7 +313,7 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     catalogId: 'super_movimento',
     name: 'Super-Movimento',
     alias: '',
-    description: 'Movimentos impossíveis por treinamento ou magia.',
+    description: 'Movimentos impossíveis por treinamento ou magia, com modos situacionais escolhidos em jogo.',
     universal: false,
     requirements: { anyOfAdvantages: ['magia'], anyOfSkills: ['esporte', 'luta'] },
     attribute: 'habilidade',
@@ -322,11 +322,19 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     duration: 'instant',
     critThresholdMod: 0,
     autoCrit: false,
-    extraDice: 1,
+    extraDice: 0,
     costValue: 1,
     costResource: 'PM',
     xpCost: 10,
     xpCategory: 'trick',
+    variantSelectionMode: 'cycle',
+    selectedVariantId: 'andar_em_paredes',
+    variants: [
+      { id: 'andar_em_paredes', label: 'Andar em Paredes', costValue: 1, costResource: 'PM', note: 'Pode andar em paredes e tetos; para prender-se de novo após descer, gasta +1PM em mesa.' },
+      { id: 'salto_extremo', label: 'Salto Extremo', costValue: 1, costResource: 'PM', note: 'Salta até Muito Longe com um movimento, sem Perda nem dano de queda ao voltar ao chão.' },
+      { id: 'correr_sobre_agua', label: 'Correr sobre a Água', costValue: 1, costResource: 'PM', note: 'Correr sobre água ou superfície instável; em mesa requer 1PM por rodada para manter.' },
+      { id: 'livre_de_contencao', label: 'Livre de Contenção', costValue: 1, costResource: 'PM', extraDice: 1, note: 'Ganho em um teste para se livrar de cordas, amarras e outras contenções.' }
+    ]
   },
   {
     catalogId: 'absorver_mana',
@@ -389,7 +397,7 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     catalogId: 'disparo_de_energia',
     name: 'Disparo de Energia',
     alias: '',
-    description: 'Concentra energia espiritual e dispara contra alvo Longe.',
+    description: 'Concentra energia espiritual e dispara contra alvo Longe, com níveis de carga situacionais.',
     universal: false,
     requirements: { anyOfAdvantages: ['magia'], anyOfSkills: ['luta'] },
     attribute: 'poder',
@@ -403,12 +411,20 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     costResource: 'PM',
     xpCost: 10,
     xpCategory: 'common',
+    variantSelectionMode: 'cycle',
+    selectedVariantId: 'padrao',
+    variants: [
+      { id: 'padrao', label: 'Padrão', costValue: 3, costResource: 'PM', value: 2, bonusType: 'attr_mod', note: 'Ataque Longe com Poder +2, sem Perda mesmo sem Alcance.' },
+      { id: 'carga_1', label: 'Carga +1 mov.', costValue: 3, costResource: 'PM', value: 4, bonusType: 'attr_mod', note: 'Concentra 1 movimento para ganhar +2 Poder sem custo extra.' },
+      { id: 'carga_2', label: 'Carga +2 mov.', costValue: 3, costResource: 'PM', value: 6, bonusType: 'attr_mod', note: 'Concentra 2 movimentos para ganhar +4 Poder total; respeite o limite real em mesa.' },
+      { id: 'gritado', label: 'Nome Gritado', costValue: 2, costResource: 'PM', value: 2, bonusType: 'attr_mod', note: 'Se o jogador gritar o nome do disparo, o custo cai em 1PM.' }
+    ]
   },
   {
     catalogId: 'consertar',
     name: 'Consertar',
     alias: '',
-    description: 'Recupera PV de construtos.',
+    description: 'Recupera PV de construtos com níveis variáveis de reparo.',
     universal: false,
     requirements: { skills: ['maquinas'] },
     attribute: 'habilidade',
@@ -422,12 +438,21 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     costResource: 'PM',
     xpCost: 10,
     xpCategory: 'common',
+    variantSelectionMode: 'cycle',
+    selectedVariantId: '1d',
+    variants: [
+      { id: '1d', label: '1D PV', costValue: 2, costResource: 'PM', note: 'Gasta 2PM para curar 1D PV em um construto.' },
+      { id: '2d', label: '2D PV', costValue: 4, costResource: 'PM', note: 'Gasta 4PM para curar 2D PV em um construto.' },
+      { id: '3d', label: '3D PV', costValue: 6, costResource: 'PM', note: 'Gasta 6PM para curar 3D PV em um construto.' },
+      { id: '4d', label: '4D PV', costValue: 8, costResource: 'PM', note: 'Gasta 8PM para curar 4D PV em um construto.' },
+      { id: '5d', label: '5D PV', costValue: 10, costResource: 'PM', note: 'Gasta 10PM para curar 5D PV em um construto; respeite o limite real de Habilidade ou 5 em mesa.' }
+    ]
   },
   {
     catalogId: 'encantar',
     name: 'Encantar',
     alias: '',
-    description: 'Torna um alvo extremamente amigável a você.',
+    description: 'Torna um alvo amigável, com uso mundano ou mágico reforçado.',
     universal: false,
     requirements: { anyOfAdvantages: ['magia'], anyOfSkills: ['arte', 'influencia'] },
     attribute: 'poder',
@@ -436,11 +461,17 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     duration: 'scene',
     critThresholdMod: 0,
     autoCrit: false,
-    extraDice: 1,
+    extraDice: 0,
     costValue: 3,
     costResource: 'PM',
     xpCost: 10,
     xpCategory: 'common',
+    variantSelectionMode: 'cycle',
+    selectedVariantId: 'padrao',
+    variants: [
+      { id: 'padrao', label: 'Padrão', costValue: 3, costResource: 'PM', note: 'Teste resistido de Poder contra Resistência; o alvo não pode agir agressivamente contra você.' },
+      { id: 'magia_reforcada', label: 'Magia Reforçada', costValue: 4, costResource: 'PM', extraDice: 1, note: 'Usando Magia, pode gastar mais PM para obter bônus no teste; esta variante representa um reforço mínimo seguro.' }
+    ]
   },
   {
     catalogId: 'invocar_elemental',
