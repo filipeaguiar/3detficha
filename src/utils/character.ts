@@ -4,7 +4,7 @@ import { TECHNIQUES_CATALOG, type TechniqueCatalogEntry } from '../constants/app
 import { ADVANTAGE_VARIANT_OPTIONS, DISADVANTAGE_VARIANT_OPTIONS } from '../constants/app/variants';
 import { STRIKES_CATALOG } from '../constants/app/strikes';
 import type { StrikeCatalogEntry } from '../constants/app/strikes';
-import type { CharacterForm, CharacterLinkGroup, CharacterSheet, KitPower, RollBonus, XPCreditRule } from '../types/character';
+import type { CharacterForm, CharacterSheet, KitPower, RollBonus, XPCreditRule } from '../types/character';
 
 export function normalizeRollBonus(raw: any): RollBonus {
   const name = raw.name || raw.label || 'Bônus';
@@ -76,18 +76,24 @@ export function createDefaultSheet(): CharacterSheet {
   };
 }
 
-export function loadInitialSheets(): { sheets: CharacterSheet[]; activeId: string; linkGroups: CharacterLinkGroup[] } {
+export function loadInitialSheets(): { sheets: CharacterSheet[]; activeId: string } {
   const defaultSheet = createDefaultSheet();
 
   try {
     const savedList = localStorage.getItem('3det_character_list');
     const savedActiveId = localStorage.getItem('3det_active_character_id');
+    const savedGroups = localStorage.getItem('3det_character_link_groups');
 
     if (savedList) {
       const parsedList = JSON.parse(savedList);
       if (Array.isArray(parsedList) && parsedList.length > 0) {
-        const normalized = parsedList.map((sheet: any) => ({
-          ...sheet,
+        let normalized: CharacterSheet[] = parsedList.map((sheet: any) => ({
+          id: sheet.id,
+          characterName: sheet.characterName || 'Personagem',
+          selectedKitId: sheet.selectedKitId || '',
+          selectedArchetypeId: sheet.selectedArchetypeId || 'humano',
+          accentColor: sheet.accentColor || '#ff0066',
+          soundOn: sheet.soundOn ?? true,
           forms: (sheet.forms || []).map((f: any) => ({
             ...f,
             maisAcao: f.maisAcao ?? 0,
@@ -96,10 +102,46 @@ export function loadInitialSheets(): { sheets: CharacterSheet[]; activeId: strin
             kitSelections: f.kitSelections || {},
           }))
         }));
-        const activeId = savedActiveId || normalized[0].id;
-        const savedGroups = localStorage.getItem('3det_character_link_groups');
-        const parsedGroups = savedGroups ? JSON.parse(savedGroups) : [];
-        return { sheets: normalized, activeId, linkGroups: Array.isArray(parsedGroups) ? parsedGroups : [] };
+
+        // Migrate legacy link groups into embedded forms
+        if (savedGroups) {
+          try {
+            const parsedGroups: Array<{ id: string; primarySheetId: string; sheetIds: string[] }> = JSON.parse(savedGroups);
+            if (Array.isArray(parsedGroups) && parsedGroups.length > 0) {
+              const sheetsToRemove = new Set<string>();
+
+              parsedGroups.forEach(group => {
+                const primaryId = group.primarySheetId || group.sheetIds[0];
+                const primarySheet = normalized.find(s => s.id === primaryId);
+                if (!primarySheet) return;
+
+                group.sheetIds.forEach(sheetId => {
+                  if (sheetId === primaryId) return;
+                  const auxSheet = normalized.find(s => s.id === sheetId);
+                  if (!auxSheet) return;
+
+                  // Add auxiliary sheet forms to primary sheet
+                  (auxSheet.forms || []).forEach(auxForm => {
+                    primarySheet.forms.push({
+                      ...auxForm,
+                      name: auxForm.name || 'Forma Alternativa',
+                    });
+                  });
+                  sheetsToRemove.add(sheetId);
+                });
+              });
+
+              normalized = normalized.filter(sheet => !sheetsToRemove.has(sheet.id));
+              localStorage.removeItem('3det_character_link_groups');
+              localStorage.setItem('3det_character_list', JSON.stringify(normalized));
+            }
+          } catch (migrationErr) {
+            console.error('Error migrating link groups:', migrationErr);
+          }
+        }
+
+        const activeId = (normalized.some(s => s.id === savedActiveId) ? savedActiveId : null) || normalized[0]?.id || defaultSheet.id;
+        return { sheets: normalized, activeId };
       }
     }
 
@@ -136,13 +178,13 @@ export function loadInitialSheets(): { sheets: CharacterSheet[]; activeId: strin
           }
         ]
       };
-      return { sheets: [migratedSheet], activeId: migratedSheet.id, linkGroups: [] };
+      return { sheets: [migratedSheet], activeId: migratedSheet.id };
     }
   } catch (e) {
     console.error('Error loading characters from storage:', e);
   }
 
-  return { sheets: [defaultSheet], activeId: defaultSheet.id, linkGroups: [] };
+  return { sheets: [defaultSheet], activeId: defaultSheet.id };
 }
 
 export function getActiveBonusVariant(bonus: RollBonus) {

@@ -128,8 +128,6 @@ export type CharacterForm = {
   strikeSelections?: StrikeSelection[];
 };
 
-export type CharacterLinkRelation = 'base' | 'form' | 'alternate';
-
 export type ArchetypeEffect = {
   id: string;
   name: string;
@@ -187,15 +185,6 @@ export type CharacterSheet = {
   accentColor: string;
   soundOn: boolean;
   forms: CharacterForm[];
-  linkGroupId?: string;
-  relationType?: CharacterLinkRelation;
-  relationLabel?: string;
-};
-
-export type CharacterLinkGroup = {
-  id: string;
-  primarySheetId: string;
-  sheetIds: string[];
 };
 
 export type KitEffect = {

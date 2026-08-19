@@ -13,7 +13,7 @@ import PlayMode from './components/play/PlayMode';
 import AppModals from './components/modals/AppModals';
 
 export default function App() {
-  const { characterSheets, activeCharacterId, activeSheet, saveAllSheets, updateActiveSheet, updateCurrentForm, linkedSheets, createLinkedSheet, unlinkSheet } = useCharacterSheets();
+  const { characterSheets, activeCharacterId, activeSheet, saveAllSheets, updateActiveSheet, updateCurrentForm } = useCharacterSheets();
 
   const [mode, setMode] = useState<'edit' | 'play'>('play');
   const [activeTab, setActiveTab] = useState<'concept' | 'attributes' | 'advantages' | 'skills' | 'techniques'>('concept');
@@ -46,18 +46,20 @@ export default function App() {
   const selectedArchetypeId = activeSheet.selectedArchetypeId || 'humano';
   const accentColor = activeSheet.accentColor;
   const soundOn = activeSheet.soundOn;
-  const forms = linkedSheets.length > 1
-    ? linkedSheets.map((sheet, index) => ({
-        ...(sheet.forms[0] || activeSheet.forms[0]),
-        id: sheet.id,
-        name: sheet.relationLabel || sheet.forms[0]?.name || `Forma ${index + 1}`,
-        avatarUrl: sheet.forms[0]?.avatarUrl,
-      }))
-    : activeSheet.forms;
+  const forms = activeSheet.forms || [];
 
-  const currentFormBase = linkedSheets.length > 1
-    ? (linkedSheets[activeFormIndex]?.forms[0] || linkedSheets[0]?.forms[0] || activeSheet.forms[0])
-    : (forms[activeFormIndex] || forms[0]);
+  const currentFormBase = forms[activeFormIndex] || forms[0] || {
+    id: 'base',
+    name: 'Forma Normal',
+    poder: 1,
+    habilidade: 1,
+    resistencia: 1,
+    maisVida: 0,
+    maisMana: 0,
+    maisAcao: 0,
+    rollBonuses: [],
+    wildShapeAdvantages: []
+  };
 
   // Selected Kit Info
   const currentKit = useMemo(() => {
@@ -185,12 +187,21 @@ export default function App() {
   const [currentPA, setCurrentPA] = useState(maxPA);
   const [temporaryPM, setTemporaryPM] = useState(0);
 
+  // Reset to full only when active character changes
   useEffect(() => {
     setCurrentPV(maxPV);
     setCurrentPM(maxPM);
     setCurrentPA(maxPA);
     setTemporaryPM(0);
-  }, [activeFormIndex, activeCharacterId, maxPV, maxPM, maxPA]);
+    setActiveFormIndex(0);
+  }, [activeCharacterId]);
+
+  // Clamp resources to new maximum when switching forms or modifying stats
+  useEffect(() => {
+    setCurrentPV(prev => Math.min(maxPV, prev));
+    setCurrentPM(prev => Math.min(maxPM, prev));
+    setCurrentPA(prev => Math.min(maxPA, prev));
+  }, [maxPV, maxPM, maxPA]);
 
   // Modificadores manuais de rolagem
   const [manualBonusDice, setManualBonusDice] = useState<0 | 1 | 2>(0);
@@ -305,27 +316,21 @@ export default function App() {
 
   // Form management for active sheet
   const updateCurrentFormForActiveIndex = (updates: Partial<CharacterForm>) => {
-    if (linkedSheets.length > 1) {
-      const targetSheet = linkedSheets[activeFormIndex] || linkedSheets[0];
-      if (!targetSheet) return;
-      const updatedForms = targetSheet.forms.map((f, i) => i === 0 ? { ...f, ...updates } : f);
-      const updatedSheets = characterSheets.map(sheet => sheet.id === targetSheet.id ? { ...sheet, forms: updatedForms } : sheet);
-      saveAllSheets(updatedSheets, targetSheet.id);
-      return;
-    }
     updateCurrentForm(activeFormIndex, updates);
   };
 
   const addTransformationForm = () => {
     const isDruid = selectedKitId === 'druida';
+    const currentForms = activeSheet.forms || [];
     const newForm: CharacterForm = {
-      id: 'base',
-      name: isDruid ? 'Forma Selvagem (Fera)' : `Forma Alternativa ${forms.length + 1}`,
+      id: 'form_' + Date.now(),
+      name: isDruid ? 'Forma Selvagem (Fera)' : `Forma Alternativa ${currentForms.length + 1}`,
       poder: Math.max(1, poder + (isDruid ? 1 : 0)),
       habilidade: habilidade,
       resistencia: Math.max(1, resistencia + (isDruid ? 1 : 0)),
       maisVida: maisVida,
       maisMana: maisMana,
+      maisAcao: maisAcao,
       rollBonuses: [],
       wildShapeAdvantages: isDruid ? ['Ágil', 'Forte'] : [],
       advantages: [],
@@ -333,31 +338,14 @@ export default function App() {
       skills: []
     };
 
-    const newSheet: CharacterSheet = {
-      id: 'char_' + Date.now(),
-      characterName,
-      selectedKitId,
-      selectedArchetypeId,
-      accentColor,
-      soundOn,
-      forms: [newForm]
-    };
-
-    createLinkedSheet(activeCharacterId, newSheet, newForm.name, 'form');
-    setActiveFormIndex(forms.length);
+    updateActiveSheet({ forms: [...currentForms, newForm] });
+    setActiveFormIndex(currentForms.length);
   };
 
   const removeCurrentForm = (index: number) => {
-    if (linkedSheets.length > 1) {
-      const targetSheet = linkedSheets[index];
-      if (!targetSheet || targetSheet.id === activeCharacterId) return;
-      unlinkSheet(targetSheet.id);
-      setActiveFormIndex(0);
-      return;
-    }
-
-    if (forms.length <= 1) return;
-    const updatedForms = forms.filter((_, i) => i !== index);
+    const currentForms = activeSheet.forms || [];
+    if (currentForms.length <= 1 || index === 0) return;
+    const updatedForms = currentForms.filter((_, i) => i !== index);
     updateActiveSheet({ forms: updatedForms });
     setActiveFormIndex(0);
   };
@@ -1019,7 +1007,6 @@ export default function App() {
         
         {mode === 'edit' && (
           <CharacterEditor
-            usingLinkedForms={linkedSheets.length > 1 || !!activeSheet.linkGroupId}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             totalPoints={totalPoints}

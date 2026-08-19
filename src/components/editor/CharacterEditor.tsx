@@ -13,7 +13,6 @@ import { BookIcon, CameraIcon, CheckIcon, CloseIcon, LeafIcon, PencilIcon, PlusI
 export type EditorTab = 'concept' | 'attributes' | 'advantages' | 'skills' | 'techniques';
 
 type CharacterEditorProps = {
-  usingLinkedForms?: boolean;
   activeTab: EditorTab;
   setActiveTab: (tab: EditorTab) => void;
   totalPoints: number;
@@ -67,7 +66,6 @@ export default function CharacterEditor(props: CharacterEditorProps) {
   const [pendingStrikeSelections, setPendingStrikeSelections] = useState<string[]>([]);
 
   const {
-    usingLinkedForms,
     activeTab,
     setActiveTab,
     totalPoints,
@@ -298,7 +296,7 @@ export default function CharacterEditor(props: CharacterEditorProps) {
           <div>
             <h2 className="panel-title" style={{ margin: 0, fontSize: '1.4rem' }}>Formas & Transformações</h2>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
-              {usingLinkedForms ? 'Cada forma é uma ficha vinculada completa.' : 'Formas internas da ficha atual.'}
+              Formas e transformações do personagem.
             </div>
           </div>
           <button className="control-btn" style={{ width: 'auto', padding: '0.3rem 0.8rem', fontSize: '0.85rem', borderColor: 'var(--accent-color)', color: 'var(--accent-color)' }} onClick={addTransformationForm}>
