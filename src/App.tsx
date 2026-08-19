@@ -989,7 +989,7 @@ export default function App() {
   }, [currentKit]);
 
 
-  const totalPoints = calculatePoints(currentFormBase, currentKit ? 1 : 0, getArchetypeCost(selectedArchetypeId));
+  const totalPoints = calculatePoints(currentFormBase, 0, getArchetypeCost(selectedArchetypeId));
   return (
     <>
       <div id="dice-box" style={{ visibility: mode === 'play' ? 'visible' : 'hidden' }}></div>
