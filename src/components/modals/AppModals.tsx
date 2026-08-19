@@ -3,7 +3,7 @@ import { BONUS_PRESETS, DRUID_WILD_SHAPE_OPTIONS } from '../../constants/app/bon
 import { KITS_CATALOG } from '../../constants/app/kits';
 import type { CharacterForm, CharacterKit, CharacterSheet, RollBonus, RollResult } from '../../types/character';
 import { getEligibleXPCreditSources } from '../../utils/character';
-import { BedIcon, CheckIcon, ChevronDownIcon, ChevronUpIcon, CloseIcon, CopyIcon, LeafIcon, PencilIcon, PlusIcon, ResetIcon, SearchIcon, TransformIcon, TrashIcon, UsersIcon, VolumeIcon, VolumeXIcon, ZapIcon } from '../common/Icons';
+import { BedIcon, CheckIcon, ChevronDownIcon, ChevronUpIcon, CloseIcon, CopyIcon, LeafIcon, PencilIcon, PlusIcon, ResetIcon, SearchIcon, TransformIcon, TrashIcon, UsersIcon, VolumeIcon, VolumeXIcon, ZapIcon, DownloadIcon, UploadIcon } from '../common/Icons';
 
 type AppModalsProps = {
   isDrawerOpen: boolean;
@@ -120,6 +120,51 @@ export default function AppModals(props: AppModalsProps) {
               <button className="drawer-menu-item" onClick={() => { handleResetScene(); setIsDrawerOpen(false); }}><div className="drawer-item-icon" style={{ color: 'var(--accent-color)' }}><ResetIcon /></div><div className="drawer-item-content"><div className="drawer-item-title">Nova Cena (Resetar)</div><div className="drawer-item-subtitle">Restaura usos de poderes e buffs de cena</div></div></button>
               <button className="drawer-menu-item" onClick={() => updateActiveSheet({ soundOn: !soundOn })}><div className="drawer-item-icon" style={{ color: soundOn ? 'var(--accent-color)' : 'var(--text-muted)' }}>{soundOn ? <VolumeIcon /> : <VolumeXIcon />}</div><div className="drawer-item-content"><div className="drawer-item-title">Som dos Dados 3D</div><div className="drawer-item-subtitle">{soundOn ? 'Ativado (Clique para desativar)' : 'Desativado (Clique para ativar)'}</div></div></button>
               <button className="drawer-menu-item" onClick={handleEdit}><div className="drawer-item-icon"><PencilIcon /></div><div className="drawer-item-content"><div className="drawer-item-title">Editar Ficha</div><div className="drawer-item-subtitle">Modificar atributos, técnicas, avatar e kits</div></div></button>
+              
+              <label className="drawer-menu-item" style={{ cursor: 'pointer' }}>
+                <input type="file" accept=".json" style={{ display: 'none' }} onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = (event) => {
+                    try {
+                      const importedData = JSON.parse(event.target?.result as string);
+                      if (Array.isArray(importedData) && importedData.length > 0 && importedData[0].id) {
+                        saveAllSheets(importedData, importedData[0].id);
+                        setIsDrawerOpen(false);
+                        alert('Personagens importados com sucesso!');
+                      } else {
+                        alert('Formato de arquivo inválido.');
+                      }
+                    } catch (err) {
+                      alert('Erro ao importar arquivo.');
+                    }
+                  };
+                  reader.readAsText(file);
+                  e.target.value = '';
+                }} />
+                <div className="drawer-item-icon"><UploadIcon /></div>
+                <div className="drawer-item-content">
+                  <div className="drawer-item-title">Importar Personagens</div>
+                  <div className="drawer-item-subtitle">Carregar fichas de um arquivo JSON</div>
+                </div>
+              </label>
+
+              <button className="drawer-menu-item" onClick={() => {
+                const dataStr = JSON.stringify(characterSheets, null, 2);
+                const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+                const link = document.createElement('a');
+                link.setAttribute('href', dataUri);
+                link.setAttribute('download', `3det_fichas_${new Date().toISOString().slice(0, 10)}.json`);
+                link.click();
+                setIsDrawerOpen(false);
+              }}>
+                <div className="drawer-item-icon"><DownloadIcon /></div>
+                <div className="drawer-item-content">
+                  <div className="drawer-item-title">Exportar Personagens</div>
+                  <div className="drawer-item-subtitle">Salvar suas fichas em um arquivo JSON</div>
+                </div>
+              </button>
             </div>
             <div className="drawer-footer-hint">Toque fora ou no botão de menu para fechar</div>
           </div>
