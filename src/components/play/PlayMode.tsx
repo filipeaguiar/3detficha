@@ -59,6 +59,7 @@ type PlayModeProps = {
 export default function PlayMode(props: PlayModeProps) {
   const [detailModal, setDetailModal] = useState<{ title: string; subtitle?: string; body: string; tone: 'advantage' | 'skill' | 'disadvantage' | 'technique' } | null>(null);
   const [comboUsedStrikeIds, setComboUsedStrikeIds] = useState<string[]>([]);
+  const [comboActive, setComboActive] = useState(false);
   const {
     characterName,
     currentKit,
@@ -275,14 +276,14 @@ export default function PlayMode(props: PlayModeProps) {
         {knownStrikes.length > 0 && (
           <div className="form-group" style={{ marginBottom: '1rem' }}>
             <h2 className="panel-title" style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Golpes</h2>
-            {hasCombo && <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', gap: '0.75rem', flexWrap: 'wrap' }}><div style={{ fontSize: '0.85rem', color: '#ffd166' }}>Combo: {comboUsedStrikeIds.length > 0 ? `${comboRemaining} extras restantes` : 'pronto para iniciar'}{comboUsedStrikeIds.length > 0 ? ` • usados: ${comboUsedStrikeIds.length}` : ''}</div><div style={{ display: 'flex', gap: '0.5rem' }}><button className="control-btn" style={{ width: 'auto', padding: '0.3rem 0.6rem', fontSize: '0.78rem' }} onClick={() => setComboUsedStrikeIds([])}>Resetar Combo</button></div></div>}
+            {hasCombo && <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', gap: '0.75rem', flexWrap: 'wrap' }}><div style={{ fontSize: '0.85rem', color: '#ffd166' }}>Combo: {comboActive ? `${comboRemaining} extras restantes` : 'pronto para iniciar'}{comboUsedStrikeIds.length > 0 ? ` • usados: ${comboUsedStrikeIds.length}` : ''}</div><div style={{ display: 'flex', gap: '0.5rem' }}><button className="control-btn" style={{ width: 'auto', padding: '0.3rem 0.6rem', fontSize: '0.78rem', borderColor: '#ffd166', color: '#ffd166' }} onClick={() => { setComboActive((active) => !active); if (comboActive) setComboUsedStrikeIds([]); }}>{comboActive ? 'Encerrar Combo' : 'Iniciar Combo'}</button><button className="control-btn" style={{ width: 'auto', padding: '0.3rem 0.6rem', fontSize: '0.78rem' }} onClick={() => { setComboActive(false); setComboUsedStrikeIds([]); }}>Resetar</button></div></div>}
             <div className="bonus-toggles-grid">
               {knownStrikes.map(({ acquisitionId, strike }) => {
                 if (!strike) return null;
-                const disabledByCombo = hasCombo && comboUsedStrikeIds.length > 0 && comboRemaining <= 0;
+                const comboLocked = hasCombo && comboActive && comboRemaining <= 0;
                 const alreadyUsed = comboUsedStrikeIds.includes(strike.id);
                 const subtitle = `${strike.description}${strike.costResource !== 'none' && strike.costValue ? ` [-${strike.costValue} ${strike.costResource}]` : ''}`;
-                return <button key={`${acquisitionId}:${strike.id}`} className={`bonus-toggle ${alreadyUsed ? 'active' : ''}`} disabled={disabledByCombo || alreadyUsed} onClick={() => { if (hasCombo) setComboUsedStrikeIds((prev) => prev.includes(strike.id) ? prev : [...prev, strike.id]); }} onContextMenu={(e) => { e.preventDefault(); setDetailModal({ title: strike.name, subtitle, body: strike.note, tone: 'technique' }); }} title={`${strike.name}: ${subtitle}`}><div className="bonus-toggle-header"><span className="bonus-toggle-label">{strike.name}</span>{hasCombo && alreadyUsed ? <span className="bonus-attr-micro" style={{ background: '#ffd166', color: '#000' }}>USADO</span> : null}</div><span className="bonus-toggle-value">{subtitle}</span></button>;
+                return <button key={`${acquisitionId}:${strike.id}`} className={`bonus-toggle ${alreadyUsed ? 'active' : ''}`} disabled={(comboActive && (comboLocked || alreadyUsed)) || false} onClick={() => { if (hasCombo && comboActive) setComboUsedStrikeIds((prev) => prev.includes(strike.id) ? prev : [...prev, strike.id]); }} onContextMenu={(e) => { e.preventDefault(); setDetailModal({ title: strike.name, subtitle, body: strike.note, tone: 'technique' }); }} title={`${strike.name}: ${subtitle}`}><div className="bonus-toggle-header"><span className="bonus-toggle-label">{strike.name}</span>{hasCombo && comboActive ? <span className="bonus-attr-micro" style={{ background: alreadyUsed ? '#ffd166' : '#33ccff', color: '#000' }}>{alreadyUsed ? 'USADO' : comboUsedStrikeIds.length === 0 ? 'ABRE' : 'COMBO'}</span> : null}</div><span className="bonus-toggle-value">{subtitle}</span></button>;
               })}
             </div>
           </div>
