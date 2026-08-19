@@ -1,3 +1,16 @@
+export type RollBonusVariant = {
+  id: string;
+  label: string;
+  costValue?: number;
+  costResource?: 'none' | 'PV' | 'PM' | 'PA';
+  value?: number;
+  bonusType?: 'attr_mod' | 'flat' | 'full_attr' | 'none';
+  extraDice?: number;
+  critThresholdMod?: number;
+  autoCrit?: boolean;
+  note?: string;
+};
+
 export type RollBonus = {
   id: string;
   name: string;
@@ -15,6 +28,9 @@ export type RollBonus = {
   xpCost?: number;
   xpCategory?: 'trick' | 'common' | 'legendary' | 'generic';
   fundedBySourceIds?: string[];
+  variants?: RollBonusVariant[];
+  selectedVariantId?: string;
+  variantSelectionMode?: 'cycle' | 'table-declared';
 };
 
 export type CharacterVariantSelection = {

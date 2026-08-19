@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ADVANTAGES_CATALOG, DISADVANTAGES_CATALOG } from '../../constants/advantagesData';
 import { ADVANTAGE_VARIANT_OPTIONS, DISADVANTAGE_VARIANT_OPTIONS } from '../../constants/app/variants';
 import { SKILLS_CATALOG } from '../../constants/skillsData';
-import { getBonusSubtitle, getKitPowerModifier } from '../../utils/character';
+import { getActiveBonusVariant, getBonusSubtitle, getKitPowerModifier } from '../../utils/character';
 import type { CharacterForm, CharacterKit, KitPower, RollBonus } from '../../types/character';
 import SegmentedBar from '../common/SegmentedBar';
 import { CheckIcon, CloseIcon, DiceCountIcon, HabilidadeIcon, InfoIcon, LeafIcon, MaskIcon, MenuIcon, PoderIcon, ResistenciaIcon, SkillsIcon, SparklesIcon, TransformIcon } from '../common/Icons';
@@ -53,6 +53,7 @@ type PlayModeProps = {
   handleUseKitPower: (power: KitPower) => void;
   handleRoll: (attrName: 'poder' | 'habilidade' | 'resistencia') => void;
   toggleActiveBonus: (id: string) => void;
+  cycleBonusVariant: (id: string) => void;
 };
 
 export default function PlayMode(props: PlayModeProps) {
@@ -101,6 +102,7 @@ export default function PlayMode(props: PlayModeProps) {
     handleUseKitPower,
     handleRoll,
     toggleActiveBonus,
+    cycleBonusVariant,
   } = props;
 
   return (
@@ -271,8 +273,9 @@ export default function PlayMode(props: PlayModeProps) {
             <div className="bonus-toggles-grid">
               {visibleRollBonuses.map((bonus) => {
                 const isActive = activeBonuses.has(bonus.id);
+                const activeVariant = getActiveBonusVariant(bonus);
                 return (
-                  <button key={bonus.id} className={`bonus-toggle ${isActive ? 'active' : ''}`} onClick={() => toggleActiveBonus(bonus.id)} onContextMenu={(e) => { e.preventDefault(); setDetailModal({ title: bonus.alias || bonus.name, subtitle: getBonusSubtitle(bonus), body: bonus.name !== (bonus.alias || bonus.name) ? `Base: ${bonus.name}` : 'Técnica configurada nesta forma.', tone: 'technique' }); }} title={`${bonus.alias || bonus.name}: ${getBonusSubtitle(bonus)}`}>
+                  <button key={bonus.id} className={`bonus-toggle ${isActive ? 'active' : ''}`} onClick={() => toggleActiveBonus(bonus.id)} onContextMenu={(e) => { e.preventDefault(); setDetailModal({ title: bonus.alias || bonus.name, subtitle: getBonusSubtitle(bonus), body: `${bonus.name !== (bonus.alias || bonus.name) ? `Base: ${bonus.name}\n\n` : ''}${activeVariant?.note || 'Técnica configurada nesta forma.'}`, tone: 'technique' }); }} title={`${bonus.alias || bonus.name}: ${getBonusSubtitle(bonus)}`}>
                     <div className="bonus-toggle-header">
                       <span className="bonus-toggle-label">{bonus.alias ? bonus.alias : bonus.name}</span>
                       {bonus.duration === 'scene' && <span className="bonus-attr-micro" style={{ background: '#33ccff', color: '#000' }}>CENA</span>}
@@ -280,6 +283,7 @@ export default function PlayMode(props: PlayModeProps) {
                     </div>
                     {bonus.alias && <span className="bonus-toggle-raw-name">{bonus.name}</span>}
                     <span className="bonus-toggle-value">{getBonusSubtitle(bonus)}</span>
+                    {bonus.variants && bonus.variants.length > 1 ? <span className="bonus-toggle-raw-name" style={{ marginTop: '0.25rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}><button type="button" className="bonus-remove-btn" style={{ minWidth: 'auto' }} onClick={(e) => { e.stopPropagation(); cycleBonusVariant(bonus.id); }} title="Alternar variante">↻</button><span>{activeVariant?.label || 'Variante'}</span></span> : null}
                   </button>
                 );
               })}

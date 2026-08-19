@@ -124,33 +124,46 @@ export function loadInitialSheets(): { sheets: CharacterSheet[]; activeId: strin
   return { sheets: [defaultSheet], activeId: defaultSheet.id, linkGroups: [] };
 }
 
+export function getActiveBonusVariant(bonus: RollBonus) {
+  if (!bonus.variants || bonus.variants.length === 0) return null;
+  return bonus.variants.find((variant) => variant.id === bonus.selectedVariantId) || bonus.variants[0] || null;
+}
+
 export function getBonusSubtitle(bonus: RollBonus): string {
   const parts: string[] = [];
+  const activeVariant = getActiveBonusVariant(bonus);
+  const effectiveBonusType = activeVariant?.bonusType || bonus.bonusType;
+  const effectiveValue = typeof activeVariant?.value === 'number' ? activeVariant.value : bonus.value;
+  const effectiveCritThresholdMod = typeof activeVariant?.critThresholdMod === 'number' ? activeVariant.critThresholdMod : bonus.critThresholdMod;
+  const effectiveAutoCrit = typeof activeVariant?.autoCrit === 'boolean' ? activeVariant.autoCrit : bonus.autoCrit;
+  const effectiveExtraDice = typeof activeVariant?.extraDice === 'number' ? activeVariant.extraDice : bonus.extraDice;
 
-  if (bonus.bonusType === 'attr_mod' && bonus.value) {
+  if (effectiveBonusType === 'attr_mod' && effectiveValue) {
     const attrLetter = bonus.attribute === 'poder' ? 'P' : bonus.attribute === 'habilidade' ? 'H' : bonus.attribute === 'resistencia' ? 'R' : 'Atributo';
-    parts.push(`+${bonus.value} ${attrLetter}`);
-  } else if (bonus.bonusType === 'flat' && bonus.value) {
-    parts.push(`+${bonus.value} Fixo`);
-  } else if (bonus.bonusType === 'full_attr') {
+    parts.push(`+${effectiveValue} ${attrLetter}`);
+  } else if (effectiveBonusType === 'flat' && effectiveValue) {
+    parts.push(`+${effectiveValue} Fixo`);
+  } else if (effectiveBonusType === 'full_attr') {
     const srcLetter = bonus.attrSource === 'poder' ? 'P' : bonus.attrSource === 'habilidade' ? 'H' : 'R';
     parts.push(`+${srcLetter}`);
   }
 
-  if (bonus.critThresholdMod && bonus.critThresholdMod < 0) {
-    const critValue = Math.max(4, 6 + bonus.critThresholdMod);
+  if (effectiveCritThresholdMod && effectiveCritThresholdMod < 0) {
+    const critValue = Math.max(4, 6 + effectiveCritThresholdMod);
     parts.push(`Crítico ${critValue}+`);
   }
-  if (bonus.autoCrit) parts.push('Crítico Auto');
-  if (bonus.extraDice && bonus.extraDice > 0) parts.push(`+${bonus.extraDice}D Ganho`);
-  else if (bonus.extraDice && bonus.extraDice < 0) parts.push(`${bonus.extraDice}D Perda`);
+  if (effectiveAutoCrit) parts.push('Crítico Auto');
+  if (effectiveExtraDice && effectiveExtraDice > 0) parts.push(`+${effectiveExtraDice}D Ganho`);
+  else if (effectiveExtraDice && effectiveExtraDice < 0) parts.push(`${effectiveExtraDice}D Perda`);
   if (bonus.duration === 'scene') parts.push('Cena');
 
   let text = parts.join(' • ');
   if (!text && bonus.name) text = bonus.name;
 
-  if (bonus.costResource && bonus.costResource !== 'none' && bonus.costValue) {
-    text += ` [-${bonus.costValue} ${bonus.costResource}]`;
+  const effectiveCostResource = activeVariant?.costResource || bonus.costResource;
+  const effectiveCostValue = typeof activeVariant?.costValue === 'number' ? activeVariant.costValue : bonus.costValue;
+  if (effectiveCostResource && effectiveCostResource !== 'none' && effectiveCostValue) {
+    text += ` [-${effectiveCostValue} ${effectiveCostResource}]`;
   }
   return text || 'Sem bônus direto';
 }
@@ -373,6 +386,9 @@ export function createTechniqueBonusFromCatalog(technique: TechniqueCatalogEntry
     xpCost: technique.xpCost,
     xpCategory: technique.xpCategory,
     fundedBySourceIds: technique.xpCategory === 'legendary' ? [] : autoFunding.slice(0, 1),
+    variants: technique.variants,
+    selectedVariantId: technique.selectedVariantId,
+    variantSelectionMode: technique.variantSelectionMode,
   };
 }
 

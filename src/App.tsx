@@ -3,7 +3,7 @@ import { useDiceSound } from './useDiceSound';
 
 import { ARCHETYPES_CATALOG } from './constants/app/archetypes';
 import { KITS_CATALOG } from './constants/app/kits';
-import { calculatePoints, getArchetypeCost, getKitPowerModifier } from './utils/character';
+import { calculatePoints, getActiveBonusVariant, getArchetypeCost, getKitPowerModifier } from './utils/character';
 import type { CharacterForm, CharacterSheet, KitPower, RollBonus, RollResult } from './types/character';
 import { useCharacterSheets } from './hooks/useCharacterSheets';
 import { useDiceBox } from './hooks/useDiceBox';
@@ -131,7 +131,7 @@ export default function App() {
   const maisMana = currentForm.maisMana;
   const rollBonuses = useMemo(() => [
     ...(currentForm.rollBonuses || []),
-    ...([...(currentArchetype?.grantedEffects || []), ...(((currentForm as any)._archetypeSelectedEffects) || [])].map((effect) => ({
+    ...([...(currentArchetype?.grantedEffects || []), ...(((currentForm as any)._archetypeSelectedEffects) || [])].map((effect): RollBonus => ({
       id: effect.id,
       name: effect.name,
       alias: '',
@@ -145,8 +145,11 @@ export default function App() {
       extraDice: effect.extraDice || 0,
       costValue: effect.costValue || 0,
       costResource: effect.costResource || 'none',
+      variants: undefined,
+      selectedVariantId: undefined,
+      variantSelectionMode: undefined,
     }))),
-    ...([...(currentKit?.grantedEffects || []), ...(((currentForm as any)._kitSelectedEffects) || [])].map((effect) => ({
+    ...([...(currentKit?.grantedEffects || []), ...(((currentForm as any)._kitSelectedEffects) || [])].map((effect): RollBonus => ({
       id: effect.id,
       name: effect.name,
       alias: '',
@@ -160,6 +163,9 @@ export default function App() {
       extraDice: effect.extraDice || 0,
       costValue: effect.costValue || 0,
       costResource: effect.costResource || 'none',
+      variants: undefined,
+      selectedVariantId: undefined,
+      variantSelectionMode: undefined,
     })))
   ], [currentForm, currentArchetype, currentKit]);
   const visibleRollBonuses = rollBonuses.filter(b => b.bonusType !== 'none' || b.critThresholdMod || b.extraDice || b.autoCrit || !b.id.startsWith('kit_'));
@@ -471,9 +477,21 @@ export default function App() {
     });
   };
 
+  const cycleBonusVariant = (id: string) => {
+    updateCurrentFormForActiveIndex({
+      rollBonuses: rollBonuses.map(b => {
+        if (b.id !== id || !b.variants || b.variants.length <= 1) return b;
+        const currentIndex = b.variants.findIndex(variant => variant.id === b.selectedVariantId);
+        const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % b.variants.length : 0;
+        return { ...b, selectedVariantId: b.variants[nextIndex]?.id || b.selectedVariantId };
+      })
+    });
+  };
+
   const toggleActiveBonus = async (id: string) => {
     const bonus = rollBonuses.find(b => b.id === id);
     if (!bonus) return;
+    const activeVariant = getActiveBonusVariant(bonus);
 
     if (id.startsWith('arch_')) {
       if (usedArchetypeEffects[id]) return;
@@ -539,10 +557,12 @@ export default function App() {
       } else {
         next.add(id);
         // If scene duration, deduct cost once upon activation
-        if (bonus.duration === 'scene' && bonus.costResource && bonus.costResource !== 'none' && bonus.costValue) {
-          if (bonus.costResource === 'PM') setCurrentPM(p => Math.max(0, p - (bonus.costValue || 0)));
-          if (bonus.costResource === 'PV') setCurrentPV(p => Math.max(0, p - (bonus.costValue || 0)));
-          if (bonus.costResource === 'PA') setCurrentPA(p => Math.max(0, p - (bonus.costValue || 0)));
+        const effectiveCostResource = activeVariant?.costResource || bonus.costResource;
+        const effectiveCostValue = typeof activeVariant?.costValue === 'number' ? activeVariant.costValue : bonus.costValue;
+        if (bonus.duration === 'scene' && effectiveCostResource && effectiveCostResource !== 'none' && effectiveCostValue) {
+          if (effectiveCostResource === 'PM') setCurrentPM(p => Math.max(0, p - (effectiveCostValue || 0)));
+          if (effectiveCostResource === 'PV') setCurrentPV(p => Math.max(0, p - (effectiveCostValue || 0)));
+          if (effectiveCostResource === 'PA') setCurrentPA(p => Math.max(0, p - (effectiveCostValue || 0)));
         }
       }
       return next;
@@ -664,33 +684,42 @@ export default function App() {
 
     activeBonusesList.forEach(bonus => {
       let desc = '';
-      if (bonus.bonusType === 'attr_mod') {
-        attrModValue += bonus.value;
-        desc = `+${bonus.value} no Atributo`;
-      } else if (bonus.bonusType === 'flat') {
-        flatBonusTotal += bonus.value;
-        desc = `+${bonus.value} Total`;
-      } else if (bonus.bonusType === 'full_attr') {
+      const activeVariant = getActiveBonusVariant(bonus);
+      const effectiveBonusType = activeVariant?.bonusType || bonus.bonusType;
+      const effectiveValue = typeof activeVariant?.value === 'number' ? activeVariant.value : bonus.value;
+      const effectiveCritThresholdMod = typeof activeVariant?.critThresholdMod === 'number' ? activeVariant.critThresholdMod : bonus.critThresholdMod;
+      const effectiveAutoCrit = typeof activeVariant?.autoCrit === 'boolean' ? activeVariant.autoCrit : bonus.autoCrit;
+      const effectiveExtraDice = typeof activeVariant?.extraDice === 'number' ? activeVariant.extraDice : bonus.extraDice;
+      const effectiveCostResource = activeVariant?.costResource || bonus.costResource;
+      const effectiveCostValue = typeof activeVariant?.costValue === 'number' ? activeVariant.costValue : bonus.costValue;
+
+      if (effectiveBonusType === 'attr_mod') {
+        attrModValue += effectiveValue;
+        desc = `+${effectiveValue} no Atributo`;
+      } else if (effectiveBonusType === 'flat') {
+        flatBonusTotal += effectiveValue;
+        desc = `+${effectiveValue} Total`;
+      } else if (effectiveBonusType === 'full_attr') {
         const val = bonus.attrSource === 'poder' ? poder : bonus.attrSource === 'habilidade' ? habilidade : resistencia;
         flatBonusTotal += val;
         desc = `+${val} (${bonus.attrSource})`;
       }
 
-      if (bonus.critThresholdMod) {
-        const critValue = Math.max(4, 6 + bonus.critThresholdMod);
+      if (effectiveCritThresholdMod) {
+        const critValue = Math.max(4, 6 + effectiveCritThresholdMod);
         desc += desc ? ` | Crítico ${critValue}+` : `Crítico ${critValue}+`;
       }
-      if (bonus.autoCrit) {
+      if (effectiveAutoCrit) {
         hasAutoCrit = true;
         desc += desc ? ' | Crítico Automático' : 'Crítico Automático';
       }
-      if (bonus.extraDice) {
-        desc += desc ? ` | ${bonus.extraDice > 0 ? '+' : ''}${bonus.extraDice}D` : `${bonus.extraDice > 0 ? '+' : ''}${bonus.extraDice}D`;
+      if (effectiveExtraDice) {
+        desc += desc ? ` | ${effectiveExtraDice > 0 ? '+' : ''}${effectiveExtraDice}D` : `${effectiveExtraDice > 0 ? '+' : ''}${effectiveExtraDice}D`;
       }
 
       let costStr = '';
-      if (bonus.duration === 'instant' && bonus.costResource && bonus.costResource !== 'none' && bonus.costValue) {
-        costStr = `-${bonus.costValue} ${bonus.costResource}`;
+      if (bonus.duration === 'instant' && effectiveCostResource && effectiveCostResource !== 'none' && effectiveCostValue) {
+        costStr = `-${effectiveCostValue} ${effectiveCostResource}`;
       } else if (bonus.duration === 'scene') {
         costStr = 'Buff de Cena';
       }
@@ -958,6 +987,7 @@ export default function App() {
             handleUseKitPower={handleUseKitPower}
             handleRoll={handleRoll}
             toggleActiveBonus={toggleActiveBonus}
+            cycleBonusVariant={cycleBonusVariant}
           />
         )}
       </div>
