@@ -100,7 +100,6 @@ export default function PlayMode(props: PlayModeProps) {
     setManualBonusDice,
     setManualCritRange,
     setIsDrawerOpen,
-    setCurrentPM,
     setActiveFormIndex,
     setIsTransformModalOpen,
     setIsKitInfoModalOpen,
@@ -132,15 +131,10 @@ export default function PlayMode(props: PlayModeProps) {
           style={{ width: '90px', height: '110px', backgroundColor: 'var(--surface-hover)', border: '3px solid var(--accent-color)', transform: 'skewX(-10deg)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 15px var(--accent-transparent)', overflow: 'hidden', position: 'relative', cursor: forms.length > 1 ? 'pointer' : 'default' }}
           onClick={() => {
             if (forms.length > 1) {
-              if (currentPM >= 1) {
-                setCurrentPM(prev => prev - 1);
-                const nextIndex = (activeFormIndex + 1) % forms.length;
-                setActiveFormIndex(nextIndex);
-                if (['druida', 'gigante_da_luz', 'guerreira_magica', 'alquimista'].includes(selectedKitId) && nextIndex > 0) {
-                  setIsTransformModalOpen(true);
-                }
-              } else {
-                alert('PM insuficiente para mudar de forma (Custo: 1 PM).');
+              const nextIndex = (activeFormIndex + 1) % forms.length;
+              setActiveFormIndex(nextIndex);
+              if (['druida', 'gigante_da_luz', 'guerreira_magica', 'alquimista'].includes(selectedKitId) && nextIndex > 0) {
+                setIsTransformModalOpen(true);
               }
             }
           }}
