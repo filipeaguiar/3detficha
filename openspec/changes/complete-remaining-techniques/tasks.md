@@ -33,6 +33,6 @@
 
 - [x] 6.1 Verify every named reference technique has catalog coverage without duplicate IDs
 - [x] 6.2 Run lint and build
-- [ ] 6.3 Commit implementation
-- [ ] 6.4 Push to origin/master
-- [ ] 6.5 Deploy to gh-pages
+- [x] 6.3 Commit implementation
+- [x] 6.4 Push to origin/master
+- [x] 6.5 Deploy to gh-pages
