@@ -26,9 +26,15 @@ function handleInputAutoSelect(target: EventTarget | null) {
 document.addEventListener('focusin', (e) => handleInputAutoSelect(e.target));
 document.addEventListener('click', (e) => handleInputAutoSelect(e.target));
 
+// Tenta travar a orientação em modo retrato (principalmente para Android)
+if (window.screen && screen.orientation && screen.orientation.lock) {
+  screen.orientation.lock('portrait').catch(() => {
+    // Ignora silenciosamente se o dispositivo/navegador não suportar
+  });
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
   </StrictMode>,
 )
-
