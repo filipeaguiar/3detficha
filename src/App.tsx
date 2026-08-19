@@ -870,7 +870,7 @@ export default function App() {
 
     const totalEffectiveAttribute = Math.max(0, baseAttrValue + attrModValue);
     const totalExtraDice = calculatedTotalExtraDice;
-    const diceCount = Math.max(1, Math.min(3, 1 + Math.abs(totalExtraDice)));
+    const diceCount = Math.max(1, Math.min(3, 1 + totalExtraDice));
     const effectiveCritRange = calculatedCritRange;
 
     try {
@@ -906,14 +906,7 @@ export default function App() {
         }
       }
 
-      let diceSum = 0;
-      if (totalExtraDice > 0) {
-        diceSum = Math.max(...rolls);
-      } else if (totalExtraDice < 0) {
-        diceSum = Math.min(...rolls);
-      } else {
-        diceSum = rolls[0];
-      }
+      let diceSum = rolls.reduce((sum, r) => sum + r, 0);
       const isCriticalFail = rolls.length > 0 && rolls.every((r) => r === 1);
       
       let rolledCrits = rolls.filter((r) => r >= effectiveCritRange).length;
