@@ -1773,6 +1773,24 @@ input.stat-input:focus {
   flex-direction: column;
   gap: 0.8rem;
   flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 0.5rem; /* For scrollbar breathing room */
+}
+
+.drawer-items-list::-webkit-scrollbar {
+  width: 6px;
+}
+.drawer-items-list::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+.drawer-items-list::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+.drawer-items-list::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }
 
 .drawer-menu-item {
