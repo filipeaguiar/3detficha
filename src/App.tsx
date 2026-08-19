@@ -509,7 +509,9 @@ export default function App() {
       const diceResults = await diceBoxRef.current.roll('1d6');
       const dResult = diceResults[0];
       const rollTotal = dResult.value;
-      const total = action.rollFormula === '1d6+h' ? rollTotal + habilidade : rollTotal;
+      const rawTotal = action.rollFormula === '1d6+h' ? rollTotal + habilidade : rollTotal;
+      const capValue = action.capAttribute === 'resistencia' ? resistencia : action.capAttribute === 'habilidade' ? habilidade : action.capAttribute === 'poder' ? poder : undefined;
+      const total = typeof capValue === 'number' ? Math.min(rawTotal, Math.max(0, capValue)) : rawTotal;
 
       setTimeout(() => {
         if (diceBoxRef.current) diceBoxRef.current.clear();
@@ -532,7 +534,7 @@ export default function App() {
           totalEffectiveAttribute: action.rollFormula === '1d6+h' ? habilidade : 0,
           flatBonusTotal: 0,
           critRangeUsed: 6,
-          appliedBonuses: [{ name: sourceName, desc: action.kind === 'recover_pm' ? `Recuperou ${total} PM.` : `Armazenou ${total} PM temporário até a próxima rolagem.` }]
+          appliedBonuses: [{ name: sourceName, desc: action.kind === 'recover_pm' ? `Recuperou ${total} PM.${typeof capValue === 'number' ? ` (limite ${capValue})` : ''}` : `Armazenou ${total} PM temporário até a próxima rolagem.` }]
         });
         setIsModalOpen(true);
         setRolling(false);

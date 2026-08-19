@@ -2,6 +2,7 @@ export type ImmediateActionConfig = {
   kind: 'recover_pm' | 'grant_temporary_pm';
   rollFormula: '1d6' | '1d6+h';
   resultLabel?: string;
+  capAttribute?: 'poder' | 'habilidade' | 'resistencia';
 };
 
 export type RollBonusVariant = {

@@ -1,3 +1,5 @@
+import type { ImmediateActionConfig } from '../../types/character';
+
 export type StrikeCatalogEntry = {
   id: string;
   name: string;
@@ -12,11 +14,7 @@ export type StrikeCatalogEntry = {
   autoCrit?: boolean;
   strikeKind?: 'immediate' | 'attack_mod' | 'reaction' | 'recovery';
   canStartCombo?: boolean;
-  immediateAction?: {
-    kind: 'recover_pm';
-    rollFormula: '1d6';
-    resultLabel?: string;
-  };
+  immediateAction?: ImmediateActionConfig;
 };
 
 export const STRIKES_CATALOG: StrikeCatalogEntry[] = [
@@ -104,6 +102,6 @@ export const STRIKES_CATALOG: StrikeCatalogEntry[] = [
     note: 'Recupera 1D PM, até um máximo igual à Resistência; apenas durante combates e conflitos.',
     strikeKind: 'recovery',
     canStartCombo: false,
-    immediateAction: { kind: 'recover_pm', rollFormula: '1d6', resultLabel: 'Recuperar Fôlego (PM)' }
+    immediateAction: { kind: 'recover_pm', rollFormula: '1d6', resultLabel: 'Recuperar Fôlego (PM)', capAttribute: 'resistencia' }
   }
 ];
