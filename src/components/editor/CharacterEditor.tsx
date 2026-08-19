@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
 import { HexColorPicker } from 'react-colorful';
 import { ADVANTAGES_CATALOG, DISADVANTAGES_CATALOG } from '../../constants/advantagesData';
+import { ARCHETYPES_CATALOG } from '../../constants/app/archetypes';
 import { SKILLS_CATALOG } from '../../constants/skillsData';
 import { getBonusSubtitle } from '../../utils/character';
 import { ADVANTAGE_VARIANT_OPTIONS, DISADVANTAGE_VARIANT_OPTIONS } from '../../constants/app/variants';
-import type { CharacterForm, CharacterKit, CharacterSheet, RollBonus } from '../../types/character';
+import type { CharacterArchetype, CharacterForm, CharacterKit, CharacterSheet, RollBonus } from '../../types/character';
 import { BookIcon, CameraIcon, CheckIcon, CloseIcon, LeafIcon, PencilIcon, PlusIcon, TabAdvantagesIcon, TabAttributesIcon, TabConceptIcon, TabSkillsIcon, TabTechniquesIcon, TrashIcon, UsersIcon, WandSparklesIcon } from '../common/Icons';
 
 export type EditorTab = 'concept' | 'attributes' | 'advantages' | 'skills' | 'techniques';
@@ -18,6 +19,7 @@ type CharacterEditorProps = {
   characterName: string;
   updateActiveSheet: (updates: Partial<CharacterSheet>) => void;
   currentKit: CharacterKit | null;
+  currentArchetype: CharacterArchetype | null;
   setIsKitSelectModalOpen: (open: boolean) => void;
   accentColor: string;
   forms: CharacterForm[];
@@ -30,6 +32,7 @@ type CharacterEditorProps = {
   updateCurrentForm: (updates: Partial<CharacterForm>) => void;
   removeAvatar: () => void;
   selectedKitId: string;
+  selectedArchetypeId: string;
   setIsTransformModalOpen: (open: boolean) => void;
   poder: number;
   habilidade: number;
@@ -65,6 +68,7 @@ export default function CharacterEditor(props: CharacterEditorProps) {
     characterName,
     updateActiveSheet,
     currentKit,
+    currentArchetype,
     setIsKitSelectModalOpen,
     accentColor,
     forms,
@@ -77,6 +81,7 @@ export default function CharacterEditor(props: CharacterEditorProps) {
     updateCurrentForm,
     removeAvatar,
     selectedKitId,
+    selectedArchetypeId,
     setIsTransformModalOpen,
     poder,
     habilidade,
@@ -193,6 +198,29 @@ export default function CharacterEditor(props: CharacterEditorProps) {
               transition: 'var(--transition)'
             }}
           />
+        </div>
+
+        <div style={{ marginBottom: '1.5rem', background: 'var(--surface-hover)', padding: '1rem', borderRadius: 'var(--radius)', border: '1px solid var(--border-color)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+            <span className="stat-label" style={{ color: 'var(--accent-color)', fontWeight: 'bold' }}>ARQUÉTIPO</span>
+          </div>
+          <select
+            className="bonus-type-select"
+            style={{ width: '100%', fontSize: '1rem', background: 'var(--surface-hover)', padding: '0.7rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}
+            value={selectedArchetypeId}
+            onChange={(e) => updateActiveSheet({ selectedArchetypeId: e.target.value })}
+          >
+            {ARCHETYPES_CATALOG.map((archetype) => (
+              <option key={archetype.id} value={archetype.id}>{archetype.name} ({archetype.cost}pt)</option>
+            ))}
+          </select>
+          {currentArchetype && (
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.6rem' }}>
+              <strong style={{ color: '#fff' }}>{currentArchetype.name}</strong> • {currentArchetype.group} • {currentArchetype.cost}pt
+              <div style={{ marginTop: '0.25rem' }}>{currentArchetype.desc}</div>
+              {currentArchetype.traits.length > 0 && <div style={{ marginTop: '0.25rem' }}><strong style={{ color: 'var(--text-main)' }}>Traços:</strong> {currentArchetype.traits.join(', ')}</div>}
+            </div>
+          )}
         </div>
 
         <div style={{ marginBottom: '1.5rem', background: 'var(--surface-hover)', padding: '1rem', borderRadius: 'var(--radius)', border: '1px solid var(--border-color)' }}>

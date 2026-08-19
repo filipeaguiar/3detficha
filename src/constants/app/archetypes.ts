@@ -1,0 +1,68 @@
+import type { CharacterArchetype } from '../../types/character';
+
+export const ARCHETYPES_CATALOG: CharacterArchetype[] = [
+  {
+    id: 'none',
+    name: 'Sem Arquétipo',
+    cost: 0,
+    group: 'Livre',
+    desc: 'Personagem sem arquétipo específico. Útil para conceitos humanos comuns ou construções totalmente personalizadas.',
+    traits: [],
+  },
+  {
+    id: 'humano',
+    name: 'Humano',
+    cost: 0,
+    group: 'Comum',
+    desc: 'Arquétipo versátil e genérico para personagens humanos.',
+    traits: [],
+  },
+  {
+    id: 'anao',
+    name: 'Anão',
+    cost: 1,
+    group: 'Comum',
+    desc: 'Representa anões clássicos, robustos e tradicionais.',
+    traits: ['Robusto', 'Tradicional'],
+  },
+  {
+    id: 'elfo',
+    name: 'Elfo',
+    cost: 1,
+    group: 'Comum',
+    desc: 'Representa elfos ágeis, místicos ou refinados.',
+    traits: ['Gracioso', 'Longevo'],
+  },
+  {
+    id: 'goblin',
+    name: 'Goblin',
+    cost: 0,
+    group: 'Comum',
+    desc: 'Representa goblins espertos, improvisadores e problemáticos.',
+    traits: ['Astuto'],
+  },
+  {
+    id: 'kemono',
+    name: 'Kemono',
+    cost: 1,
+    group: 'Comum',
+    desc: 'Representa personagens animalizados ou criaturas ferozes de natureza bestial.',
+    traits: ['Feroz', 'Instintivo'],
+  },
+  {
+    id: 'osteon',
+    name: 'Osteon',
+    cost: 1,
+    group: 'Incomum',
+    desc: 'Representa esqueletos e mortos-vivos conscientes com natureza peculiar.',
+    traits: ['Morto-vivo'],
+  },
+  {
+    id: 'ciborgue',
+    name: 'Ciborgue',
+    cost: 1,
+    group: 'Incomum',
+    desc: 'Representa personagens com partes mecânicas ou reconstruídos tecnologicamente.',
+    traits: ['Mecânico', 'Condição'],
+  },
+];

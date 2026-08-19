@@ -1,4 +1,5 @@
 import { ADVANTAGES_CATALOG, DISADVANTAGES_CATALOG } from '../constants/advantagesData';
+import { ARCHETYPES_CATALOG } from '../constants/app/archetypes';
 import { ADVANTAGE_VARIANT_OPTIONS, DISADVANTAGE_VARIANT_OPTIONS } from '../constants/app/variants';
 import type { CharacterForm, CharacterLinkGroup, CharacterSheet, KitPower, RollBonus } from '../types/character';
 
@@ -37,6 +38,7 @@ export function createDefaultSheet(): CharacterSheet {
     id: 'char_default',
     characterName: 'Dahllan Druida',
     selectedKitId: 'druida',
+    selectedArchetypeId: 'humano',
     accentColor: '#5EB05D',
     soundOn: true,
     forms: [
@@ -86,6 +88,7 @@ export function loadInitialSheets(): { sheets: CharacterSheet[]; activeId: strin
         id: 'char_' + Date.now(),
         characterName: parsed.characterName || 'Personagem',
         selectedKitId: parsed.selectedKitId || 'druida',
+        selectedArchetypeId: parsed.selectedArchetypeId || 'humano',
         accentColor: parsed.accentColor || '#ff0066',
         soundOn: parsed.soundOn ?? true,
         forms: Array.isArray(parsed.forms) && parsed.forms.length > 0 ? parsed.forms.map((f: any) => ({
@@ -202,8 +205,8 @@ function getFirstNumericCost(cost?: string): number {
   return positiveMatch ? parseInt(positiveMatch[0], 10) : 0;
 }
 
-export function calculatePoints(currentForm: CharacterForm, kitCost = 0): number {
-  let total = currentForm.poder + currentForm.habilidade + currentForm.resistencia + kitCost;
+export function calculatePoints(currentForm: CharacterForm, kitCost = 0, archetypeCost = 0): number {
+  let total = currentForm.poder + currentForm.habilidade + currentForm.resistencia + kitCost + archetypeCost;
 
   if (currentForm.skills) total += currentForm.skills.length;
 
@@ -228,4 +231,9 @@ export function calculatePoints(currentForm: CharacterForm, kitCost = 0): number
   }
 
   return total;
+}
+
+export function getArchetypeCost(archetypeId?: string): number {
+  if (!archetypeId) return 0;
+  return ARCHETYPES_CATALOG.find((a) => a.id === archetypeId)?.cost || 0;
 }

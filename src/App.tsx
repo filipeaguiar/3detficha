@@ -1,8 +1,9 @@
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { useDiceSound } from './useDiceSound';
 
+import { ARCHETYPES_CATALOG } from './constants/app/archetypes';
 import { KITS_CATALOG } from './constants/app/kits';
-import { calculatePoints, getKitPowerModifier } from './utils/character';
+import { calculatePoints, getArchetypeCost, getKitPowerModifier } from './utils/character';
 import type { CharacterForm, CharacterSheet, KitPower, RollBonus, RollResult } from './types/character';
 import { useCharacterSheets } from './hooks/useCharacterSheets';
 import { useDiceBox } from './hooks/useDiceBox';
@@ -41,6 +42,7 @@ export default function App() {
   // Active Sheet properties
   const characterName = activeSheet.characterName;
   const selectedKitId = activeSheet.selectedKitId;
+  const selectedArchetypeId = activeSheet.selectedArchetypeId || 'humano';
   const accentColor = activeSheet.accentColor;
   const soundOn = activeSheet.soundOn;
   const forms = linkedSheets.length > 1
@@ -60,6 +62,10 @@ export default function App() {
   const currentKit = useMemo(() => {
     return KITS_CATALOG.find(k => k.id === selectedKitId) || KITS_CATALOG[0] || null;
   }, [selectedKitId]);
+
+  const currentArchetype = useMemo(() => {
+    return ARCHETYPES_CATALOG.find(a => a.id === selectedArchetypeId) || ARCHETYPES_CATALOG[0] || null;
+  }, [selectedArchetypeId]);
 
   // Filtered kits for modal
   const filteredKits = useMemo(() => {
@@ -231,6 +237,7 @@ export default function App() {
       id: 'char_' + Date.now(),
       characterName,
       selectedKitId,
+      selectedArchetypeId,
       accentColor,
       soundOn,
       forms: [newForm]
@@ -287,6 +294,7 @@ export default function App() {
       id: 'char_' + Date.now(),
       characterName: 'Novo Herói',
       selectedKitId: 'guerreiro',
+      selectedArchetypeId: 'humano',
       accentColor: '#FF9E00',
       soundOn: true,
       forms: [
@@ -752,7 +760,7 @@ export default function App() {
   }, [currentKit]);
 
 
-  const totalPoints = calculatePoints(currentForm, currentKit ? 1 : 0);
+  const totalPoints = calculatePoints(currentForm, currentKit ? 1 : 0, getArchetypeCost(selectedArchetypeId));
   return (
     <>
       <div id="dice-box" style={{ visibility: mode === 'play' ? 'visible' : 'hidden' }}></div>
@@ -778,6 +786,7 @@ export default function App() {
             characterName={characterName}
             updateActiveSheet={updateActiveSheet}
             currentKit={currentKit}
+            currentArchetype={currentArchetype}
             setIsKitSelectModalOpen={setIsKitSelectModalOpen}
             accentColor={accentColor}
             forms={forms}
@@ -790,6 +799,7 @@ export default function App() {
             updateCurrentForm={updateCurrentFormForActiveIndex}
             removeAvatar={removeAvatar}
             selectedKitId={selectedKitId}
+            selectedArchetypeId={selectedArchetypeId}
             setIsTransformModalOpen={setIsTransformModalOpen}
             poder={poder}
             habilidade={habilidade}

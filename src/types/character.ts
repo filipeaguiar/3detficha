@@ -40,10 +40,20 @@ export type CharacterForm = {
 
 export type CharacterLinkRelation = 'base' | 'form' | 'alternate';
 
+export type CharacterArchetype = {
+  id: string;
+  name: string;
+  cost: number;
+  group: string;
+  desc: string;
+  traits: string[];
+};
+
 export type CharacterSheet = {
   id: string;
   characterName: string;
   selectedKitId: string;
+  selectedArchetypeId?: string;
   accentColor: string;
   soundOn: boolean;
   forms: CharacterForm[];
