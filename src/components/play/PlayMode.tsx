@@ -452,13 +452,13 @@ export default function PlayMode(props: PlayModeProps) {
                       </div>
                     </div>
                     
-                    <div className="bt-body">
+                    <div className="bt-body" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
                       <span className="bt-effect">{getBonusSubtitle(bonus)}</span>
                       {(() => {
                         const effectiveCostValue = typeof activeVariant?.costValue === 'number' ? activeVariant.costValue : bonus.costValue;
                         const effectiveCostResource = activeVariant?.costResource || bonus.costResource;
                         if (effectiveCostResource === 'PM' && effectiveCostValue && effectiveCostValue > 0) {
-                          return <SegmentedBar current={effectiveCostValue} max={effectiveCostValue} color="#894EC6" />;
+                          return <SegmentedBar current={effectiveCostValue} max={effectiveCostValue} color="#894EC6" segmentWidth={8} />;
                         }
                         return null;
                       })()}

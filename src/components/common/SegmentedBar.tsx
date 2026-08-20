@@ -5,12 +5,15 @@ type SegmentedBarProps = {
   onClick?: () => void;
   halfWidth?: boolean;
   pulseCount?: number;
+  /** Largura fixa (px) de cada segmento. Quando definida, o bar não se expande para preencher o container. */
+  segmentWidth?: number;
 };
 
-export default function SegmentedBar({ current, max, color, onClick, halfWidth, pulseCount = 0 }: SegmentedBarProps) {
+export default function SegmentedBar({ current, max, color, onClick, halfWidth, pulseCount = 0, segmentWidth }: SegmentedBarProps) {
   const segments = [];
   const maxSafe = Math.max(1, max);
   const isHighVolume = maxSafe > 20;
+  const compact = segmentWidth !== undefined;
 
   for (let i = 0; i < maxSafe; i++) {
     const isFilled = i < current;
@@ -20,9 +23,10 @@ export default function SegmentedBar({ current, max, color, onClick, halfWidth, 
         key={i}
         className={isPulsing ? 'segment-pulse' : ''}
         style={{
-          flex: 1,
+          flex: compact ? undefined : 1,
+          width: compact ? `${segmentWidth}px` : undefined,
           height: '16px',
-          minWidth: '2px',
+          minWidth: compact ? `${segmentWidth}px` : '2px',
           backgroundColor: isFilled ? color : 'transparent',
           border: isHighVolume ? 'none' : `1px solid ${isFilled ? color : 'var(--border-color)'}`,
           transform: 'skewX(-20deg)',
@@ -36,8 +40,8 @@ export default function SegmentedBar({ current, max, color, onClick, halfWidth, 
   }
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '3px', cursor: 'pointer', width: halfWidth ? '50%' : '100%' }} onClick={onClick}>
-      <div style={{ display: 'flex', flexWrap: 'nowrap', flex: 1 }}>
+    <div style={{ display: 'flex', alignItems: 'center', marginBottom: compact ? 0 : '3px', cursor: onClick ? 'pointer' : 'default', width: compact ? 'fit-content' : halfWidth ? '50%' : '100%' }} onClick={onClick}>
+      <div style={{ display: 'flex', flexWrap: 'nowrap', flex: compact ? undefined : 1 }}>
         {segments}
       </div>
     </div>
