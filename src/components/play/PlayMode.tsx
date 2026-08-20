@@ -127,6 +127,7 @@ export default function PlayMode(props: PlayModeProps) {
   const usesMisticaForCombat = !hasLuta && hasMistica && hasMagia;
   const hasCombatSkill = hasLuta || usesMisticaForCombat;
   const attributeLabel = (attribute: 'poder' | 'habilidade' | 'resistencia') => attribute === 'poder' ? 'Poder' : attribute === 'habilidade' ? 'Habilidade' : 'Resistência';
+  const attributeColor = (attribute: 'poder' | 'habilidade' | 'resistencia') => attribute === 'poder' ? '#FF9E00' : attribute === 'habilidade' ? '#894EC6' : '#5EB05D';
   const techniqueActions = visibleRollBonuses.filter((bonus) => bonus.sourceCatalogId !== 'golpes');
   const hasCombo = (currentForm.rollBonuses || []).some((bonus) => bonus.name === 'Combo');
   const comboRemaining = Math.max(0, habilidade - comboUsedStrikeIds.length);
@@ -430,6 +431,7 @@ export default function PlayMode(props: PlayModeProps) {
                 <button
                   type="button"
                   className={`bonus-toggle combat-action-button attack play-action-card-compact ${!attackPlan.canAfford || attackPlan.hasConflicts ? 'disabled-attribute' : ''}`}
+                  style={{ '--combat-action-color': attributeColor(attackPlan.effectiveAttributeName) } as React.CSSProperties}
                   disabled={rolling || !attackPlan.canAfford || attackPlan.hasConflicts}
                   onClick={() => handleRoll(attackPlan.effectiveAttributeName, { label: 'Ataque', actionType: 'attack' })}
                   title={attackPlan.conflictMessage || (!attackPlan.canAfford ? 'Recursos insuficientes' : 'Rolar Ataque')}
@@ -438,16 +440,20 @@ export default function PlayMode(props: PlayModeProps) {
                     {attributeLabel(attackPlan.effectiveAttributeName)}
                   </div>
                   <div className="action-corner top-right">
-                    <span className="bonus-attr-micro" style={{ background: attackPlan.totalCostPM > 0 ? '#894EC6' : '#7bd389', color: attackPlan.totalCostPM > 0 ? '#fff' : '#000' }}>
+                    <span className="bonus-attr-micro" style={{ background: 'rgba(0, 0, 0, 0.45)', color: '#fff', border: '1px solid rgba(255, 255, 255, 0.25)' }}>
                       {attackPlan.diceCount > 1 ? `${attackPlan.diceCount}D • ` : ''}{attackPlan.totalCostPM} PM
                     </span>
                   </div>
-                  <div className="action-corner bottom-left">
-                    {attackPlan.applicableSkill ? (attackPlan.applicableSkill === 'luta' ? 'Luta' : 'Mística') : ''}
-                  </div>
-                  <div className="action-corner bottom-right">
-                    {attackPlan.critRange < 6 ? `Crítico ${attackPlan.critRange}+` : ''}
-                  </div>
+                  {attackPlan.applicableSkill && (
+                    <div className="action-corner bottom-left">
+                      {attackPlan.applicableSkill === 'luta' ? 'Luta' : 'Mística'}
+                    </div>
+                  )}
+                  {attackPlan.critRange < 6 && (
+                    <div className="action-corner bottom-right">
+                      Crítico {attackPlan.critRange}+
+                    </div>
+                  )}
 
                   <div className="combat-action-button-icon">
                     <SwordsIcon size={36} />
@@ -458,6 +464,7 @@ export default function PlayMode(props: PlayModeProps) {
                 <button
                   type="button"
                   className={`bonus-toggle combat-action-button defense play-action-card-compact ${!defensePlan.canAfford || defensePlan.hasConflicts ? 'disabled-attribute' : ''}`}
+                  style={{ '--combat-action-color': attributeColor(defensePlan.effectiveAttributeName) } as React.CSSProperties}
                   disabled={rolling || !defensePlan.canAfford || defensePlan.hasConflicts}
                   onClick={() => handleRoll(defensePlan.effectiveAttributeName, { label: 'Defesa', actionType: 'defense' })}
                   title={defensePlan.conflictMessage || (!defensePlan.canAfford ? 'Recursos insuficientes' : 'Rolar Defesa')}
@@ -466,16 +473,20 @@ export default function PlayMode(props: PlayModeProps) {
                     {attributeLabel(defensePlan.effectiveAttributeName)}
                   </div>
                   <div className="action-corner top-right">
-                    <span className="bonus-attr-micro" style={{ background: defensePlan.totalCostPM > 0 ? '#894EC6' : '#7bd389', color: defensePlan.totalCostPM > 0 ? '#fff' : '#000' }}>
+                    <span className="bonus-attr-micro" style={{ background: 'rgba(0, 0, 0, 0.45)', color: '#fff', border: '1px solid rgba(255, 255, 255, 0.25)' }}>
                       {defensePlan.diceCount > 1 ? `${defensePlan.diceCount}D • ` : ''}{defensePlan.totalCostPM} PM
                     </span>
                   </div>
-                  <div className="action-corner bottom-left">
-                    {defensePlan.applicableSkill ? (defensePlan.applicableSkill === 'luta' ? 'Luta' : 'Mística') : ''}
-                  </div>
-                  <div className="action-corner bottom-right">
-                    {defensePlan.critRange < 6 ? `Crítico ${defensePlan.critRange}+` : ''}
-                  </div>
+                  {defensePlan.applicableSkill && (
+                    <div className="action-corner bottom-left">
+                      {defensePlan.applicableSkill === 'luta' ? 'Luta' : 'Mística'}
+                    </div>
+                  )}
+                  {defensePlan.critRange < 6 && (
+                    <div className="action-corner bottom-right">
+                      Crítico {defensePlan.critRange}+
+                    </div>
+                  )}
 
                   <div className="combat-action-button-icon">
                     <ShieldIcon size={36} />
