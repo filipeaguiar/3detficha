@@ -418,6 +418,85 @@ h1, h2, h3, h4, h5, h6 {
   padding: 0.85rem;
 }
 
+.editor-technique-stack {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.editor-technique-filter-bar {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.editor-technique-results {
+  display: grid;
+  gap: 0.5rem;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.editor-technique-owned-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.editor-technique-owned-card {
+  background: var(--surface-hover);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.editor-technique-owned-card:hover {
+  border-color: var(--text-muted);
+  transform: translateY(-1px);
+}
+
+.editor-technique-owned-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.editor-technique-owned-title {
+  color: var(--text-main);
+  font-size: 1.2rem;
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 1px;
+}
+
+.editor-technique-owned-alias {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: var(--surface-hover);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.editor-technique-owned-subtitle {
+  color: var(--accent-color);
+  font-size: 0.85rem;
+  margin-top: 2px;
+}
+
+.editor-technique-owned-xp {
+  color: #7bdff2;
+  font-size: 0.75rem;
+  margin-top: 2px;
+}
+
+.editor-technique-owned-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
 .editor-technique-card.is-eligible {
   background: rgba(123,223,242,0.08);
   border-color: rgba(123,223,242,0.35);

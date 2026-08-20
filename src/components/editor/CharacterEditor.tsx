@@ -498,27 +498,27 @@ export default function CharacterEditor(props: CharacterEditorProps) {
 
       <EditorSection title="Técnicas & Bônus desta Forma" visible={activeTab === 'techniques'} titleMarginTop="2rem">
         {xpCredits.length > 0 && <div className="editor-info-banner">{xpCredits.map((credit) => <div key={credit.sourceId} className="editor-info-chip"><strong style={{ color: '#7bdff2' }}>{credit.label}</strong> • {credit.spentXP}/{credit.xpPerRank} XP usados • {credit.remainingXP} XP restantes</div>)}</div>}
-        <div style={{ display: 'grid', gap: '0.75rem', marginBottom: '1rem' }}>
+        <div className="editor-technique-filter-bar">
           <input type="text" className="editor-search" value={techniqueSearch} onChange={(e) => setTechniqueSearch(e.target.value)} placeholder="Buscar técnicas..." />
           <label className="checkbox-label" style={{ padding: '0.5rem 0.8rem' }}><input type="checkbox" className="checkbox-input" checked={showUnavailableTechniques} onChange={(e) => setShowUnavailableTechniques(e.target.checked)} /><span style={{ fontSize: '0.85rem' }}>Mostrar técnicas indisponíveis</span></label>
-          <div style={{ display: 'grid', gap: '0.5rem', maxHeight: '280px', overflowY: 'auto' }}>
+          <div className="editor-technique-results">
             {filteredTechniques.map((technique) => { const eligibility = isTechniqueEligible(currentForm, technique); const isGolpes = technique.catalogId === 'golpes'; const alreadyOwned = !isGolpes && (currentForm.rollBonuses || []).some(b => b.sourceCatalogId === technique.catalogId); const pattern = technique.gameplayPattern || (technique.temporaryPackage ? 'temporary-package' : technique.persistentAssisted ? 'persistent-assisted' : technique.immediateAction ? 'immediate-action' : technique.variants?.length ? 'cycling-variant' : 'fixed-modifier'); return <EditorTechniqueCard key={technique.catalogId} eligible={eligibility.eligible} header={<><div style={{ fontWeight: 'bold', color: '#fff' }}>{technique.name} {technique.universal ? '• Universal' : ''}</div><div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>{technique.description}</div><div style={{ fontSize: '0.76rem', color: '#7bdff2', marginTop: '0.25rem' }}>XP {technique.xpCost || 0} • {technique.xpCategory || 'common'} • {pattern}</div>{technique.tableNotes?.length ? <div style={{ fontSize: '0.74rem', color: '#ffd166', marginTop: '0.2rem' }}>Mesa: {technique.tableNotes.join(' • ')}</div> : null}{!eligibility.eligible && <div style={{ fontSize: '0.76rem', color: '#ff8fab', marginTop: '0.25rem' }}>Faltando: {eligibility.unmet.join(' • ')}</div>}</>} action={<button className="control-btn" disabled={!eligibility.eligible || alreadyOwned || (isGolpes && pendingStrikeSelections.length !== 2)} style={{ width: 'auto', padding: '0.35rem 0.7rem', fontSize: '0.8rem', opacity: (eligibility.eligible && !alreadyOwned && (!isGolpes || pendingStrikeSelections.length === 2)) ? 1 : 0.5, color: '#fff' }} onClick={() => { const newBonus = createTechniqueBonusFromCatalog(technique, currentForm); if (isGolpes) { const acquisitionId = newBonus.id; updateCurrentForm({ rollBonuses: [...(currentForm.rollBonuses || []), newBonus], strikeSelections: [...(currentForm.strikeSelections || []), { acquisitionId, strikeIds: pendingStrikeSelections }] }); setPendingStrikeSelections([]); } else { updateCurrentForm({ rollBonuses: [...(currentForm.rollBonuses || []), newBonus] }); } }}>{alreadyOwned ? 'Adquirida' : 'Adicionar'}</button>} footer={isGolpes ? <><div style={{ fontSize: '0.78rem', color: '#ffd166', marginBottom: '0.45rem' }}>Escolha exatamente 2 golpes para esta aquisição.</div><EditorPillGroup options={STRIKES_CATALOG.map((strike) => { const selected = pendingStrikeSelections.includes(strike.id); const disabled = !selected && pendingStrikeSelections.length >= 2; return { key: strike.id, selected, disabled, onClick: () => setPendingStrikeSelections((current) => selected ? current.filter((id) => id !== strike.id) : [...current, strike.id]), label: <>{selected ? <CheckIcon size={12} /> : null} {strike.name}</> }; })} /></> : undefined} />; })}
           </div>
         </div>
         {knownStrikes.length > 0 && <div className="editor-warning-chip"><div style={{ fontWeight: 'bold', color: '#ffd166', marginBottom: '0.45rem' }}>Golpes Conhecidos</div><div className="editor-pill-group">{knownStrikes.map(({ acquisitionId, strike }) => strike ? <span key={`${acquisitionId}:${strike.id}`} className="editor-choice-meta" style={{ color: '#fff', borderColor: 'rgba(255, 209, 102, 0.35)' }}>{strike.name}</span> : null)}</div></div>}
-        <div className="bonus-editor-list">
+        <div className="editor-technique-owned-list">
           {visibleRollBonuses.map((bonus) => (
-            <div key={bonus.id} className="bonus-editor-row" style={{ justifyContent: 'space-between', padding: '0.8rem 1rem', cursor: 'pointer' }} onClick={(e) => {
+            <div key={bonus.id} className="editor-technique-owned-card" onClick={(e) => {
               if ((e.target as HTMLElement).closest('button')) return;
               setEditingBonusId(bonus.id);
             }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  <span style={{ color: 'var(--text-main)', fontSize: '1.2rem', fontFamily: 'Bebas Neue, sans-serif', letterSpacing: '1px' }}>
+                <div className="editor-technique-owned-header">
+                  <span className="editor-technique-owned-title">
                     {bonus.alias ? bonus.alias.toUpperCase() : bonus.name || 'Técnica sem nome'}
                   </span>
                   {bonus.alias && (
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', background: 'var(--surface-hover)', padding: '2px 6px', borderRadius: '4px' }}>
+                    <span className="editor-technique-owned-alias">
                       {bonus.name}
                     </span>
                   )}
@@ -531,14 +531,14 @@ export default function CharacterEditor(props: CharacterEditorProps) {
                     </span>
                   )}
                 </div>
-                <div style={{ color: 'var(--accent-color)', fontSize: '0.85rem', marginTop: '2px' }}>
+                <div className="editor-technique-owned-subtitle">
                   {getBonusSubtitle(bonus)}
                 </div>
-                {(bonus.xpCost || bonus.fundedBySourceIds?.length) ? <div style={{ color: '#7bdff2', fontSize: '0.75rem', marginTop: '2px' }}>XP: {bonus.xpCost || 0}{bonus.fundedBySourceIds?.length ? ` • Coberta por: ${bonus.fundedBySourceIds.join(', ')}` : ''}</div> : null}
+                {(bonus.xpCost || bonus.fundedBySourceIds?.length) ? <div className="editor-technique-owned-xp">XP: {bonus.xpCost || 0}{bonus.fundedBySourceIds?.length ? ` • Coberta por: ${bonus.fundedBySourceIds.join(', ')}` : ''}</div> : null}
                 {bonus.sourceCatalogId === 'setas_infaliveis_de_petrovna' ? <div style={{ marginTop: '0.55rem', display: 'flex', alignItems: 'center', gap: '0.55rem' }} onClick={(event) => event.stopPropagation()}><span style={{ fontSize: '0.78rem', color: '#ffd166' }}>Setas a preparar:</span><button className="control-btn" style={{ width: '32px', height: '28px' }} onClick={() => { const current = bonus.assistedState?.configuredStock || 1; updateOwnedBonus(bonus.id, { assistedState: { ...(bonus.assistedState || {}), configuredStock: Math.max(1, current - 1) } }); }}>−</button><strong>{Math.min(habilidade, bonus.assistedState?.configuredStock || 1)}</strong><button className="control-btn" style={{ width: '32px', height: '28px' }} onClick={() => { const current = bonus.assistedState?.configuredStock || 1; updateOwnedBonus(bonus.id, { assistedState: { ...(bonus.assistedState || {}), configuredStock: Math.min(Math.max(1, habilidade), current + 1) } }); }}>+</button><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>custo igual ao estoque em PM</span></div> : null}
                 {bonus.sourceCatalogId === 'area_de_batalha' ? (() => { const selected = bonus.assistedState?.packageChoices || []; const total = selected.reduce((sum, id) => sum + (areaAdvantageOptions.find((option) => option.id === id)?.pointCost || 0), 0); return <div style={{ marginTop: '0.55rem' }} onClick={(event) => event.stopPropagation()}><div style={{ fontSize: '0.78rem', color: total === 2 ? '#7bd389' : '#ffd166', marginBottom: '0.35rem' }}>Pacote da Área: {total}/2 pontos</div><div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', maxHeight: '120px', overflowY: 'auto' }}>{areaAdvantageOptions.map((option) => { const checked = selected.includes(option.id); const disabled = !checked && (selected.length >= 2 || total + option.pointCost > 2); return <button key={option.id} className="control-btn" disabled={disabled} style={{ width: 'auto', padding: '0.25rem 0.45rem', fontSize: '0.72rem', opacity: disabled ? 0.45 : 1, borderColor: checked ? '#7bd389' : 'var(--border-color)' }} onClick={() => updateOwnedBonus(bonus.id, { assistedState: { ...(bonus.assistedState || {}), packageChoices: checked ? selected.filter((id) => id !== option.id) : [...selected, option.id] } })}>{checked ? <CheckIcon size={11} /> : null}{option.name} ({option.pointCost})</button>; })}</div></div>; })() : null}
               </div>
-              <div className="editor-actions-row">
+              <div className="editor-technique-owned-controls">
                 <button className="bonus-remove-btn" style={{ color: 'var(--text-muted)' }} onClick={() => setEditingBonusId(bonus.id)} title="Editar técnica">
                   <PencilIcon />
                 </button>
