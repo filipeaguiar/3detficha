@@ -2000,7 +2000,7 @@ input.stat-input:focus {
 }
 
 .bonus-toggle.active {
-  background-color: var(--accent-transparent);
+  background-color: var(--accent-color);
   border-color: var(--accent-color);
   box-shadow: 0 6px 16px var(--accent-glow);
 }
@@ -2052,7 +2052,7 @@ input.stat-input:focus {
 .bt-badges {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 6px;
   justify-content: flex-end;
   flex-shrink: 0;
   max-width: 50%;
@@ -2089,3 +2089,24 @@ input.stat-input:focus {
   border-top-color: var(--accent-color);
 }
 
+
+.bonus-toggle.active,
+.bonus-toggle.active .bt-name,
+.bonus-toggle.active .bt-raw-name,
+.bonus-toggle.active .bt-effect,
+.bonus-toggle.active .bt-footer,
+.bonus-toggle.active .bt-footer span,
+.bonus-toggle.active .bonus-attr-micro,
+.bonus-toggle.active .bt-badges span {
+  color: var(--accent-text-color) !important;
+}
+
+.bonus-toggle.active .bt-footer {
+  background: rgba(0, 0, 0, 0.15); /* Slightly darken the footer to distinguish it, but keep it transparent */
+  border-top-color: rgba(0, 0, 0, 0.2);
+}
+
+.bonus-toggle.active .bonus-remove-btn {
+  color: var(--accent-text-color) !important;
+  border-color: var(--accent-text-color) !important;
+}
