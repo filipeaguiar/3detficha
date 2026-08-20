@@ -1,9 +1,5 @@
-# character-editor-ui-refactor Specification
+## MODIFIED Requirements
 
-## Purpose
-Definir padrões reutilizáveis de composição visual e estrutural para a tela de edição da ficha, garantindo consistência entre abas, formulários e listas selecionáveis sem alterar o comportamento funcional da edição.
-
-## Requirements
 ### Requirement: Character editor tabs SHALL use reusable UI composition patterns
 The system SHALL render the editing experience using a consistent set of reusable editor UI patterns for tab containers, cards, nested option groups, selectable entries, and action areas, and SHALL avoid leaving one editor tab or subsection visually isolated on legacy layout patterns when equivalent structures already exist elsewhere in the editor.
 
