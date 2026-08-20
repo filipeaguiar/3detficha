@@ -1429,7 +1429,7 @@ input.stat-input:focus {
   display: flex;
   gap: 0.5rem;
   overflow-x: auto;
-  padding: 0 0 0.8rem 0;
+  padding: 0 1rem 0.8rem 1rem;
   margin-bottom: 0.2rem;
 }
 
