@@ -96,7 +96,7 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     description: 'Ataque mágico direto com modo base e aprimoramentos declarados em mesa.',
     universal: false,
     requirements: { advantages: ['magia'], skills: ['mistica'] },
-    attribute: 'habilidade',
+    attribute: 'poder',
     bonusType: 'none',
     value: 0,
     duration: 'instant',
