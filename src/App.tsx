@@ -763,6 +763,7 @@ export default function App() {
     else if (stat === 'PV') setCurrentPV(p => Math.max(0, p + delta));
   };
 
+  (window as any).debugState = { rolling, diceBox: diceBoxRef.current };
   const handleRoll = async (attrName: 'poder' | 'habilidade' | 'resistencia') => {
     if (!diceBoxRef.current || diceBoxRef.current === 'initializing' || rolling) return;
     if (!allowedAttributes[attrName]) return;

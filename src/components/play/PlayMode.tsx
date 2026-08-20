@@ -309,7 +309,7 @@ export default function PlayMode(props: PlayModeProps) {
                 const assistedConfig = activeVariant?.persistentAssisted || bonus.persistentAssisted;
                 const temporaryConfig = activeVariant?.temporaryPackage || bonus.temporaryPackage;
                 return (
-                  <button key={bonus.id} className={`bonus-toggle ${isActive ? 'active' : ''}`} onClick={() => toggleActiveBonus(bonus.id)} onContextMenu={(e) => { e.preventDefault(); setDetailModal({ title: bonus.alias || bonus.name, subtitle: getBonusSubtitle(bonus), body: `${bonus.name !== (bonus.alias || bonus.name) ? `Base: ${bonus.name}\n\n` : ''}${activeVariant?.note || bonus.persistentAssisted?.note || bonus.temporaryPackage?.note || 'Técnica configurada nesta forma.'}`, tone: 'technique' }); }} title={`${bonus.alias || bonus.name}: ${getBonusSubtitle(bonus)}`}>
+                  <div key={bonus.id} className={`bonus-toggle ${isActive ? 'active' : ''}`} onClick={() => toggleActiveBonus(bonus.id)} onContextMenu={(e) => { e.preventDefault(); setDetailModal({ title: bonus.alias || bonus.name, subtitle: getBonusSubtitle(bonus), body: `${bonus.name !== (bonus.alias || bonus.name) ? `Base: ${bonus.name}\n\n` : ''}${activeVariant?.note || bonus.persistentAssisted?.note || bonus.temporaryPackage?.note || 'Técnica configurada nesta forma.'}`, tone: 'technique' }); }} title={`${bonus.alias || bonus.name}: ${getBonusSubtitle(bonus)}`}>
                     <div className="bonus-toggle-header">
                       <span className="bonus-toggle-label">{bonus.alias ? bonus.alias : bonus.name}</span>
                       {bonus.duration === 'scene' && <span className="bonus-attr-micro" style={{ background: '#33ccff', color: '#000' }}>CENA</span>}
@@ -335,7 +335,7 @@ export default function PlayMode(props: PlayModeProps) {
                     {bonus.tableNotes?.length ? <span className="bonus-toggle-raw-name" style={{ color: '#ffd166' }}>Mesa: {bonus.tableNotes.join(' • ')}</span> : null}
 
                     {bonus.variants && bonus.variants.length > 1 ? <span className="bonus-toggle-raw-name" style={{ marginTop: '0.25rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}><button type="button" className="bonus-remove-btn" style={{ minWidth: 'auto' }} onClick={(e) => { e.stopPropagation(); cycleBonusVariant(bonus.id); }} title="Alternar variante">↻</button><span>{activeVariant?.label || 'Variante'}</span></span> : null}
-                  </button>
+                  </div>
                 );
               })}
             </div>
