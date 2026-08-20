@@ -241,6 +241,7 @@ export type KitPower = {
 export type CharacterKit = {
   id: string;
   name: string;
+  cost?: number;
   exigencias: string;
   nucleos: string;
   powers: KitPower[];
