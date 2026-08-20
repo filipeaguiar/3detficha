@@ -445,7 +445,7 @@ export default function App() {
       costValue: 1,
       costResource: 'PM'
     };
-    updateCurrentFormForActiveIndex({ rollBonuses: [...rollBonuses, newBonus] });
+    updateCurrentFormForActiveIndex({ rollBonuses: [...(currentForm.rollBonuses || []), newBonus] });
     setEditingBonusId(newId);
   };
 
@@ -459,14 +459,14 @@ export default function App() {
       ...preset,
       id: newId
     };
-    updateCurrentFormForActiveIndex({ rollBonuses: [...rollBonuses, newBonus] });
+    updateCurrentFormForActiveIndex({ rollBonuses: [...(currentForm.rollBonuses || []), newBonus] });
     setIsPresetModalOpen(false);
     setEditingBonusId(newId);
   };
 
   const removeRollBonus = (id: string) => {
     updateCurrentFormForActiveIndex({
-      rollBonuses: rollBonuses.filter(b => b.id !== id),
+      rollBonuses: (currentForm.rollBonuses || []).filter(b => b.id !== id),
       strikeSelections: (currentForm.strikeSelections || []).filter((selection) => selection.acquisitionId !== id),
     });
     setActiveBonuses(prev => {
@@ -478,13 +478,13 @@ export default function App() {
 
   const updateRollBonus = (id: string, updates: Partial<RollBonus>) => {
     updateCurrentFormForActiveIndex({
-      rollBonuses: rollBonuses.map(b => b.id === id ? { ...b, ...updates } : b)
+      rollBonuses: (currentForm.rollBonuses || []).map(b => b.id === id ? { ...b, ...updates } : b)
     });
   };
 
   const cycleBonusVariant = (id: string) => {
     updateCurrentFormForActiveIndex({
-      rollBonuses: rollBonuses.map(b => {
+      rollBonuses: (currentForm.rollBonuses || []).map(b => {
         if (b.id !== id || !b.variants || b.variants.length <= 1) return b;
         const currentIndex = b.variants.findIndex(variant => variant.id === b.selectedVariantId);
         const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % b.variants.length : 0;
@@ -1098,7 +1098,7 @@ export default function App() {
             toggleActiveBonus={toggleActiveBonus}
             cycleBonusVariant={cycleBonusVariant}
             activateStrike={(bonus) => {
-              updateCurrentFormForActiveIndex({ rollBonuses: [...rollBonuses.filter((b) => b.id !== bonus.id), bonus] });
+              updateCurrentFormForActiveIndex({ rollBonuses: [...(currentForm.rollBonuses || []).filter((b) => b.id !== bonus.id), bonus] });
               void toggleActiveBonus(bonus.id);
             }}
             configureAssistedBonus={configureAssistedBonus}
