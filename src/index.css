@@ -1076,6 +1076,15 @@ input.stat-input:focus {
   background: rgba(0, 0, 0, 0.4);
   padding: 0 4px;
   border-radius: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 18px; /* Force consistent height */
+  line-height: 1;
+}
+
+.bt-badges svg {
+  display: block; /* Removes inline gap below SVGs */
 }
 
 .preset-card-item {
