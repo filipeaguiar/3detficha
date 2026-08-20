@@ -182,14 +182,18 @@ export default function PlayMode(props: PlayModeProps) {
             const isAvailable = useCount === 0;
             const mod = getKitPowerModifier(power);
 
-            let statusTag: React.ReactNode = '';
+            let statusTag: React.ReactNode = null;
             if (isActiveBuff) {
               const attrLetter = mod.attribute === 'poder' ? 'P' : mod.attribute === 'habilidade' ? 'H' : mod.attribute === 'resistencia' ? 'R' : '';
               statusTag = <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px' }}><CheckIcon size={11} /> ATIVO {mod.value ? `(+${mod.value}${attrLetter})` : ''}</span>;
             } else if (mod.bonusType !== 'none') {
               const attrLetter = mod.attribute === 'poder' ? 'P' : mod.attribute === 'habilidade' ? 'H' : mod.attribute === 'resistencia' ? 'R' : '';
               const costDisp = power.costPM !== undefined ? power.costPM : 3;
-              statusTag = `${mod.value ? `+${mod.value}${attrLetter}` : ''} [${costDisp === -1 ? 'Var.' : costDisp}PM]`;
+              // Visual slanted rectangle indicator using SegmentedBar
+              const visualCost = <SegmentedBar current={costDisp} max={costDisp} color="#894EC6" />;
+              statusTag = <>
+                {mod.value ? `+${mod.value}${attrLetter}` : ''} {visualCost}
+              </>;
             } else if (power.type === 'per_scene') {
               const repeatCost = power.repeatCostPM !== undefined ? power.repeatCostPM : 3;
               statusTag = isAvailable ? '1/1 Cena' : (repeatCost === -1 ? 'Var. PM' : `-${repeatCost}PM`);
@@ -450,6 +454,14 @@ export default function PlayMode(props: PlayModeProps) {
                     
                     <div className="bt-body">
                       <span className="bt-effect">{getBonusSubtitle(bonus)}</span>
+                      {(() => {
+                        const effectiveCostValue = typeof activeVariant?.costValue === 'number' ? activeVariant.costValue : bonus.costValue;
+                        const effectiveCostResource = activeVariant?.costResource || bonus.costResource;
+                        if (effectiveCostResource === 'PM' && effectiveCostValue && effectiveCostValue > 0) {
+                          return <SegmentedBar current={effectiveCostValue} max={effectiveCostValue} color="#894EC6" />;
+                        }
+                        return null;
+                      })()}
                     </div>
 
                     {(isPersistentAssisted || isTemporaryPackage || (bonus.variants && bonus.variants.length > 1)) && (

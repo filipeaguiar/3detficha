@@ -2,7 +2,7 @@ type SegmentedBarProps = {
   current: number;
   max: number;
   color: string;
-  onClick: () => void;
+  onClick?: () => void;
   halfWidth?: boolean;
   pulseCount?: number;
 };
