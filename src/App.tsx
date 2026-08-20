@@ -631,8 +631,15 @@ export default function App() {
         setActiveBonuses((current) => { const next = new Set(current); next.add(id); return next; });
         return;
       } else {
-        // State 2 -> State 1
+        // State 2 -> State 0
+        const cost = typeof activeVariant?.costValue === 'number' ? activeVariant.costValue : (bonus.costValue || 0);
+        const resource = activeVariant?.costResource || bonus.costResource;
+        if (resource === 'PM') setCurrentPM(prev => Math.min(maxPM, prev + cost));
+        else if (resource === 'PA') setCurrentPA(prev => Math.min(maxPA, prev + cost));
+        else if (resource === 'PV') setCurrentPV(prev => Math.min(maxPV, prev + cost));
+        
         setActiveBonuses((current) => { const next = new Set(current); next.delete(id); return next; });
+        updateRollBonus(bonus.id, { assistedState: { ...(bonus.assistedState || {}), prepared: false } });
         return;
       }
     }
