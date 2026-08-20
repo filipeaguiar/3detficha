@@ -2119,3 +2119,162 @@ input.stat-input:focus {
   color: var(--accent-text-color) !important;
   border-color: var(--accent-text-color) !important;
 }
+
+/* -------------------------------------------------
+   Character Info Collapsible Bar
+   ------------------------------------------------- */
+.char-info-section {
+  margin-top: 1.25rem;
+  width: 100%;
+}
+
+.char-info-toggle-btn {
+  width: 100%;
+  padding: 0.45rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transform: skewX(-5deg);
+  transition: var(--transition);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.char-info-toggle-btn:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.char-info-toggle-btn.open {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  background: var(--accent-transparent);
+  box-shadow: 0 0 10px var(--accent-glow), inset 0 0 10px var(--accent-transparent);
+}
+
+.char-info-toggle-content {
+  transform: skewX(5deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.05rem;
+  letter-spacing: 1.5px;
+}
+
+.char-info-triangle {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.char-info-triangle.rotated {
+  transform: rotate(180deg);
+}
+
+.char-info-collapsible {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.char-info-collapsible.open {
+  grid-template-rows: 1fr;
+}
+
+.char-info-inner {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+}
+
+.char-info-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.35rem 0.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.char-info-row:last-child {
+  border-bottom: none;
+}
+
+.char-info-row-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.95rem;
+  letter-spacing: 1.2px;
+  color: var(--text-muted);
+  min-width: 85px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.char-info-badge-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+  flex: 1;
+}
+
+.char-info-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.65rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  transform: skewX(-5deg);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: var(--bg-card);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  line-height: 1.2;
+}
+
+.char-info-badge > * {
+  transform: skewX(5deg);
+}
+
+.char-info-badge:hover {
+  transform: skewX(-5deg) translateY(-1px);
+  filter: brightness(1.2);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35);
+}
+
+.char-info-badge.kit-badge {
+  background: rgba(123, 223, 242, 0.12);
+  border-color: #7bdff2;
+  color: #7bdff2;
+}
+
+.char-info-badge.archetype-badge {
+  background: rgba(255, 209, 102, 0.12);
+  border-color: #ffd166;
+  color: #ffd166;
+}
+
+.char-info-badge.advantage-badge {
+  background: var(--accent-transparent);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.char-info-badge.skill-badge {
+  background: rgba(51, 204, 255, 0.12);
+  border-color: #33ccff;
+  color: #33ccff;
+}
+
+.char-info-badge.disadvantage-badge {
+  background: rgba(255, 77, 77, 0.12);
+  border-color: #ff4d4d;
+  color: #ff4d4d;
+}
+

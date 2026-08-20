@@ -5,7 +5,7 @@ import { SKILLS_CATALOG } from '../../constants/skillsData';
 import { createStrikeBonus, getActiveBonusVariant, getBonusSubtitle, getKnownStrikes, getKitPowerModifier } from '../../utils/character';
 import type { CharacterForm, CharacterKit, KitPower, RollBonus } from '../../types/character';
 import SegmentedBar from '../common/SegmentedBar';
-import { CheckIcon, ZapIcon, HourglassIcon, SquareIcon, CheckSquareIcon, CloseIcon, DiceCountIcon, HabilidadeIcon, InfoIcon, LeafIcon, MaskIcon, MenuIcon, PoderIcon, ResistenciaIcon, SkillsIcon, SparklesIcon, TransformIcon } from '../common/Icons';
+import { CheckIcon, ZapIcon, HourglassIcon, SquareIcon, CheckSquareIcon, CloseIcon, DiceCountIcon, HabilidadeIcon, InfoIcon, LeafIcon, MaskIcon, MenuIcon, PoderIcon, ResistenciaIcon, SkillsIcon, SparklesIcon, TransformIcon, BookIcon, CrownIcon, TriangleDownIcon } from '../common/Icons';
 
 type PlayModeProps = {
   characterName: string;
@@ -64,6 +64,7 @@ export default function PlayMode(props: PlayModeProps) {
   const [detailModal, setDetailModal] = useState<{ title: string; subtitle?: string; body: string; tone: 'advantage' | 'skill' | 'disadvantage' | 'technique' } | null>(null);
   const [comboUsedStrikeIds, setComboUsedStrikeIds] = useState<string[]>([]);
   const [comboActive, setComboActive] = useState(false);
+  const [isCharInfoOpen, setIsCharInfoOpen] = useState(false);
   const {
     characterName,
     currentKit,
@@ -234,30 +235,152 @@ export default function PlayMode(props: PlayModeProps) {
           </button>
         </div>
 
-        {(currentArchetypeName || (currentForm.advantages && currentForm.advantages.length > 0) || (currentForm.disadvantages && currentForm.disadvantages.length > 0) || (currentForm.skills && currentForm.skills.length > 0)) && (
-          <div style={{ marginTop: '1rem', display: 'flex', flexWrap: 'wrap', gap: '0.4rem', justifyContent: 'center' }}>
-            {currentKit && <button onClick={() => setDetailModal({ title: `Kit — ${currentKit.name}`, body: [...(currentKitNotes || []), ...(currentKitUnsupportedNotes || []).map(note => `Manual/Narrador: ${note}`)].join('\n\n') || 'Sem detalhes adicionais.', tone: 'technique' })} style={{ background: '#7bdff2', border: 'none', color: '#000', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}><InfoIcon />{currentKit.name}</button>}
-            {currentArchetypeName && <button onClick={() => setDetailModal({ title: `Arquétipo — ${currentArchetypeName}`, body: [...(currentArchetypeNotes || []), ...(currentArchetypeUnsupportedNotes || []).map(note => `Manual/Narrador: ${note}`)].join('\n\n') || 'Sem detalhes adicionais.', tone: 'technique' })} style={{ background: '#ffd166', border: 'none', color: '#000', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}><InfoIcon />{currentArchetypeName}</button>}
-            {currentForm.advantages?.map(id => {
-              const [baseId, variantKey] = id.split('::');
-              const adv = ADVANTAGES_CATALOG.find(a => a.id === baseId);
-              const variant = variantKey ? ADVANTAGE_VARIANT_OPTIONS[baseId]?.find(v => v.key === variantKey) : undefined;
-              const displayName = adv ? (variant ? `${adv.name} — ${variant.label}` : adv.name) : id;
-              const displayCost = variant?.cost || adv?.cost || '';
-              return adv ? <button key={id} onClick={() => setDetailModal({ title: displayName, subtitle: displayCost ? `Custo: ${displayCost}` : undefined, body: adv.desc, tone: 'advantage' })} style={{ background: 'var(--accent-color)', border: 'none', color: '#000', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}><SparklesIcon size={12} />{displayName}</button> : null;
-            })}
-            {currentForm.skills?.map(id => {
-              const skill = SKILLS_CATALOG.find(a => a.id === id);
-              return skill ? <button key={id} onClick={() => setDetailModal({ title: skill.name, body: skill.desc, tone: 'skill' })} style={{ background: '#33ccff', border: 'none', color: '#000', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}><SkillsIcon size={12} />{skill.name}</button> : null;
-            })}
-            {currentForm.disadvantages?.map(id => {
-              const [baseId, variantKey] = id.split('::');
-              const disadv = DISADVANTAGES_CATALOG.find(a => a.id === baseId);
-              const variant = variantKey ? DISADVANTAGE_VARIANT_OPTIONS[baseId]?.find(v => v.key === variantKey) : undefined;
-              const displayName = disadv ? (variant ? `${disadv.name} — ${variant.label}` : disadv.name) : id;
-              const displayCost = variant?.cost || disadv?.cost || '';
-              return disadv ? <button key={id} onClick={() => setDetailModal({ title: displayName, subtitle: displayCost ? `Custo: ${displayCost}` : undefined, body: disadv.desc, tone: 'disadvantage' })} style={{ background: '#ff4d4d', border: 'none', color: '#fff', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}><MaskIcon size={12} />{displayName}</button> : null;
-            })}
+        {(currentKit || currentArchetypeName || (currentForm.advantages && currentForm.advantages.length > 0) || (currentForm.skills && currentForm.skills.length > 0) || (currentForm.disadvantages && currentForm.disadvantages.length > 0)) && (
+          <div className="char-info-section">
+            <button
+              type="button"
+              className={`char-info-toggle-btn ${isCharInfoOpen ? 'open' : ''}`}
+              onClick={() => setIsCharInfoOpen(prev => !prev)}
+              title="Alternar visibilidade das informações do personagem"
+            >
+              <div className="char-info-toggle-content">
+                <TriangleDownIcon size={9} className={`char-info-triangle ${isCharInfoOpen ? 'rotated' : ''}`} />
+                <span>INFORMAÇÕES DO PERSONAGEM</span>
+                <TriangleDownIcon size={9} className={`char-info-triangle ${isCharInfoOpen ? 'rotated' : ''}`} />
+              </div>
+            </button>
+
+            <div className={`char-info-collapsible ${isCharInfoOpen ? 'open' : ''}`}>
+              <div className="char-info-inner">
+                {currentKit && (
+                  <div className="char-info-row">
+                    <span className="char-info-row-label">Kit</span>
+                    <div className="char-info-badge-group">
+                      <button
+                        type="button"
+                        className="char-info-badge kit-badge"
+                        onClick={() => setDetailModal({
+                          title: `Kit — ${currentKit.name}`,
+                          body: [...(currentKitNotes || []), ...(currentKitUnsupportedNotes || []).map(note => `Manual/Narrador: ${note}`)].join('\n\n') || 'Sem detalhes adicionais.',
+                          tone: 'technique'
+                        })}
+                      >
+                        <BookIcon size={13} />
+                        <span>{currentKit.name}</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {currentArchetypeName && (
+                  <div className="char-info-row">
+                    <span className="char-info-row-label">Arquétipo</span>
+                    <div className="char-info-badge-group">
+                      <button
+                        type="button"
+                        className="char-info-badge archetype-badge"
+                        onClick={() => setDetailModal({
+                          title: `Arquétipo — ${currentArchetypeName}`,
+                          body: [...(currentArchetypeNotes || []), ...(currentArchetypeUnsupportedNotes || []).map(note => `Manual/Narrador: ${note}`)].join('\n\n') || 'Sem detalhes adicionais.',
+                          tone: 'technique'
+                        })}
+                      >
+                        <CrownIcon size={13} />
+                        <span>{currentArchetypeName}</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {currentForm.advantages && currentForm.advantages.length > 0 && (
+                  <div className="char-info-row">
+                    <span className="char-info-row-label">Vantagens</span>
+                    <div className="char-info-badge-group">
+                      {currentForm.advantages.map(id => {
+                        const [baseId, variantKey] = id.split('::');
+                        const adv = ADVANTAGES_CATALOG.find(a => a.id === baseId);
+                        const variant = variantKey ? ADVANTAGE_VARIANT_OPTIONS[baseId]?.find(v => v.key === variantKey) : undefined;
+                        const displayName = adv ? (variant ? `${adv.name} — ${variant.label}` : adv.name) : id;
+                        const displayCost = variant?.cost || adv?.cost || '';
+                        return adv ? (
+                          <button
+                            key={id}
+                            type="button"
+                            className="char-info-badge advantage-badge"
+                            onClick={() => setDetailModal({
+                              title: displayName,
+                              subtitle: displayCost ? `Custo: ${displayCost}` : undefined,
+                              body: adv.desc,
+                              tone: 'advantage'
+                            })}
+                          >
+                            <SparklesIcon size={12} />
+                            <span>{displayName}</span>
+                          </button>
+                        ) : null;
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {currentForm.skills && currentForm.skills.length > 0 && (
+                  <div className="char-info-row">
+                    <span className="char-info-row-label">Perícias</span>
+                    <div className="char-info-badge-group">
+                      {currentForm.skills.map(id => {
+                        const skill = SKILLS_CATALOG.find(a => a.id === id);
+                        return skill ? (
+                          <button
+                            key={id}
+                            type="button"
+                            className="char-info-badge skill-badge"
+                            onClick={() => setDetailModal({
+                              title: skill.name,
+                              body: skill.desc,
+                              tone: 'skill'
+                            })}
+                          >
+                            <SkillsIcon size={12} />
+                            <span>{skill.name}</span>
+                          </button>
+                        ) : null;
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {currentForm.disadvantages && currentForm.disadvantages.length > 0 && (
+                  <div className="char-info-row">
+                    <span className="char-info-row-label">Desvantagens</span>
+                    <div className="char-info-badge-group">
+                      {currentForm.disadvantages.map(id => {
+                        const [baseId, variantKey] = id.split('::');
+                        const disadv = DISADVANTAGES_CATALOG.find(a => a.id === baseId);
+                        const variant = variantKey ? DISADVANTAGE_VARIANT_OPTIONS[baseId]?.find(v => v.key === variantKey) : undefined;
+                        const displayName = disadv ? (variant ? `${disadv.name} — ${variant.label}` : disadv.name) : id;
+                        const displayCost = variant?.cost || disadv?.cost || '';
+                        return disadv ? (
+                          <button
+                            key={id}
+                            type="button"
+                            className="char-info-badge disadvantage-badge"
+                            onClick={() => setDetailModal({
+                              title: displayName,
+                              subtitle: displayCost ? `Custo: ${displayCost}` : undefined,
+                              body: disadv.desc,
+                              tone: 'disadvantage'
+                            })}
+                          >
+                            <MaskIcon size={12} />
+                            <span>{displayName}</span>
+                          </button>
+                        ) : null;
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
