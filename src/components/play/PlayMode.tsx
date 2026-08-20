@@ -443,7 +443,7 @@ export default function PlayMode(props: PlayModeProps) {
                     )}
                   </div>
                   {attackPlan.critRange < 6 && (
-                    <div className="action-corner bottom-right">
+                    <div className="action-corner bottom-left">
                       Crítico {attackPlan.critRange}+
                     </div>
                   )}
@@ -452,7 +452,7 @@ export default function PlayMode(props: PlayModeProps) {
                     <SwordsIcon size={38} />
                   </div>
 
-                  <div style={{ position: 'absolute', bottom: '8px', left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
+                  <div className="action-corner bottom-right" style={{ display: 'flex', justifyContent: 'flex-end', paddingBottom: '2px' }}>
                     {attackPlan.totalCostPM > 0 && (
                       <SegmentedBar
                         current={attackPlan.totalCostPM}
@@ -481,7 +481,7 @@ export default function PlayMode(props: PlayModeProps) {
                     )}
                   </div>
                   {defensePlan.critRange < 6 && (
-                    <div className="action-corner bottom-right">
+                    <div className="action-corner bottom-left">
                       Crítico {defensePlan.critRange}+
                     </div>
                   )}
@@ -490,7 +490,7 @@ export default function PlayMode(props: PlayModeProps) {
                     <ShieldIcon size={38} />
                   </div>
 
-                  <div style={{ position: 'absolute', bottom: '8px', left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
+                  <div className="action-corner bottom-right" style={{ display: 'flex', justifyContent: 'flex-end', paddingBottom: '2px' }}>
                     {defensePlan.totalCostPM > 0 && (
                       <SegmentedBar
                         current={defensePlan.totalCostPM}
