@@ -5,7 +5,7 @@ import type { ActionWorkspaceTab, AppMode } from '../../types/navigation';
 import { classifyFormActions } from '../../utils/actionClassification';
 import { getActiveBonusVariant, getBonusSubtitle } from '../../utils/character';
 import { resolveActionPlan } from '../../utils/actionResolver';
-import { BookIcon, CheckIcon, CloseIcon, HabilidadeIcon, HourglassIcon, MenuIcon, PencilIcon, PlusIcon, PoderIcon, ResistenciaIcon, SparklesIcon, TabTechniquesIcon, TrashIcon, WandSparklesIcon, ZapIcon } from '../common/Icons';
+import { BookIcon, CheckIcon, CloseIcon, HabilidadeIcon, HourglassIcon, MenuIcon, PencilIcon, PlusIcon, PoderIcon, ResistenciaIcon, SparklesIcon, TabTechniquesIcon, TrashIcon, WandSparklesIcon, ZapIcon, SwordsIcon, ShieldIcon } from '../common/Icons';
 import SegmentedBar from '../common/SegmentedBar';
 import TabbedNavigation from '../common/TabbedNavigation';
 import EditorPillGroup from '../editor/EditorPillGroup';
@@ -32,7 +32,7 @@ type ActionWorkspaceProps = {
 };
 
 const TAB_LABELS: Record<ActionWorkspaceTab, string> = {
-  attacks: 'Ataques',
+  attacks: 'Combate',
   techniques: 'Técnicas',
   modifiers: 'Modificadores/Bônus',
 };
@@ -69,7 +69,8 @@ export default function ActionWorkspace({ characterName, currentForm, forms, act
     );
   }, [currentForm, visibleRollBonuses, currentPM, hasCombatSkill, hasLuta]);
 
-  const attributeLabel = (attribute: 'poder' | 'habilidade' | 'resistencia') => attribute === 'poder' ? 'Poder' : attribute === 'habilidade' ? 'Habilidade' : 'Resistência';
+  const attributeColor = (attribute: 'poder' | 'habilidade' | 'resistencia') => attribute === 'poder' ? '#FF9E00' : attribute === 'habilidade' ? '#894EC6' : '#5EB05D';
+  const attributeLetter = (attribute: 'poder' | 'habilidade' | 'resistencia') => attribute === 'poder' ? 'P' : attribute === 'habilidade' ? 'H' : 'R';
 
   const renderBonus = (bonus: RollBonus) => {
     const activeVariant = getActiveBonusVariant(bonus);
@@ -127,33 +128,69 @@ export default function ActionWorkspace({ characterName, currentForm, forms, act
 
       <section className={`bonus-toggles-grid action-workspace-content action-workspace-${activeTab}`}>
         {activeTab === 'attacks' && <>
-          <article className="bonus-toggle combat-action-button attack action-workspace-preview-card play-action-card-compact">
-            <div className="bonus-toggle-header">
-              <span className="bonus-toggle-label">Ataque</span>
-              <span className="bonus-attr-micro" style={{ background: attackPlan.totalCostPM > 0 ? '#894EC6' : '#7bd389', color: attackPlan.totalCostPM > 0 ? '#fff' : '#000' }}>
-                {attackPlan.diceCount > 1 ? `${attackPlan.diceCount}D • ` : ''}{attackPlan.totalCostPM} PM
-              </span>
+          <article
+            className="bonus-toggle combat-action-button attack action-workspace-preview-card play-action-card-compact"
+            style={{ '--combat-action-color': attributeColor(attackPlan.effectiveAttributeName) } as React.CSSProperties}
+          >
+            <div className="action-corner top-left">
+              {attributeLetter(attackPlan.effectiveAttributeName)}
             </div>
-            <span className="bonus-toggle-value">
-              {attributeLabel(attackPlan.effectiveAttributeName)}
-              {attackPlan.applicableSkill ? ` com ${attackPlan.applicableSkill === 'luta' ? 'Luta' : 'Mística'}` : ''}
-              {attackPlan.critRange < 6 ? ` • Crítico ${attackPlan.critRange}+` : ''}
-            </span>
-            <div className="bt-footer">Rola automaticamente no modo Jogar</div>
+            <div className="action-corner top-right">
+              {attackPlan.diceCount > 1 && <span style={{ marginRight: '4px', fontSize: '0.8rem' }}>{attackPlan.diceCount}D</span>}
+              {attackPlan.totalCostPM > 0 && (
+                <SegmentedBar
+                  current={attackPlan.totalCostPM}
+                  max={attackPlan.totalCostPM}
+                  color="#ffffff"
+                  segmentWidth={8}
+                />
+              )}
+            </div>
+            {attackPlan.applicableSkill && (
+              <div className="action-corner bottom-left">
+                {attackPlan.applicableSkill === 'luta' ? 'Luta' : 'Mística'}
+              </div>
+            )}
+            {attackPlan.critRange < 6 && (
+              <div className="action-corner bottom-right">
+                Crítico {attackPlan.critRange}+
+              </div>
+            )}
+            <div className="combat-action-button-icon">
+              <SwordsIcon size={46} />
+            </div>
           </article>
-          <article className="bonus-toggle combat-action-button defense action-workspace-preview-card play-action-card-compact">
-            <div className="bonus-toggle-header">
-              <span className="bonus-toggle-label">Defesa</span>
-              <span className="bonus-attr-micro" style={{ background: defensePlan.totalCostPM > 0 ? '#894EC6' : '#7bd389', color: defensePlan.totalCostPM > 0 ? '#fff' : '#000' }}>
-                {defensePlan.diceCount > 1 ? `${defensePlan.diceCount}D • ` : ''}{defensePlan.totalCostPM} PM
-              </span>
+          <article
+            className="bonus-toggle combat-action-button defense action-workspace-preview-card play-action-card-compact"
+            style={{ '--combat-action-color': attributeColor(defensePlan.effectiveAttributeName) } as React.CSSProperties}
+          >
+            <div className="action-corner top-left">
+              {attributeLetter(defensePlan.effectiveAttributeName)}
             </div>
-            <span className="bonus-toggle-value">
-              {attributeLabel(defensePlan.effectiveAttributeName)}
-              {defensePlan.applicableSkill ? ` com ${defensePlan.applicableSkill === 'luta' ? 'Luta' : 'Mística'}` : ''}
-              {defensePlan.critRange < 6 ? ` • Crítico ${defensePlan.critRange}+` : ''}
-            </span>
-            <div className="bt-footer">Rola automaticamente no modo Jogar</div>
+            <div className="action-corner top-right">
+              {defensePlan.diceCount > 1 && <span style={{ marginRight: '4px', fontSize: '0.8rem' }}>{defensePlan.diceCount}D</span>}
+              {defensePlan.totalCostPM > 0 && (
+                <SegmentedBar
+                  current={defensePlan.totalCostPM}
+                  max={defensePlan.totalCostPM}
+                  color="#ffffff"
+                  segmentWidth={8}
+                />
+              )}
+            </div>
+            {defensePlan.applicableSkill && (
+              <div className="action-corner bottom-left">
+                {defensePlan.applicableSkill === 'luta' ? 'Luta' : 'Mística'}
+              </div>
+            )}
+            {defensePlan.critRange < 6 && (
+              <div className="action-corner bottom-right">
+                Crítico {defensePlan.critRange}+
+              </div>
+            )}
+            <div className="combat-action-button-icon">
+              <ShieldIcon size={46} />
+            </div>
           </article>
           {actions.attacks.map(({ acquisitionId, strike }) => strike && <article key={`${acquisitionId}:${strike.id}`} className={`bonus-toggle action-workspace-preview-card ${strike.note.length > 70 ? 'play-action-card-detailed' : 'play-action-card-compact'}`}><div className="bonus-toggle-header"><span className="bonus-toggle-label">{strike.name}</span></div><span className="bonus-toggle-value">{strike.description}{strike.costResource !== 'none' && strike.costValue ? ` [-${strike.costValue} ${strike.costResource}]` : ''}</span><div className="bt-footer"><span>{strike.note}</span><span>Prévia no modo de jogo</span></div></article>)}
         </>}
