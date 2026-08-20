@@ -7,9 +7,11 @@ type SegmentedBarProps = {
   pulseCount?: number;
   /** Largura fixa (px) de cada segmento. Quando definida, a barra não se expande para preencher o container. */
   segmentWidth?: number;
+  offsetX?: number;
+  style?: React.CSSProperties;
 };
 
-export default function SegmentedBar({ current, max, color, onClick, halfWidth, pulseCount = 0, segmentWidth }: SegmentedBarProps) {
+export default function SegmentedBar({ current, max, color, onClick, halfWidth, pulseCount = 0, segmentWidth, offsetX = 0, style }: SegmentedBarProps) {
   const maxSafe = Math.max(1, max);
   const compact = segmentWidth !== undefined;
   const gapSize = compact ? '2px' : maxSafe > 25 ? '1px' : '2px';
@@ -50,6 +52,8 @@ export default function SegmentedBar({ current, max, color, onClick, halfWidth, 
         marginBottom: compact ? 0 : '3px',
         cursor: onClick ? 'pointer' : 'default',
         width: compact ? 'fit-content' : halfWidth ? '50%' : '100%',
+        transform: offsetX ? `translateX(${offsetX}px)` : undefined,
+        ...style,
       }}
       onClick={onClick}
     >
