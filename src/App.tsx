@@ -660,6 +660,28 @@ export default function App() {
       return;
     }
 
+    if (bonus.gameplayPattern === 'cycling-variant') {
+      if (!activeBonuses.has(id)) {
+        setActiveBonuses((current) => { const next = new Set(current); next.add(id); return next; });
+        if (bonus.variants && bonus.variants.length > 0) {
+           updateRollBonus(id, { selectedVariantId: bonus.variants[0].id });
+        }
+        return;
+      } else {
+        const currentIndex = bonus.variants?.findIndex(v => v.id === bonus.selectedVariantId) ?? 0;
+        if (bonus.variants && currentIndex < bonus.variants.length - 1) {
+          updateRollBonus(id, { selectedVariantId: bonus.variants[currentIndex + 1].id });
+          return;
+        } else {
+          setActiveBonuses((current) => { const next = new Set(current); next.delete(id); return next; });
+          if (bonus.variants && bonus.variants.length > 0) {
+             updateRollBonus(id, { selectedVariantId: bonus.variants[0].id });
+          }
+          return;
+        }
+      }
+    }
+
     if (bonus.gameplayPattern === 'narrative') {
       spendResource(activeVariant?.costResource || bonus.costResource, typeof activeVariant?.costValue === 'number' ? activeVariant.costValue : (bonus.costValue || 0));
       return;
