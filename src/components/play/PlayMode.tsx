@@ -6,7 +6,7 @@ import { createStrikeBonus, getActiveBonusVariant, getBonusSubtitle, getKnownStr
 import { resolveActionPlan } from '../../utils/actionResolver';
 import type { CharacterForm, CharacterKit, KitPower, RollBonus } from '../../types/character';
 import SegmentedBar from '../common/SegmentedBar';
-import { CheckIcon, ZapIcon, HourglassIcon, SquareIcon, CheckSquareIcon, CloseIcon, DiceCountIcon, HabilidadeIcon, InfoIcon, LeafIcon, MaskIcon, MenuIcon, PoderIcon, ResistenciaIcon, SkillsIcon, SparklesIcon, TransformIcon, BookIcon, CrownIcon, TriangleDownIcon } from '../common/Icons';
+import { CheckIcon, ZapIcon, HourglassIcon, SquareIcon, CheckSquareIcon, CloseIcon, DiceCountIcon, HabilidadeIcon, InfoIcon, LeafIcon, MaskIcon, MenuIcon, PoderIcon, ResistenciaIcon, SkillsIcon, SparklesIcon, TransformIcon, BookIcon, CrownIcon, TriangleDownIcon, SwordsIcon, ShieldIcon } from '../common/Icons';
 import PlayAttacksSection from './PlayAttacksSection';
 import PlayTechniquesSection from './PlayTechniquesSection';
 
@@ -426,45 +426,57 @@ export default function PlayMode(props: PlayModeProps) {
         )}
 
         <PlayAttacksSection comboControls={hasCombo ? <div className="play-combo-controls"><div className="play-combo-status">Combo: {comboActive ? `${comboRemaining} extras restantes` : 'pronto para iniciar'}{comboUsedStrikeIds.length > 0 ? ` • usados: ${comboUsedStrikeIds.length}` : ''}</div><div className="play-combo-actions"><button className="control-btn editor-pill-btn" onClick={() => { setComboActive((active) => !active); if (comboActive) setComboUsedStrikeIds([]); }}>{comboActive ? 'Encerrar Combo' : 'Iniciar Combo'}</button><button className="control-btn editor-pill-btn" onClick={() => { setComboActive(false); setComboUsedStrikeIds([]); }}>Resetar</button></div></div> : undefined}>
-              <button
-                type="button"
-                className={`bonus-toggle combat-action-button attack play-action-card-compact ${!attackPlan.canAfford || attackPlan.hasConflicts ? 'disabled-attribute' : ''}`}
-                disabled={rolling || !attackPlan.canAfford || attackPlan.hasConflicts}
-                onClick={() => handleRoll(attackPlan.effectiveAttributeName, { label: 'Ataque', actionType: 'attack' })}
-                title={attackPlan.conflictMessage || (!attackPlan.canAfford ? 'Recursos insuficientes' : 'Rolar Ataque')}
-              >
-                <div className="bonus-toggle-header">
-                  <span className="bonus-toggle-label">Ataque</span>
-                  <span className="bonus-attr-micro" style={{ background: attackPlan.totalCostPM > 0 ? '#894EC6' : '#7bd389', color: attackPlan.totalCostPM > 0 ? '#fff' : '#000' }}>
-                    {attackPlan.diceCount > 1 ? `${attackPlan.diceCount}D • ` : ''}{attackPlan.totalCostPM} PM
-                  </span>
-                </div>
-                <span className="bonus-toggle-value">
-                  {attributeLabel(attackPlan.effectiveAttributeName)}
-                  {attackPlan.applicableSkill ? ` com ${attackPlan.applicableSkill === 'luta' ? 'Luta' : 'Mística'}` : ''}
-                  {attackPlan.critRange < 6 ? ` • Crítico ${attackPlan.critRange}+` : ''}
-                </span>
-              </button>
+              <div className="generic-combat-actions-grid">
+                <button
+                  type="button"
+                  className={`bonus-toggle combat-action-button attack play-action-card-compact ${!attackPlan.canAfford || attackPlan.hasConflicts ? 'disabled-attribute' : ''}`}
+                  disabled={rolling || !attackPlan.canAfford || attackPlan.hasConflicts}
+                  onClick={() => handleRoll(attackPlan.effectiveAttributeName, { label: 'Ataque', actionType: 'attack' })}
+                  title={attackPlan.conflictMessage || (!attackPlan.canAfford ? 'Recursos insuficientes' : 'Rolar Ataque')}
+                >
+                  <div className="combat-action-button-icon">
+                    <SwordsIcon size={28} />
+                  </div>
+                  <div className="combat-action-button-content">
+                    <div className="bonus-toggle-header">
+                      <span className="bonus-toggle-label">Ataque</span>
+                      <span className="bonus-attr-micro" style={{ background: attackPlan.totalCostPM > 0 ? '#894EC6' : '#7bd389', color: attackPlan.totalCostPM > 0 ? '#fff' : '#000' }}>
+                        {attackPlan.diceCount > 1 ? `${attackPlan.diceCount}D • ` : ''}{attackPlan.totalCostPM} PM
+                      </span>
+                    </div>
+                    <span className="bonus-toggle-value">
+                      {attributeLabel(attackPlan.effectiveAttributeName)}
+                      {attackPlan.applicableSkill ? ` com ${attackPlan.applicableSkill === 'luta' ? 'Luta' : 'Mística'}` : ''}
+                      {attackPlan.critRange < 6 ? ` • Crítico ${attackPlan.critRange}+` : ''}
+                    </span>
+                  </div>
+                </button>
 
-              <button
-                type="button"
-                className={`bonus-toggle combat-action-button defense play-action-card-compact ${!defensePlan.canAfford || defensePlan.hasConflicts ? 'disabled-attribute' : ''}`}
-                disabled={rolling || !defensePlan.canAfford || defensePlan.hasConflicts}
-                onClick={() => handleRoll(defensePlan.effectiveAttributeName, { label: 'Defesa', actionType: 'defense' })}
-                title={defensePlan.conflictMessage || (!defensePlan.canAfford ? 'Recursos insuficientes' : 'Rolar Defesa')}
-              >
-                <div className="bonus-toggle-header">
-                  <span className="bonus-toggle-label">Defesa</span>
-                  <span className="bonus-attr-micro" style={{ background: defensePlan.totalCostPM > 0 ? '#894EC6' : '#7bd389', color: defensePlan.totalCostPM > 0 ? '#fff' : '#000' }}>
-                    {defensePlan.diceCount > 1 ? `${defensePlan.diceCount}D • ` : ''}{defensePlan.totalCostPM} PM
-                  </span>
-                </div>
-                <span className="bonus-toggle-value">
-                  {attributeLabel(defensePlan.effectiveAttributeName)}
-                  {defensePlan.applicableSkill ? ` com ${defensePlan.applicableSkill === 'luta' ? 'Luta' : 'Mística'}` : ''}
-                  {defensePlan.critRange < 6 ? ` • Crítico ${defensePlan.critRange}+` : ''}
-                </span>
-              </button>
+                <button
+                  type="button"
+                  className={`bonus-toggle combat-action-button defense play-action-card-compact ${!defensePlan.canAfford || defensePlan.hasConflicts ? 'disabled-attribute' : ''}`}
+                  disabled={rolling || !defensePlan.canAfford || defensePlan.hasConflicts}
+                  onClick={() => handleRoll(defensePlan.effectiveAttributeName, { label: 'Defesa', actionType: 'defense' })}
+                  title={defensePlan.conflictMessage || (!defensePlan.canAfford ? 'Recursos insuficientes' : 'Rolar Defesa')}
+                >
+                  <div className="combat-action-button-icon">
+                    <ShieldIcon size={28} />
+                  </div>
+                  <div className="combat-action-button-content">
+                    <div className="bonus-toggle-header">
+                      <span className="bonus-toggle-label">Defesa</span>
+                      <span className="bonus-attr-micro" style={{ background: defensePlan.totalCostPM > 0 ? '#894EC6' : '#7bd389', color: defensePlan.totalCostPM > 0 ? '#fff' : '#000' }}>
+                        {defensePlan.diceCount > 1 ? `${defensePlan.diceCount}D • ` : ''}{defensePlan.totalCostPM} PM
+                      </span>
+                    </div>
+                    <span className="bonus-toggle-value">
+                      {attributeLabel(defensePlan.effectiveAttributeName)}
+                      {defensePlan.applicableSkill ? ` com ${defensePlan.applicableSkill === 'luta' ? 'Luta' : 'Mística'}` : ''}
+                      {defensePlan.critRange < 6 ? ` • Crítico ${defensePlan.critRange}+` : ''}
+                    </span>
+                  </div>
+                </button>
+              </div>
               {attackActions.map(({ acquisitionId, strike }) => {
                 if (!strike) return null;
                 const comboLocked = hasCombo && comboActive && comboRemaining <= 0;

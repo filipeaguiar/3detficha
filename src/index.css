@@ -2522,6 +2522,45 @@ input.stat-input:focus {
 .combat-action-button:hover { border-color: var(--combat-action-color); }
 .combat-action-button:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 
+.generic-combat-actions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.combat-action-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0;
+}
+
+.combat-action-button-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0 0 0;
+  color: var(--combat-action-color);
+  opacity: 0.9;
+}
+
+.combat-action-button-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.combat-action-button .bonus-toggle-header {
+  justify-content: center;
+  padding: 0.25rem 0.5rem 0.25rem;
+}
+
+.combat-action-button .bonus-toggle-value {
+  padding: 0 0.5rem 0.5rem;
+}
+
 .bonus-toggle::before {
   content: '';
   position: absolute;
