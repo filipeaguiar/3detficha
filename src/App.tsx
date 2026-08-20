@@ -450,6 +450,10 @@ export default function App() {
   };
 
   const addPresetBonus = (preset: Omit<RollBonus, 'id'>) => {
+    if (rollBonuses.some(b => b.name === preset.name)) {
+      alert('Você já possui esta técnica/vantagem!');
+      return;
+    }
     const newId = Date.now().toString();
     const newBonus: RollBonus = {
       ...preset,
