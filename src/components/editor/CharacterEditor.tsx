@@ -9,6 +9,10 @@ import { createTechniqueBonusFromCatalog, getBonusSubtitle, getKnownStrikes, get
 import { ADVANTAGE_VARIANT_OPTIONS, DISADVANTAGE_VARIANT_OPTIONS } from '../../constants/app/variants';
 import type { CharacterArchetype, CharacterForm, CharacterKit, CharacterSheet, RollBonus } from '../../types/character';
 import { BookIcon, CameraIcon, CheckIcon, CloseIcon, LeafIcon, PencilIcon, PlusIcon, TabAdvantagesIcon, TabAttributesIcon, TabConceptIcon, TabDisadvantagesIcon, TabSkillsIcon, TabTechniquesIcon, TrashIcon, UsersIcon, WandSparklesIcon } from '../common/Icons';
+import EditorSection from './EditorSection';
+import EditorChoiceCard from './EditorChoiceCard';
+import EditorPillGroup from './EditorPillGroup';
+import EditorTechniqueCard from './EditorTechniqueCard';
 
 export type EditorTab = 'concept' | 'attributes' | 'advantages' | 'disadvantages' | 'skills' | 'techniques';
 
@@ -168,26 +172,12 @@ export default function CharacterEditor(props: CharacterEditorProps) {
         </div>
       </div>
 
-      <div style={{ display: 'flex', borderBottom: '2px solid var(--border-color)', marginBottom: '1.5rem', overflowX: 'auto', whiteSpace: 'nowrap', gap: '0.5rem', paddingBottom: '0.5rem' }}>
+      <div className="editor-tabs">
         {EDITOR_TABS.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            style={{
-              padding: '0.6rem 1rem',
-              background: activeTab === tab.id ? 'var(--surface-hover)' : 'transparent',
-              border: 'none',
-              borderBottom: activeTab === tab.id ? '3px solid var(--accent-color)' : '3px solid transparent',
-              color: activeTab === tab.id ? 'var(--accent-color)' : 'var(--text-muted)',
-              fontFamily: 'Bebas Neue, sans-serif',
-              fontSize: '1.1rem',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              transition: 'all 0.2s',
-              borderRadius: '4px 4px 0 0'
-            }}
+            className={`editor-tab-btn ${activeTab === tab.id ? 'active' : ''}`}
           >
             <span className="editor-tab-icon" aria-hidden="true">{tab.icon}</span>
             {tab.label}
@@ -195,7 +185,7 @@ export default function CharacterEditor(props: CharacterEditorProps) {
         ))}
       </div>
 
-      <div style={{ display: activeTab === 'concept' ? 'block' : 'none' }}>
+      <div className="editor-section" style={{ display: activeTab === 'concept' ? 'block' : 'none' }}>
         <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
           <div className="stat-label" style={{ marginBottom: '0.5rem', color: 'var(--text-muted)' }}>NOME DO PERSONAGEM</div>
           <input
@@ -219,7 +209,7 @@ export default function CharacterEditor(props: CharacterEditorProps) {
           />
         </div>
 
-        <div style={{ marginBottom: '1.5rem', background: 'var(--surface-hover)', padding: '1rem', borderRadius: 'var(--radius)', border: '1px solid var(--border-color)' }}>
+        <div className="editor-card" style={{ marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
             <span className="stat-label" style={{ color: 'var(--accent-color)', fontWeight: 'bold' }}>ARQUÉTIPO</span>
           </div>
@@ -237,17 +227,17 @@ export default function CharacterEditor(props: CharacterEditorProps) {
             <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.6rem' }}>
               <strong style={{ color: '#fff' }}>{currentArchetype.name}</strong> • {currentArchetype.group} • {currentArchetype.cost}pt
               <div style={{ marginTop: '0.25rem' }}>{currentArchetype.desc}</div>
-              {currentArchetype.traits.length > 0 && <div style={{ marginTop: '0.25rem' }}><strong style={{ color: 'var(--text-main)' }}>Traços:</strong> {currentArchetype.traits.join(', ')}</div>}
-              {currentArchetype.grantedAdvantages && currentArchetype.grantedAdvantages.length > 0 && <div style={{ marginTop: '0.25rem' }}><strong style={{ color: 'var(--text-main)' }}>Vantagens base:</strong> {currentArchetype.grantedAdvantages.join(', ')}</div>}
-              {currentArchetype.grantedDisadvantages && currentArchetype.grantedDisadvantages.length > 0 && <div style={{ marginTop: '0.25rem' }}><strong style={{ color: 'var(--text-main)' }}>Desvantagens base:</strong> {currentArchetype.grantedDisadvantages.join(', ')}</div>}
-              {currentArchetype.notes && currentArchetype.notes.length > 0 && <div style={{ marginTop: '0.25rem' }}><strong style={{ color: 'var(--text-main)' }}>Notas:</strong> {currentArchetype.notes.join(' • ')}</div>}
-              {currentArchetype.unsupportedNotes && currentArchetype.unsupportedNotes.length > 0 && <div style={{ marginTop: '0.25rem', color: '#ffd166' }}><strong style={{ color: '#ffd166' }}>Manual/Narrador:</strong> {currentArchetype.unsupportedNotes.join(' • ')}</div>}
-             {currentArchetype.choiceGroups && currentArchetype.choiceGroups.length > 0 && <div style={{ marginTop: '0.75rem', display: 'grid', gap: '0.75rem' }}>{currentArchetype.choiceGroups.map((group) => { const selected = currentForm.archetypeSelections?.[group.id] || []; return <div key={group.id} style={{ border: '1px solid var(--border-color)', borderRadius: '6px', padding: '0.75rem', background: 'rgba(255,255,255,0.03)' }}><div style={{ fontWeight: 'bold', color: '#fff', marginBottom: '0.5rem' }}>{group.label}</div><div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>{group.options.map((option) => { const isSelected = selected.includes(option.id); return <button key={option.id} className="control-btn" style={{ width: 'auto', padding: '0.35rem 0.65rem', fontSize: '0.8rem', borderColor: isSelected ? 'var(--accent-color)' : 'var(--border-color)', color: isSelected ? 'var(--accent-color)' : 'var(--text-main)' }} onClick={() => updateCurrentForm({ archetypeSelections: { ...(currentForm.archetypeSelections || {}), [group.id]: [option.id] } })}>{isSelected ? <CheckIcon size={12} /> : null} {option.label}</button>; })}</div></div>; })}</div>}
+              {currentArchetype.traits.length > 0 && <div className="editor-inline-muted" style={{ marginTop: '0.25rem' }}><strong style={{ color: 'var(--text-main)' }}>Traços:</strong> {currentArchetype.traits.join(', ')}</div>}
+              {currentArchetype.grantedAdvantages && currentArchetype.grantedAdvantages.length > 0 && <div className="editor-inline-muted" style={{ marginTop: '0.25rem' }}><strong style={{ color: 'var(--text-main)' }}>Vantagens base:</strong> {currentArchetype.grantedAdvantages.join(', ')}</div>}
+              {currentArchetype.grantedDisadvantages && currentArchetype.grantedDisadvantages.length > 0 && <div className="editor-inline-muted" style={{ marginTop: '0.25rem' }}><strong style={{ color: 'var(--text-main)' }}>Desvantagens base:</strong> {currentArchetype.grantedDisadvantages.join(', ')}</div>}
+              {currentArchetype.notes && currentArchetype.notes.length > 0 && <div className="editor-inline-muted" style={{ marginTop: '0.25rem' }}><strong style={{ color: 'var(--text-main)' }}>Notas:</strong> {currentArchetype.notes.join(' • ')}</div>}
+              {currentArchetype.unsupportedNotes && currentArchetype.unsupportedNotes.length > 0 && <div className="editor-inline-warning" style={{ marginTop: '0.25rem' }}><strong style={{ color: '#ffd166' }}>Manual/Narrador:</strong> {currentArchetype.unsupportedNotes.join(' • ')}</div>}
+             {currentArchetype.choiceGroups && currentArchetype.choiceGroups.length > 0 && <div style={{ marginTop: '0.75rem', display: 'grid', gap: '0.75rem' }}>{currentArchetype.choiceGroups.map((group) => { const selected = currentForm.archetypeSelections?.[group.id] || []; return <div key={group.id} className="editor-subcard"><div style={{ fontWeight: 'bold', color: '#fff', marginBottom: '0.5rem' }}>{group.label}</div><div className="editor-pill-group">{group.options.map((option) => { const isSelected = selected.includes(option.id); return <button key={option.id} className={`control-btn editor-pill-btn ${isSelected ? 'is-selected' : ''}`} onClick={() => updateCurrentForm({ archetypeSelections: { ...(currentForm.archetypeSelections || {}), [group.id]: [option.id] } })}>{isSelected ? <CheckIcon size={12} /> : null} {option.label}</button>; })}</div></div>; })}</div>}
             </div>
           )}
         </div>
 
-        <div style={{ marginBottom: '1.5rem', background: 'var(--surface-hover)', padding: '1rem', borderRadius: 'var(--radius)', border: '1px solid var(--border-color)' }}>
+        <div className="editor-card" style={{ marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
             <span className="stat-label" style={{ color: 'var(--accent-color)', fontWeight: 'bold' }}>KIT DE PERSONAGEM</span>
             <button
@@ -274,9 +264,9 @@ export default function CharacterEditor(props: CharacterEditorProps) {
                   <strong style={{ color: 'var(--text-main)' }}>Exigências:</strong> {currentKit.exigencias}
                 </div>
               )}
-              {currentKit.notes && currentKit.notes.length > 0 && <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '4px' }}><strong style={{ color: 'var(--text-main)' }}>Notas:</strong> {currentKit.notes.join(' • ')}</div>}
-              {currentKit.unsupportedNotes && currentKit.unsupportedNotes.length > 0 && <div style={{ fontSize: '0.8rem', color: '#ffd166', marginTop: '4px' }}><strong style={{ color: '#ffd166' }}>Manual/Narrador:</strong> {currentKit.unsupportedNotes.join(' • ')}</div>}
-              {currentKit.choiceGroups && currentKit.choiceGroups.length > 0 && <div style={{ marginTop: '0.75rem', display: 'grid', gap: '0.75rem' }}>{currentKit.choiceGroups.map((group) => { const selected = currentForm.kitSelections?.[group.id] || []; return <div key={group.id} style={{ border: '1px solid var(--border-color)', borderRadius: '6px', padding: '0.75rem', background: 'rgba(255,255,255,0.03)' }}><div style={{ fontWeight: 'bold', color: '#fff', marginBottom: '0.5rem' }}>{group.label}</div><div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>{group.options.map((option) => { const isSelected = selected.includes(option.id); const max = group.max || 1; return <button key={option.id} className="control-btn" style={{ width: 'auto', padding: '0.35rem 0.65rem', fontSize: '0.8rem', borderColor: isSelected ? 'var(--accent-color)' : 'var(--border-color)', color: isSelected ? 'var(--accent-color)' : 'var(--text-main)' }} onClick={(e) => { e.stopPropagation(); const current = currentForm.kitSelections?.[group.id] || []; let next = current; if (isSelected) next = current.filter(id => id !== option.id); else next = max <= 1 ? [option.id] : [...current.slice(-(max - 1)), option.id]; updateCurrentForm({ kitSelections: { ...(currentForm.kitSelections || {}), [group.id]: next } }); }}>{isSelected ? <CheckIcon size={12} /> : null} {option.label}</button>; })}</div></div>; })}</div>}
+              {currentKit.notes && currentKit.notes.length > 0 && <div className="editor-inline-muted" style={{ marginTop: '4px' }}><strong style={{ color: 'var(--text-main)' }}>Notas:</strong> {currentKit.notes.join(' • ')}</div>}
+              {currentKit.unsupportedNotes && currentKit.unsupportedNotes.length > 0 && <div className="editor-inline-warning" style={{ marginTop: '4px' }}><strong style={{ color: '#ffd166' }}>Manual/Narrador:</strong> {currentKit.unsupportedNotes.join(' • ')}</div>}
+              {currentKit.choiceGroups && currentKit.choiceGroups.length > 0 && <div style={{ marginTop: '0.75rem', display: 'grid', gap: '0.75rem' }}>{currentKit.choiceGroups.map((group) => { const selected = currentForm.kitSelections?.[group.id] || []; return <div key={group.id} className="editor-subcard"><div style={{ fontWeight: 'bold', color: '#fff', marginBottom: '0.5rem' }}>{group.label}</div><div className="editor-pill-group">{group.options.map((option) => { const isSelected = selected.includes(option.id); const max = group.max || 1; return <button key={option.id} className={`control-btn editor-pill-btn ${isSelected ? 'is-selected' : ''}`} onClick={(e) => { e.stopPropagation(); const current = currentForm.kitSelections?.[group.id] || []; let next = current; if (isSelected) next = current.filter(id => id !== option.id); else next = max <= 1 ? [option.id] : [...current.slice(-(max - 1)), option.id]; updateCurrentForm({ kitSelections: { ...(currentForm.kitSelections || {}), [group.id]: next } }); }}>{isSelected ? <CheckIcon size={12} /> : null} {option.label}</button>; })}</div></div>; })}</div>}
             </div>
           ) : (
             <button className="control-btn" style={{ width: '100%', padding: '0.6rem' }} onClick={() => setIsKitSelectModalOpen(true)}>
@@ -318,7 +308,7 @@ export default function CharacterEditor(props: CharacterEditorProps) {
           ))}
         </div>
 
-        <div className="editor-form-card" style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', marginBottom: '1.5rem', background: 'var(--surface-hover)', padding: '1rem', borderRadius: 'var(--radius)', border: '1px solid var(--border-color)' }}>
+        <div className="editor-form-card editor-card" style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', marginBottom: '1.5rem' }}>
           <div className="avatar-preview-box" onClick={() => fileInputRef.current?.click()} title="Clique para alterar a imagem desta forma" style={{ borderColor: accentColor }}>
             {currentForm.avatarUrl ? (
               <img src={currentForm.avatarUrl} alt={currentForm.name} className="avatar-img" />
@@ -334,7 +324,7 @@ export default function CharacterEditor(props: CharacterEditorProps) {
 
           <div style={{ flex: 1 }}>
             <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.3rem' }}>NOME DESTA FORMA</label>
-            <input type="text" className="input-number" value={currentForm.name} onChange={(e) => updateCurrentForm({ name: e.target.value })} placeholder="Ex: Humano, Lobo, Urso..." style={{ marginBottom: '0.5rem' }} />
+            <input type="text" className="editor-field" value={currentForm.name} onChange={(e) => updateCurrentForm({ name: e.target.value })} placeholder="Ex: Humano, Lobo, Urso..." style={{ marginBottom: '0.5rem' }} />
 
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button className="control-btn" style={{ width: 'auto', padding: '0.2rem 0.6rem', fontSize: '0.75rem', borderColor: 'var(--border-color)', color: 'var(--text-main)' }} onClick={() => fileInputRef.current?.click()}>
@@ -403,14 +393,11 @@ export default function CharacterEditor(props: CharacterEditorProps) {
           </div>
         )}
 
-<div style={{ display: activeTab === 'advantages' ? 'block' : 'none', minHeight: '300px' }}>
-  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-    <h2 className="panel-title" style={{ margin: 0 }}>Vantagens</h2>
-  </div>
+<EditorSection title="Vantagens" visible={activeTab === 'advantages'} minHeight="300px">
   <div style={{ marginBottom: '1rem' }}>
     <input
       type="text"
-      className="input-number"
+      className="editor-search"
       value={advantageSearch}
       onChange={(e) => setAdvantageSearch(e.target.value)}
       placeholder="Buscar vantagens..."
@@ -424,46 +411,32 @@ export default function CharacterEditor(props: CharacterEditorProps) {
           const isSelected = currentForm.advantages?.includes(adv.variantId);
           const isGranted = currentForm.archetypeAdvantages?.includes(adv.variantId);
           return (
-            <div
+            <EditorChoiceCard
               key={adv.variantId}
+              selected={isSelected}
+              granted={isGranted}
               onClick={() => {
                 if (isGranted) return;
                 const current = currentForm.advantages?.filter((id: string) => !currentForm.archetypeAdvantages?.includes(id)) || [];
                 if (isSelected) updateCurrentForm({ advantages: current.filter((id: string) => id !== adv.variantId) });
                 else updateCurrentForm({ advantages: [...current, adv.variantId] });
               }}
-              style={{
-                background: isGranted ? 'rgba(51, 204, 255, 0.12)' : isSelected ? 'rgba(0, 255, 0, 0.1)' : 'var(--surface-hover)',
-                padding: '1rem',
-                borderRadius: '4px',
-                border: `1px solid ${isGranted ? '#33ccff' : isSelected ? 'var(--accent-color)' : 'var(--border-color)'}`,
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                <strong style={{ fontSize: '1.1rem', color: isSelected ? 'var(--accent-color)' : '#fff' }}>
-                  {(isSelected || isGranted) && <CheckIcon size={14} />} {adv.displayName} {isGranted ? '• Arquétipo' : ''}
-                </strong>
-                <span style={{ fontSize: '0.8rem', background: isSelected ? 'var(--accent-color)' : 'var(--surface-hover)', color: isSelected ? '#000' : 'var(--text-muted)', border: '1px solid var(--border-color)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>{adv.displayCost}</span>
-              </div>
-              <p style={{ margin: 0, fontSize: '0.85rem', color: isSelected ? '#fff' : 'var(--text-muted)' }}>{adv.desc}</p>
-            </div>
+              title={<>{(isSelected || isGranted) && <CheckIcon size={14} />} {adv.displayName} {isGranted ? '• Arquétipo' : ''}</>}
+              meta={adv.displayCost}
+              description={adv.desc}
+            />
           );
         })}
       </div>
     </div>
   </div>
-</div>
+</EditorSection>
 
-<div style={{ display: activeTab === 'disadvantages' ? 'block' : 'none', minHeight: '300px' }}>
-  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-    <h2 className="panel-title" style={{ margin: 0 }}>Desvantagens</h2>
-  </div>
+<EditorSection title="Desvantagens" visible={activeTab === 'disadvantages'} minHeight="300px">
   <div style={{ marginBottom: '1rem' }}>
     <input
       type="text"
-      className="input-number"
+      className="editor-search"
       value={advantageSearch}
       onChange={(e) => setAdvantageSearch(e.target.value)}
       placeholder="Buscar desvantagens..."
@@ -477,88 +450,62 @@ export default function CharacterEditor(props: CharacterEditorProps) {
           const isSelected = currentForm.disadvantages?.includes(disadv.variantId);
           const isGranted = currentForm.archetypeDisadvantages?.includes(disadv.variantId);
           return (
-            <div
+            <EditorChoiceCard
               key={disadv.variantId}
+              selected={isSelected}
+              granted={isGranted}
+              danger
               onClick={() => {
                 if (isGranted) return;
                 const current = currentForm.disadvantages?.filter((id: string) => !currentForm.archetypeDisadvantages?.includes(id)) || [];
                 if (isSelected) updateCurrentForm({ disadvantages: current.filter((id: string) => id !== disadv.variantId) });
                 else updateCurrentForm({ disadvantages: [...current, disadv.variantId] });
               }}
-              style={{
-                background: isGranted ? 'rgba(51, 204, 255, 0.12)' : isSelected ? 'rgba(255, 77, 77, 0.1)' : 'var(--surface-hover)',
-                padding: '1rem',
-                borderRadius: '4px',
-                border: `1px solid ${isGranted ? '#33ccff' : isSelected ? '#ff4d4d' : 'var(--border-color)'}`,
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                <strong style={{ fontSize: '1.1rem', color: isSelected ? '#ff4d4d' : '#fff' }}>
-                  {(isSelected || isGranted) && <CheckIcon size={14} />} {disadv.displayName} {isGranted ? '• Arquétipo' : ''}
-                </strong>
-                <span style={{ fontSize: '0.8rem', background: isSelected ? '#ff4d4d' : 'var(--surface-hover)', color: isSelected ? '#000' : 'var(--text-muted)', border: '1px solid var(--border-color)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>{disadv.displayCost}</span>
-              </div>
-              <p style={{ margin: 0, fontSize: '0.85rem', color: isSelected ? '#fff' : 'var(--text-muted)' }}>{disadv.desc}</p>
-            </div>
+              title={<>{(isSelected || isGranted) && <CheckIcon size={14} />} {disadv.displayName} {isGranted ? '• Arquétipo' : ''}</>}
+              meta={disadv.displayCost}
+              description={disadv.desc}
+            />
           );
         })}
       </div>
     </div>
   </div>
-</div>
-      <div style={{ display: activeTab === 'skills' ? 'block' : 'none', minHeight: '300px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h2 className="panel-title" style={{ margin: 0 }}>Perícias</h2>
-        </div>
+</EditorSection>
+      <EditorSection title="Perícias" visible={activeTab === 'skills'} minHeight="300px">
         <div style={{ marginBottom: '1rem' }}>
-          <input type="text" className="input-number" value={skillSearch} onChange={(e) => setSkillSearch(e.target.value)} placeholder="Buscar perícias..." />
+          <input type="text" className="editor-search" value={skillSearch} onChange={(e) => setSkillSearch(e.target.value)} placeholder="Buscar perícias..." />
         </div>
         <div className="editor-skills-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', maxHeight: '500px', overflowY: 'auto' }}>
           {filteredSkills.map(skill => {
             const isSelected = currentForm.skills?.includes(skill.id);
             return (
-              <div
+              <EditorChoiceCard
                 key={skill.id}
+                selected={isSelected}
                 onClick={() => {
                   const current = currentForm.skills || [];
                   if (isSelected) updateCurrentForm({ skills: current.filter((id: string) => id !== skill.id) });
                   else updateCurrentForm({ skills: [...current, skill.id] });
                 }}
-                style={{
-                  background: isSelected ? 'rgba(0, 255, 0, 0.1)' : 'var(--surface-hover)',
-                  padding: '1rem',
-                  borderRadius: '4px',
-                  border: `1px solid ${isSelected ? 'var(--accent-color)' : 'var(--border-color)'}`,
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                  <strong style={{ fontSize: '1.1rem', color: isSelected ? 'var(--accent-color)' : '#fff' }}>
-                    {isSelected && <CheckIcon size={14} />} {skill.name}
-                  </strong>
-                  <span style={{ fontSize: '0.7rem', background: isSelected ? 'var(--accent-color)' : 'var(--surface-hover)', color: isSelected ? '#000' : 'var(--text-muted)', border: '1px solid var(--border-color)', padding: '2px 4px', borderRadius: '4px', fontWeight: 'bold' }}>1pt</span>
-                </div>
-                <p style={{ margin: 0, fontSize: '0.8rem', color: isSelected ? '#fff' : 'var(--text-muted)' }}>{skill.desc}</p>
-              </div>
+                title={<>{isSelected && <CheckIcon size={14} />} {skill.name}</>}
+                meta="1pt"
+                description={skill.desc}
+              />
             );
           })}
         </div>
-      </div>
+      </EditorSection>
 
-      <div style={{ display: activeTab === 'techniques' ? 'block' : 'none' }}>
-        <h2 className="panel-title" style={{ marginTop: '2rem' }}>Técnicas & Bônus desta Forma</h2>
-        {xpCredits.length > 0 && <div style={{ marginBottom: '1rem', display: 'grid', gap: '0.5rem' }}>{xpCredits.map((credit) => <div key={credit.sourceId} style={{ background: 'rgba(123,223,242,0.08)', border: '1px solid rgba(123,223,242,0.35)', borderRadius: '6px', padding: '0.65rem 0.8rem', fontSize: '0.82rem', color: 'var(--text-main)' }}><strong style={{ color: '#7bdff2' }}>{credit.label}</strong> • {credit.spentXP}/{credit.xpPerRank} XP usados • {credit.remainingXP} XP restantes</div>)}</div>}
+      <EditorSection title="Técnicas & Bônus desta Forma" visible={activeTab === 'techniques'} titleMarginTop="2rem">
+        {xpCredits.length > 0 && <div className="editor-info-banner">{xpCredits.map((credit) => <div key={credit.sourceId} className="editor-info-chip"><strong style={{ color: '#7bdff2' }}>{credit.label}</strong> • {credit.spentXP}/{credit.xpPerRank} XP usados • {credit.remainingXP} XP restantes</div>)}</div>}
         <div style={{ display: 'grid', gap: '0.75rem', marginBottom: '1rem' }}>
-          <input type="text" className="input-number" value={techniqueSearch} onChange={(e) => setTechniqueSearch(e.target.value)} placeholder="Buscar técnicas..." />
+          <input type="text" className="editor-search" value={techniqueSearch} onChange={(e) => setTechniqueSearch(e.target.value)} placeholder="Buscar técnicas..." />
           <label className="checkbox-label" style={{ padding: '0.5rem 0.8rem' }}><input type="checkbox" className="checkbox-input" checked={showUnavailableTechniques} onChange={(e) => setShowUnavailableTechniques(e.target.checked)} /><span style={{ fontSize: '0.85rem' }}>Mostrar técnicas indisponíveis</span></label>
           <div style={{ display: 'grid', gap: '0.5rem', maxHeight: '280px', overflowY: 'auto' }}>
-            {filteredTechniques.map((technique) => { const eligibility = isTechniqueEligible(currentForm, technique); const isGolpes = technique.catalogId === 'golpes'; const alreadyOwned = !isGolpes && (currentForm.rollBonuses || []).some(b => b.sourceCatalogId === technique.catalogId); const pattern = technique.gameplayPattern || (technique.temporaryPackage ? 'temporary-package' : technique.persistentAssisted ? 'persistent-assisted' : technique.immediateAction ? 'immediate-action' : technique.variants?.length ? 'cycling-variant' : 'fixed-modifier'); return <div key={technique.catalogId} style={{ background: eligibility.eligible ? 'rgba(123,223,242,0.08)' : 'rgba(255,77,77,0.08)', border: `1px solid ${eligibility.eligible ? 'rgba(123,223,242,0.35)' : 'rgba(255,77,77,0.35)'}`, borderRadius: '6px', padding: '0.75rem' }}><div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', alignItems: 'center' }}><div><div style={{ fontWeight: 'bold', color: '#fff' }}>{technique.name} {technique.universal ? '• Universal' : ''}</div><div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>{technique.description}</div><div style={{ fontSize: '0.76rem', color: '#7bdff2', marginTop: '0.25rem' }}>XP {technique.xpCost || 0} • {technique.xpCategory || 'common'} • {pattern}</div>{technique.tableNotes?.length ? <div style={{ fontSize: '0.74rem', color: '#ffd166', marginTop: '0.2rem' }}>Mesa: {technique.tableNotes.join(' • ')}</div> : null}{!eligibility.eligible && <div style={{ fontSize: '0.76rem', color: '#ff8fab', marginTop: '0.25rem' }}>Faltando: {eligibility.unmet.join(' • ')}</div>}</div><button className="control-btn" disabled={!eligibility.eligible || alreadyOwned || (isGolpes && pendingStrikeSelections.length !== 2)} style={{ width: 'auto', padding: '0.35rem 0.7rem', fontSize: '0.8rem', opacity: (eligibility.eligible && !alreadyOwned && (!isGolpes || pendingStrikeSelections.length === 2)) ? 1 : 0.5, color: '#fff' }} onClick={() => { const newBonus = createTechniqueBonusFromCatalog(technique, currentForm); if (isGolpes) { const acquisitionId = newBonus.id; updateCurrentForm({ rollBonuses: [...(currentForm.rollBonuses || []), newBonus], strikeSelections: [...(currentForm.strikeSelections || []), { acquisitionId, strikeIds: pendingStrikeSelections }] }); setPendingStrikeSelections([]); } else { updateCurrentForm({ rollBonuses: [...(currentForm.rollBonuses || []), newBonus] }); } }}>{alreadyOwned ? 'Adquirida' : 'Adicionar'}</button></div>{isGolpes && <div style={{ marginTop: '0.75rem', display: 'grid', gap: '0.45rem' }}><div style={{ fontSize: '0.78rem', color: '#ffd166' }}>Escolha exatamente 2 golpes para esta aquisição.</div><div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem' }}>{STRIKES_CATALOG.map((strike) => { const selected = pendingStrikeSelections.includes(strike.id); const disabled = !selected && pendingStrikeSelections.length >= 2; return <button key={strike.id} className="control-btn" disabled={disabled} style={{ width: 'auto', padding: '0.3rem 0.6rem', fontSize: '0.78rem', borderColor: selected ? 'var(--accent-color)' : 'var(--border-color)', color: selected ? 'var(--accent-color)' : '#fff', opacity: disabled ? 0.45 : 1 }} onClick={() => setPendingStrikeSelections((current) => selected ? current.filter((id) => id !== strike.id) : [...current, strike.id])}>{selected ? <CheckIcon size={12} /> : null} {strike.name}</button>; })}</div></div>}</div>; })}
+            {filteredTechniques.map((technique) => { const eligibility = isTechniqueEligible(currentForm, technique); const isGolpes = technique.catalogId === 'golpes'; const alreadyOwned = !isGolpes && (currentForm.rollBonuses || []).some(b => b.sourceCatalogId === technique.catalogId); const pattern = technique.gameplayPattern || (technique.temporaryPackage ? 'temporary-package' : technique.persistentAssisted ? 'persistent-assisted' : technique.immediateAction ? 'immediate-action' : technique.variants?.length ? 'cycling-variant' : 'fixed-modifier'); return <EditorTechniqueCard key={technique.catalogId} eligible={eligibility.eligible} header={<><div style={{ fontWeight: 'bold', color: '#fff' }}>{technique.name} {technique.universal ? '• Universal' : ''}</div><div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>{technique.description}</div><div style={{ fontSize: '0.76rem', color: '#7bdff2', marginTop: '0.25rem' }}>XP {technique.xpCost || 0} • {technique.xpCategory || 'common'} • {pattern}</div>{technique.tableNotes?.length ? <div style={{ fontSize: '0.74rem', color: '#ffd166', marginTop: '0.2rem' }}>Mesa: {technique.tableNotes.join(' • ')}</div> : null}{!eligibility.eligible && <div style={{ fontSize: '0.76rem', color: '#ff8fab', marginTop: '0.25rem' }}>Faltando: {eligibility.unmet.join(' • ')}</div>}</>} action={<button className="control-btn" disabled={!eligibility.eligible || alreadyOwned || (isGolpes && pendingStrikeSelections.length !== 2)} style={{ width: 'auto', padding: '0.35rem 0.7rem', fontSize: '0.8rem', opacity: (eligibility.eligible && !alreadyOwned && (!isGolpes || pendingStrikeSelections.length === 2)) ? 1 : 0.5, color: '#fff' }} onClick={() => { const newBonus = createTechniqueBonusFromCatalog(technique, currentForm); if (isGolpes) { const acquisitionId = newBonus.id; updateCurrentForm({ rollBonuses: [...(currentForm.rollBonuses || []), newBonus], strikeSelections: [...(currentForm.strikeSelections || []), { acquisitionId, strikeIds: pendingStrikeSelections }] }); setPendingStrikeSelections([]); } else { updateCurrentForm({ rollBonuses: [...(currentForm.rollBonuses || []), newBonus] }); } }}>{alreadyOwned ? 'Adquirida' : 'Adicionar'}</button>} footer={isGolpes ? <><div style={{ fontSize: '0.78rem', color: '#ffd166', marginBottom: '0.45rem' }}>Escolha exatamente 2 golpes para esta aquisição.</div><EditorPillGroup options={STRIKES_CATALOG.map((strike) => { const selected = pendingStrikeSelections.includes(strike.id); const disabled = !selected && pendingStrikeSelections.length >= 2; return { key: strike.id, selected, disabled, onClick: () => setPendingStrikeSelections((current) => selected ? current.filter((id) => id !== strike.id) : [...current, strike.id]), label: <>{selected ? <CheckIcon size={12} /> : null} {strike.name}</> }; })} /></> : undefined} />; })}
           </div>
         </div>
-        {knownStrikes.length > 0 && <div style={{ marginBottom: '1rem', background: 'rgba(255, 209, 102, 0.08)', border: '1px solid rgba(255, 209, 102, 0.35)', borderRadius: '6px', padding: '0.75rem' }}><div style={{ fontWeight: 'bold', color: '#ffd166', marginBottom: '0.45rem' }}>Golpes Conhecidos</div><div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem' }}>{knownStrikes.map(({ acquisitionId, strike }) => strike ? <span key={`${acquisitionId}:${strike.id}`} style={{ border: '1px solid rgba(255, 209, 102, 0.35)', borderRadius: '999px', padding: '0.25rem 0.55rem', fontSize: '0.78rem', color: '#fff', background: 'rgba(255,255,255,0.04)' }}>{strike.name}</span> : null)}</div></div>}
+        {knownStrikes.length > 0 && <div className="editor-warning-chip"><div style={{ fontWeight: 'bold', color: '#ffd166', marginBottom: '0.45rem' }}>Golpes Conhecidos</div><div className="editor-pill-group">{knownStrikes.map(({ acquisitionId, strike }) => strike ? <span key={`${acquisitionId}:${strike.id}`} className="editor-choice-meta" style={{ color: '#fff', borderColor: 'rgba(255, 209, 102, 0.35)' }}>{strike.name}</span> : null)}</div></div>}
         <div className="bonus-editor-list">
           {visibleRollBonuses.map((bonus) => (
             <div key={bonus.id} className="bonus-editor-row" style={{ justifyContent: 'space-between', padding: '0.8rem 1rem', cursor: 'pointer' }} onClick={(e) => {
@@ -591,7 +538,7 @@ export default function CharacterEditor(props: CharacterEditorProps) {
                 {bonus.sourceCatalogId === 'setas_infaliveis_de_petrovna' ? <div style={{ marginTop: '0.55rem', display: 'flex', alignItems: 'center', gap: '0.55rem' }} onClick={(event) => event.stopPropagation()}><span style={{ fontSize: '0.78rem', color: '#ffd166' }}>Setas a preparar:</span><button className="control-btn" style={{ width: '32px', height: '28px' }} onClick={() => { const current = bonus.assistedState?.configuredStock || 1; updateOwnedBonus(bonus.id, { assistedState: { ...(bonus.assistedState || {}), configuredStock: Math.max(1, current - 1) } }); }}>−</button><strong>{Math.min(habilidade, bonus.assistedState?.configuredStock || 1)}</strong><button className="control-btn" style={{ width: '32px', height: '28px' }} onClick={() => { const current = bonus.assistedState?.configuredStock || 1; updateOwnedBonus(bonus.id, { assistedState: { ...(bonus.assistedState || {}), configuredStock: Math.min(Math.max(1, habilidade), current + 1) } }); }}>+</button><span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>custo igual ao estoque em PM</span></div> : null}
                 {bonus.sourceCatalogId === 'area_de_batalha' ? (() => { const selected = bonus.assistedState?.packageChoices || []; const total = selected.reduce((sum, id) => sum + (areaAdvantageOptions.find((option) => option.id === id)?.pointCost || 0), 0); return <div style={{ marginTop: '0.55rem' }} onClick={(event) => event.stopPropagation()}><div style={{ fontSize: '0.78rem', color: total === 2 ? '#7bd389' : '#ffd166', marginBottom: '0.35rem' }}>Pacote da Área: {total}/2 pontos</div><div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', maxHeight: '120px', overflowY: 'auto' }}>{areaAdvantageOptions.map((option) => { const checked = selected.includes(option.id); const disabled = !checked && (selected.length >= 2 || total + option.pointCost > 2); return <button key={option.id} className="control-btn" disabled={disabled} style={{ width: 'auto', padding: '0.25rem 0.45rem', fontSize: '0.72rem', opacity: disabled ? 0.45 : 1, borderColor: checked ? '#7bd389' : 'var(--border-color)' }} onClick={() => updateOwnedBonus(bonus.id, { assistedState: { ...(bonus.assistedState || {}), packageChoices: checked ? selected.filter((id) => id !== option.id) : [...selected, option.id] } })}>{checked ? <CheckIcon size={11} /> : null}{option.name} ({option.pointCost})</button>; })}</div></div>; })() : null}
               </div>
-              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <div className="editor-actions-row">
                 <button className="bonus-remove-btn" style={{ color: 'var(--text-muted)' }} onClick={() => setEditingBonusId(bonus.id)} title="Editar técnica">
                   <PencilIcon />
                 </button>
@@ -616,7 +563,7 @@ export default function CharacterEditor(props: CharacterEditorProps) {
             <WandSparklesIcon size={16} /> Preparar Magia (Mago)
           </button>
         )}
-      </div>
+      </EditorSection>
 
       <button className="btn-roll" onClick={() => setMode('play')} style={{ marginTop: '2rem' }}>
         Salvar e Jogar

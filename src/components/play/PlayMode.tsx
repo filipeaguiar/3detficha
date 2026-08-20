@@ -190,7 +190,7 @@ export default function PlayMode(props: PlayModeProps) {
               const attrLetter = mod.attribute === 'poder' ? 'P' : mod.attribute === 'habilidade' ? 'H' : mod.attribute === 'resistencia' ? 'R' : '';
               const costDisp = power.costPM !== undefined ? power.costPM : 3;
               // Visual slanted rectangle indicator using SegmentedBar
-              const visualCost = <SegmentedBar current={costDisp} max={costDisp} color="#894EC6" />;
+              const visualCost = <SegmentedBar current={costDisp} max={costDisp} color={isActiveBuff ? "#ffffff" : "#894EC6"} />;
               statusTag = <>
                 {mod.value ? `+${mod.value}${attrLetter}` : ''} {visualCost}
               </>;
@@ -458,7 +458,7 @@ export default function PlayMode(props: PlayModeProps) {
                         const effectiveCostValue = typeof activeVariant?.costValue === 'number' ? activeVariant.costValue : bonus.costValue;
                         const effectiveCostResource = activeVariant?.costResource || bonus.costResource;
                         if (effectiveCostResource === 'PM' && effectiveCostValue && effectiveCostValue > 0) {
-                          return <SegmentedBar current={effectiveCostValue} max={effectiveCostValue} color="#894EC6" segmentWidth={8} />;
+                          return <SegmentedBar current={effectiveCostValue} max={effectiveCostValue} color={isActive ? "#ffffff" : "#894EC6"} segmentWidth={8} />;
                         }
                         return null;
                       })()}

@@ -246,38 +246,52 @@ export const ArrowLeftIcon = ({ size = 14 }: { size?: number }) => (
 );
 
 export const TabConceptIcon = ({ size = 16 }: { size?: number }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 448 512" fill="currentColor" aria-hidden="true">
-    <path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zM313.6 288h-16.7c-22.2 10.3-46.9 16-72.9 16s-50.6-5.7-72.9-16h-16.7C60.2 288 0 348.2 0 422.4C0 455.3 26.7 482 59.6 482H388.4c32.9 0 59.6-26.7 59.6-59.6C448 348.2 387.8 288 313.6 288z"/>
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M20 21a8 8 0 0 0-16 0" />
+    <circle cx="12" cy="7" r="4" />
   </svg>
 );
 
 export const TabAttributesIcon = ({ size = 16 }: { size?: number }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 448 512" fill="currentColor" aria-hidden="true">
-    <path d="M32 32C14.3 32 0 46.3 0 64V384c0 17.7 14.3 32 32 32H128c17.7 0 32-14.3 32-32V64c0-17.7-14.3-32-32-32H32zm128 0c-17.7 0-32 14.3-32 32V384c0 17.7 14.3 32 32 32H256c17.7 0 32-14.3 32-32V64c0-17.7-14.3-32-32-32H160zm128 0c-17.7 0-32 14.3-32 32V384c0 17.7 14.3 32 32 32H384c17.7 0 32-14.3 32-32V64c0-17.7-14.3-32-32-32H288z"/>
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <line x1="12" y1="20" x2="12" y2="10" />
+    <line x1="18" y1="20" x2="18" y2="4" />
+    <line x1="6" y1="20" x2="6" y2="16" />
   </svg>
 );
 
 export const TabAdvantagesIcon = ({ size = 16 }: { size?: number }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 384 512" fill="currentColor" aria-hidden="true">
-    <path d="M331.8 177.1c-2.2-3.4-5.9-5.5-9.9-5.5H190.5l-40.3-123C148.5 40.5 141 35.2 132.9 35.2s-15.7 5.3-17.3 13.4L75.3 171.6H-56c-4 0-7.7 2.1-9.9 5.5s-2.5 7.6-.7 11.3l106.3 201.7c3.2 6 9.4 9.8 16.2 9.8s13-3.8 16.2-9.8L178.2 240l106.3 150.1c3.2 6 9.4 9.8 16.2 9.8s13-3.8 16.2-9.8L423.2 188.4c1.8-3.7 1.5-7.9-.7-11.3z"/>
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M12 3l1.9 3.9L18 9l-3 2.9.7 4.1-3.7-2-3.7 2 .7-4.1L6 9l4.1-2.1L12 3z" />
   </svg>
 );
 
 export const TabDisadvantagesIcon = ({ size = 16 }: { size?: number }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 512 512" fill="currentColor" aria-hidden="true">
-    <path d="M256 32c14.2 0 27.3 7.5 34.5 19.8l216 368c7.3 12.4 7.3 27.7 .2 40.1S486.3 480 472 480H40c-14.3 0-27.6-7.7-34.7-20.1s-7-27.8 .2-40.1l216-368C228.7 39.5 241.8 32 256 32zm0 128c-13.3 0-24 10.7-24 24V296c0 13.3 10.7 24 24 24s24-10.7 24-24V184c0-13.3-10.7-24-24-24zm32 224a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"/>
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+    <line x1="12" y1="9" x2="12" y2="13" />
+    <line x1="12" y1="17" x2="12.01" y2="17" />
   </svg>
 );
 
 export const TabSkillsIcon = ({ size = 16 }: { size?: number }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 448 512" fill="currentColor" aria-hidden="true">
-    <path d="M288 32c17.7 0 32 14.3 32 32V96h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H320v32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H320v96c0 17.7-14.3 32-32 32s-32-14.3-32-32V256H224v96c0 17.7-14.3 32-32 32s-32-14.3-32-32V256H64c-17.7 0-32-14.3-32-32s14.3-32 32-32H160V160H64c-17.7 0-32-14.3-32-32S46.3 96 64 96h96V64c0-17.7 14.3-32 32-32s32 14.3 32 32V96h32V64c0-17.7 14.3-32 32-32z"/>
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M2 19.5A2.5 2.5 0 0 1 4.5 17H20" />
+    <path d="M4.5 2H20v20H4.5A2.5 2.5 0 0 1 2 19.5v-15A2.5 2.5 0 0 1 4.5 2z" />
   </svg>
 );
 
 export const TabTechniquesIcon = ({ size = 16 }: { size?: number }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 512 512" fill="currentColor" aria-hidden="true">
-    <path d="M160 32c12.4 0 23.8 6.9 29.4 17.9L256 176 322.6 49.9C328.2 38.9 339.6 32 352 32c11.3 0 21.8 5.9 27.6 15.6l96 160c6 10 5.8 22.5-.3 32.3S458.6 256 448 256H310.4l-75.3 142.1C229.4 409 218.1 416 206.4 416s-23-7-28.7-17.9L118.4 288H32c-11.3 0-21.8-5.9-27.6-15.6s-6-22.3-.3-32.3l96-160C105.8 37.9 116.4 32 128 32h32z"/>
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M15 4V2" />
+    <path d="M15 16v-2" />
+    <path d="M8 9h2" />
+    <path d="M20 9h2" />
+    <path d="M17.8 11.8 19 13" />
+    <path d="M15 9h0" />
+    <path d="M17.8 6.2 19 5" />
+    <path d="m3 21 9-9" />
+    <path d="M12.2 6.2 11 5" />
   </svg>
 );
 
