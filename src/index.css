@@ -860,6 +860,7 @@ input.stat-input:focus {
 /* Botões de controle de PV, PM, PA */
 .control-btn {
   background: transparent;
+  color: var(--text-main);
   border: 1px solid;
   border-radius: 4px;
   width: 28px;
