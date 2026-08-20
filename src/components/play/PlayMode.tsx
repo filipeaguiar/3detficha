@@ -434,21 +434,24 @@ export default function PlayMode(props: PlayModeProps) {
                   onClick={() => handleRoll(attackPlan.effectiveAttributeName, { label: 'Ataque', actionType: 'attack' })}
                   title={attackPlan.conflictMessage || (!attackPlan.canAfford ? 'Recursos insuficientes' : 'Rolar Ataque')}
                 >
-                  <div className="combat-action-button-icon">
-                    <SwordsIcon size={28} />
+                  <div className="action-corner top-left">
+                    {attributeLabel(attackPlan.effectiveAttributeName)}
                   </div>
-                  <div className="combat-action-button-content">
-                    <div className="bonus-toggle-header">
-                      <span className="bonus-toggle-label">Ataque</span>
-                      <span className="bonus-attr-micro" style={{ background: attackPlan.totalCostPM > 0 ? '#894EC6' : '#7bd389', color: attackPlan.totalCostPM > 0 ? '#fff' : '#000' }}>
-                        {attackPlan.diceCount > 1 ? `${attackPlan.diceCount}D • ` : ''}{attackPlan.totalCostPM} PM
-                      </span>
-                    </div>
-                    <span className="bonus-toggle-value">
-                      {attributeLabel(attackPlan.effectiveAttributeName)}
-                      {attackPlan.applicableSkill ? ` com ${attackPlan.applicableSkill === 'luta' ? 'Luta' : 'Mística'}` : ''}
-                      {attackPlan.critRange < 6 ? ` • Crítico ${attackPlan.critRange}+` : ''}
+                  <div className="action-corner top-right">
+                    <span className="bonus-attr-micro" style={{ background: attackPlan.totalCostPM > 0 ? '#894EC6' : '#7bd389', color: attackPlan.totalCostPM > 0 ? '#fff' : '#000' }}>
+                      {attackPlan.diceCount > 1 ? `${attackPlan.diceCount}D • ` : ''}{attackPlan.totalCostPM} PM
                     </span>
+                  </div>
+                  <div className="action-corner bottom-left">
+                    {attackPlan.applicableSkill ? (attackPlan.applicableSkill === 'luta' ? 'Luta' : 'Mística') : ''}
+                  </div>
+                  <div className="action-corner bottom-right">
+                    {attackPlan.critRange < 6 ? `Crítico ${attackPlan.critRange}+` : ''}
+                  </div>
+
+                  <div className="combat-action-button-icon">
+                    <SwordsIcon size={36} />
+                    <span className="combat-action-button-label">Ataque</span>
                   </div>
                 </button>
 
@@ -459,21 +462,24 @@ export default function PlayMode(props: PlayModeProps) {
                   onClick={() => handleRoll(defensePlan.effectiveAttributeName, { label: 'Defesa', actionType: 'defense' })}
                   title={defensePlan.conflictMessage || (!defensePlan.canAfford ? 'Recursos insuficientes' : 'Rolar Defesa')}
                 >
-                  <div className="combat-action-button-icon">
-                    <ShieldIcon size={28} />
+                  <div className="action-corner top-left">
+                    {attributeLabel(defensePlan.effectiveAttributeName)}
                   </div>
-                  <div className="combat-action-button-content">
-                    <div className="bonus-toggle-header">
-                      <span className="bonus-toggle-label">Defesa</span>
-                      <span className="bonus-attr-micro" style={{ background: defensePlan.totalCostPM > 0 ? '#894EC6' : '#7bd389', color: defensePlan.totalCostPM > 0 ? '#fff' : '#000' }}>
-                        {defensePlan.diceCount > 1 ? `${defensePlan.diceCount}D • ` : ''}{defensePlan.totalCostPM} PM
-                      </span>
-                    </div>
-                    <span className="bonus-toggle-value">
-                      {attributeLabel(defensePlan.effectiveAttributeName)}
-                      {defensePlan.applicableSkill ? ` com ${defensePlan.applicableSkill === 'luta' ? 'Luta' : 'Mística'}` : ''}
-                      {defensePlan.critRange < 6 ? ` • Crítico ${defensePlan.critRange}+` : ''}
+                  <div className="action-corner top-right">
+                    <span className="bonus-attr-micro" style={{ background: defensePlan.totalCostPM > 0 ? '#894EC6' : '#7bd389', color: defensePlan.totalCostPM > 0 ? '#fff' : '#000' }}>
+                      {defensePlan.diceCount > 1 ? `${defensePlan.diceCount}D • ` : ''}{defensePlan.totalCostPM} PM
                     </span>
+                  </div>
+                  <div className="action-corner bottom-left">
+                    {defensePlan.applicableSkill ? (defensePlan.applicableSkill === 'luta' ? 'Luta' : 'Mística') : ''}
+                  </div>
+                  <div className="action-corner bottom-right">
+                    {defensePlan.critRange < 6 ? `Crítico ${defensePlan.critRange}+` : ''}
+                  </div>
+
+                  <div className="combat-action-button-icon">
+                    <ShieldIcon size={36} />
+                    <span className="combat-action-button-label">Defesa</span>
                   </div>
                 </button>
               </div>

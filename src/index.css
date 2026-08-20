@@ -2533,32 +2533,64 @@ input.stat-input:focus {
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
+  justify-content: center;
   padding: 0;
+  position: relative;
+  min-height: 120px;
 }
 
 .combat-action-button-icon {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem 0 0 0;
   color: var(--combat-action-color);
   opacity: 0.9;
+  margin-bottom: 0.25rem;
 }
 
-.combat-action-button-content {
+.combat-action-button-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.5rem;
+  letter-spacing: 1px;
+  color: var(--combat-action-color);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.action-corner {
+  position: absolute;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
   display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-.combat-action-button .bonus-toggle-header {
+  align-items: center;
   justify-content: center;
-  padding: 0.25rem 0.5rem 0.25rem;
+  line-height: 1;
 }
 
-.combat-action-button .bonus-toggle-value {
-  padding: 0 0.5rem 0.5rem;
+.action-corner.top-left {
+  top: 0.5rem;
+  left: 0.5rem;
+  color: var(--text-main);
+}
+
+.action-corner.top-right {
+  top: 0.5rem;
+  right: 0.5rem;
+}
+
+.action-corner.bottom-left {
+  bottom: 0.5rem;
+  left: 0.5rem;
+  color: var(--text-main);
+}
+
+.action-corner.bottom-right {
+  bottom: 0.5rem;
+  right: 0.5rem;
+  color: #ff8fab;
 }
 
 .bonus-toggle::before {
