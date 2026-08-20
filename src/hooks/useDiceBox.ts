@@ -1,41 +1,48 @@
 import { useEffect, useRef } from 'react';
+import type { AppMode } from '../types/navigation';
 // @ts-ignore
 import DiceBox from '@3d-dice/dice-box';
 
-export function useDiceBox(mode: 'edit' | 'play', accentColor: string) {
+export function useDiceBox(mode: AppMode, accentColor: string) {
   const diceBoxRef = useRef<any>(null);
   const clearDiceTimeoutRef = useRef<any>(null);
 
   useEffect(() => {
-    let isMounted = true;
+    if (mode !== 'play') return;
 
-    if (mode === 'play' && !diceBoxRef.current && diceBoxRef.current !== 'initializing') {
-      diceBoxRef.current = 'initializing';
-
-      const diceBox = new DiceBox('#dice-box', {
-        assetPath: `${import.meta.env.BASE_URL}assets/`,
-        theme: 'default',
-        themeColor: accentColor,
-        scale: 6,
-        enableShadows: true,
-        lightIntensity: 1
+    const refreshDiceViewport = () => {
+      requestAnimationFrame(() => {
+        window.dispatchEvent(new Event('resize'));
+        setTimeout(() => window.dispatchEvent(new Event('resize')), 100);
       });
+    };
 
-      diceBox.init().then(() => {
-        if (!isMounted) return;
-        diceBoxRef.current = diceBox;
-        setTimeout(() => {
-          window.dispatchEvent(new Event('resize'));
-        }, 100);
-      }).catch((err: any) => {
-        console.error('Falha ao inicializar WebGL dos Dados:', err);
-        if (isMounted) diceBoxRef.current = null;
-      });
+    if (diceBoxRef.current && diceBoxRef.current !== 'initializing') {
+      refreshDiceViewport();
+      return;
     }
 
-    return () => {
-      isMounted = false;
-    };
+    if (diceBoxRef.current === 'initializing') return;
+    diceBoxRef.current = 'initializing';
+
+    const diceBox = new DiceBox('#dice-box', {
+      assetPath: `${import.meta.env.BASE_URL}assets/`,
+      theme: 'default',
+      themeColor: accentColor,
+      scale: 6,
+      enableShadows: true,
+      lightIntensity: 1
+    });
+
+    diceBox.init().then(() => {
+      // Keep the initialized instance even when React StrictMode replays the effect.
+      // Otherwise the ref can remain permanently stuck as "initializing".
+      diceBoxRef.current = diceBox;
+      refreshDiceViewport();
+    }).catch((err: unknown) => {
+      console.error('Falha ao inicializar WebGL dos Dados:', err);
+      diceBoxRef.current = null;
+    });
   }, [mode, accentColor]);
 
   useEffect(() => {

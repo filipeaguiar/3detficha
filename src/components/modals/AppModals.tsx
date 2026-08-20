@@ -2,8 +2,9 @@ import ImageCropper from '../../ImageCropper';
 import { BONUS_PRESETS, DRUID_WILD_SHAPE_OPTIONS } from '../../constants/app/bonuses';
 import { KITS_CATALOG } from '../../constants/app/kits';
 import type { CharacterForm, CharacterKit, CharacterSheet, RollBonus, RollResult } from '../../types/character';
+import type { AppMode } from '../../types/navigation';
 import { getEligibleXPCreditSources } from '../../utils/character';
-import { BedIcon, CheckIcon, ChevronDownIcon, ChevronUpIcon, CloseIcon, CopyIcon, LeafIcon, PencilIcon, PlusIcon, ResetIcon, SearchIcon, TransformIcon, TrashIcon, UsersIcon, VolumeIcon, VolumeXIcon, ZapIcon, DownloadIcon, UploadIcon } from '../common/Icons';
+import { BedIcon, CheckIcon, ChevronDownIcon, ChevronUpIcon, CloseIcon, CopyIcon, CubeIcon, LeafIcon, PencilIcon, PlusIcon, ResetIcon, SearchIcon, TransformIcon, TrashIcon, UsersIcon, VolumeIcon, VolumeXIcon, WandSparklesIcon, ZapIcon, DownloadIcon, UploadIcon } from '../common/Icons';
 
 type AppModalsProps = {
   isDrawerOpen: boolean;
@@ -20,6 +21,8 @@ type AppModalsProps = {
   updateActiveSheet: (updates: Partial<CharacterSheet>) => void;
   soundOn: boolean;
   handleEdit: () => void;
+  handleActions: () => void;
+  handlePlayMode: () => void;
   isKitSelectModalOpen: boolean;
   setIsKitSelectModalOpen: (open: boolean) => void;
   filteredKits: CharacterKit[];
@@ -48,7 +51,7 @@ type AppModalsProps = {
   rolling: boolean;
   closeResult: () => void;
   setIsModalOpen: (open: boolean) => void;
-  mode: 'edit' | 'play';
+  mode: AppMode;
   isTransformModalOpen: boolean;
   setIsTransformModalOpen: (open: boolean) => void;
   updateCurrentForm: (updates: Partial<CharacterForm>) => void;
@@ -78,7 +81,7 @@ type AppModalsProps = {
 export default function AppModals(props: AppModalsProps) {
   const {
     isDrawerOpen, setIsDrawerOpen, isDrawerClosingFast, accentColor, currentForm, characterName, currentKit, setIsSheetsModalOpen,
-    handleFullRest, handleQuickRest, handleResetScene, updateActiveSheet, soundOn, handleEdit,
+    handleFullRest, handleQuickRest, handleResetScene, updateActiveSheet, soundOn, handleEdit, handleActions, handlePlayMode,
     isKitSelectModalOpen, setIsKitSelectModalOpen, filteredKits, kitSearchQuery, setKitSearchQuery,
     selectedNucleoFilter, setSelectedNucleoFilter, selectedKitId, forms, activeFormIndex, updateActiveSheetForms,
     isKitInfoModalOpen, setIsKitInfoModalOpen, isSheetsModalOpen, setIsSheetsModalOpenDirect, characterSheets,
@@ -112,6 +115,9 @@ export default function AppModals(props: AppModalsProps) {
             </div>
 
             <div className="drawer-items-list">
+              <button className={`drawer-menu-item ${mode === 'play' ? 'active' : ''}`} onClick={handlePlayMode}><div className="drawer-item-icon"><CubeIcon size={22} /></div><div className="drawer-item-content"><div className="drawer-item-title">Jogar</div><div className="drawer-item-subtitle">Abrir o painel de jogo e rolagens</div></div></button>
+              <button className={`drawer-menu-item ${mode === 'actions' ? 'active' : ''}`} onClick={handleActions}><div className="drawer-item-icon"><WandSparklesIcon size={20} /></div><div className="drawer-item-content"><div className="drawer-item-title">Ações</div><div className="drawer-item-subtitle">Gerenciar ataques, técnicas e modificadores</div></div></button>
+              <button className={`drawer-menu-item ${mode === 'edit' ? 'active' : ''}`} onClick={handleEdit}><div className="drawer-item-icon"><PencilIcon /></div><div className="drawer-item-content"><div className="drawer-item-title">Editar Ficha</div><div className="drawer-item-subtitle">Modificar atributos, aquisições, avatar e kits</div></div></button>
               <button className="drawer-menu-item" onClick={() => { setIsDrawerOpen(false); setIsSheetsModalOpen(true); }}>
                 <div className="drawer-item-icon"><UsersIcon /></div><div className="drawer-item-content"><div className="drawer-item-title">Trocar de Personagem</div><div className="drawer-item-subtitle">Alternar entre suas fichas salvas</div></div>
               </button>
@@ -119,8 +125,6 @@ export default function AppModals(props: AppModalsProps) {
               <button className="drawer-menu-item" onClick={handleQuickRest}><div className="drawer-item-icon" style={{ color: '#FF9E00' }}><ZapIcon /></div><div className="drawer-item-content"><div className="drawer-item-title" style={{ color: '#FF9E00' }}>Descanso Rápido</div><div className="drawer-item-subtitle">Recupera +R em PV e +H em PM (Fôlego / Pausa Curta)</div></div></button>
               <button className="drawer-menu-item" onClick={() => { handleResetScene(); setIsDrawerOpen(false); }}><div className="drawer-item-icon" style={{ color: 'var(--accent-color)' }}><ResetIcon /></div><div className="drawer-item-content"><div className="drawer-item-title">Nova Cena (Resetar)</div><div className="drawer-item-subtitle">Restaura usos de poderes e buffs de cena</div></div></button>
               <button className="drawer-menu-item" onClick={() => updateActiveSheet({ soundOn: !soundOn })}><div className="drawer-item-icon" style={{ color: soundOn ? 'var(--accent-color)' : 'var(--text-muted)' }}>{soundOn ? <VolumeIcon /> : <VolumeXIcon />}</div><div className="drawer-item-content"><div className="drawer-item-title">Som dos Dados 3D</div><div className="drawer-item-subtitle">{soundOn ? 'Ativado (Clique para desativar)' : 'Desativado (Clique para ativar)'}</div></div></button>
-              <button className="drawer-menu-item" onClick={handleEdit}><div className="drawer-item-icon"><PencilIcon /></div><div className="drawer-item-content"><div className="drawer-item-title">Editar Ficha</div><div className="drawer-item-subtitle">Modificar atributos, técnicas, avatar e kits</div></div></button>
-              
               <label className="drawer-menu-item" style={{ cursor: 'pointer' }}>
                 <input type="file" accept=".json" style={{ display: 'none' }} onChange={(e) => {
                   const file = e.target.files?.[0];

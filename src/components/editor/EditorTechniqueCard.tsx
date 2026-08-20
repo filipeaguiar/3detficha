@@ -9,7 +9,7 @@ type EditorTechniqueCardProps = {
 
 export default function EditorTechniqueCard({ eligible, header, action, footer }: EditorTechniqueCardProps) {
   return (
-    <div className={`editor-technique-card ${eligible ? 'is-eligible' : 'is-ineligible'}`}>
+    <div className={`editor-choice-card editor-technique-card ${eligible ? 'is-eligible' : 'is-ineligible'}`}>
       <div className="editor-flex-between" style={{ gap: '0.75rem', alignItems: 'center' }}>
         <div>{header}</div>
         {action}

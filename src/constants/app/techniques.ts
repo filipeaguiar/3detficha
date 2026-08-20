@@ -67,6 +67,7 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     name: 'Barreira Mística',
     alias: '',
     description: 'Barreira defensiva mágica usada como reação, com modo base e aprimoramentos declarados em mesa.',
+    actionScope: 'defense',
     universal: false,
     requirements: { advantages: ['magia'], skills: ['mistica'] },
     attribute: 'resistencia',
@@ -78,6 +79,7 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     extraDice: 0,
     costValue: 1,
     costResource: 'PM',
+    costKey: 'magical_defense_cost',
     xpCost: 10,
     xpCategory: 'trick',
     gameplayPattern: 'cycling-variant',
@@ -85,7 +87,7 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     variantSelectionMode: 'cycle',
     selectedVariantId: 'base',
     variants: [
-      { id: 'base', label: 'Base', costValue: 1, costResource: 'PM', note: 'Usa Mística em vez de Luta na defesa.' },
+      { id: 'base', label: 'Base', costValue: 1, costResource: 'PM', costKey: 'magical_defense_cost', note: 'Usa Mística em vez de Luta na defesa.' },
       { id: 'aprimorada', label: 'Aprimorada', costValue: 2, costResource: 'PM', note: 'Escolha em mesa: Debilitante, Drenante, Elétrica, Espinhosa, Luminosa, Maciça ou Solidária.' }
     ]
   },
@@ -94,6 +96,7 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     name: 'Raio Místico',
     alias: '',
     description: 'Ataque mágico direto com modo base e aprimoramentos declarados em mesa.',
+    actionScope: 'attack',
     universal: false,
     requirements: { advantages: ['magia'], skills: ['mistica'] },
     attribute: 'poder',
@@ -171,7 +174,7 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     alias: '',
     description: 'Conjunto lendário de modificadores aplicados a Magia e técnicas que exigem Magia.',
     universal: false,
-    requirements: { attributes: { habilidade: 5 }, advantages: ['magia', 'maestria'] },
+    requirements: { attributes: { habilidade: 5 }, advantages: ['magia'], exactAdvantages: ['maestria::mistica'] },
     attribute: 'habilidade',
     bonusType: 'none',
     value: 0,
@@ -256,11 +259,11 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     variantSelectionMode: 'cycle',
     selectedVariantId: 'corpo_fechado',
     variants: [
-      { id: 'corpo_fechado', label: 'Corpo Fechado', costValue: 2, costResource: 'PM', extraDice: 1, note: 'Ganho em um teste de Resistência para evitar um efeito negativo de vantagens ou técnicas.' },
-      { id: 'inviolavel', label: 'Inviolável', costValue: 2, costResource: 'PM', extraDice: 1, note: 'Se mantiver imóvel, tem Ganho e defesa perfeita em todos os testes de defesa até seu próximo turno.' },
-      { id: 'palma_de_ferro', label: 'Palma de Ferro', costValue: 2, costResource: 'PM', extraDice: 1, note: 'Ganho em um teste de Poder para quebrar objetos inanimados.' },
-      { id: 'realinhar_chakras', label: 'Realinhar Chakras', costValue: 2, costResource: 'PM', note: 'Repete um teste de Resistência para eliminar efeito negativo.' },
-      { id: 'realinhar_chakras_reforcado', label: 'Realinhar + Corpo Fechado', costValue: 4, costResource: 'PM', extraDice: 1, note: 'Repete o teste de Resistência e gasta +2PM para obter Corpo Fechado no mesmo teste.' }
+      { id: 'corpo_fechado', label: 'Corpo Fechado', actionScope: 'general', attribute: 'resistencia', costValue: 2, costResource: 'PM', extraDice: 1, note: 'Ganho em um teste de Resistência para evitar um efeito negativo de vantagens ou técnicas.' },
+      { id: 'inviolavel', label: 'Inviolável', actionScope: 'defense', attribute: 'resistencia', costValue: 2, costResource: 'PM', extraDice: 1, note: 'Se mantiver imóvel, tem Ganho e defesa perfeita em todos os testes de defesa até seu próximo turno.' },
+      { id: 'palma_de_ferro', label: 'Palma de Ferro', actionScope: 'general', attribute: 'poder', costValue: 2, costResource: 'PM', extraDice: 1, note: 'Ganho em um teste de Poder para quebrar objetos inanimados.' },
+      { id: 'realinhar_chakras', label: 'Realinhar Chakras', actionScope: 'general', attribute: 'resistencia', costValue: 2, costResource: 'PM', note: 'Repete um teste de Resistência para eliminar efeito negativo.' },
+      { id: 'realinhar_chakras_reforcado', label: 'Realinhar + Corpo Fechado', actionScope: 'general', attribute: 'resistencia', costValue: 4, costResource: 'PM', extraDice: 1, note: 'Repete o teste de Resistência e gasta +2PM para obter Corpo Fechado no mesmo teste.' }
     ]
   },
   {
@@ -284,11 +287,11 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     variantSelectionMode: 'cycle',
     selectedVariantId: 'bomba_de_fumaca',
     variants: [
-      { id: 'bomba_de_fumaca', label: 'Bomba de Fumaça', costValue: 2, costResource: 'PM', note: 'Todos Perto ficam cegos por uma rodada, inclusive aliados; Perda visual é aplicada em mesa.' },
-      { id: 'corrida_ninja', label: 'Corrida Ninja', costValue: 2, costResource: 'PM', note: 'Dobra o deslocamento neste turno.' },
-      { id: 'estrepes', label: 'Estrepes', costValue: 2, costResource: 'PM', note: 'Alvo Perto sofre Perda em um teste à sua escolha até seu próximo turno.' },
-      { id: 'jutsu_de_troca', label: 'Jutsu de Troca', costValue: 2, costResource: 'PM', extraDice: 1, note: 'Como reação, troca de lugar com item próximo e recebe Ganho na defesa; apenas uma vez por rodada.' },
-      { id: 'pipa_ninja', label: 'Pipa Ninja', costValue: 2, costResource: 'PM', note: 'Salta até Longe e voa por uma rodada; manutenção declarada em mesa.' }
+      { id: 'bomba_de_fumaca', label: 'Bomba de Fumaça', actionScope: 'general', costValue: 2, costResource: 'PM', note: 'Todos Perto ficam cegos por uma rodada, inclusive aliados; Perda visual é aplicada em mesa.' },
+      { id: 'corrida_ninja', label: 'Corrida Ninja', actionScope: 'general', costValue: 2, costResource: 'PM', note: 'Dobra o deslocamento neste turno.' },
+      { id: 'estrepes', label: 'Estrepes', actionScope: 'general', costValue: 2, costResource: 'PM', note: 'Alvo Perto sofre Perda em um teste à sua escolha até seu próximo turno.' },
+      { id: 'jutsu_de_troca', label: 'Jutsu de Troca', actionScope: 'defense', attribute: 'habilidade', costValue: 2, costResource: 'PM', extraDice: 1, note: 'Como reação, troca de lugar com item próximo e recebe Ganho na defesa; apenas uma vez por rodada.' },
+      { id: 'pipa_ninja', label: 'Pipa Ninja', actionScope: 'general', costValue: 2, costResource: 'PM', note: 'Salta até Longe e voa por uma rodada; manutenção declarada em mesa.' }
     ]
   },
   {
@@ -451,6 +454,7 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     name: 'Disparo de Energia',
     alias: '',
     description: 'Concentra energia espiritual e dispara contra alvo Longe, com níveis de carga situacionais.',
+    actionScope: 'attack',
     universal: false,
     requirements: { oneOf: { advantages: ['magia'], skills: ['luta'] } },
     attribute: 'poder',
@@ -552,6 +556,7 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     name: 'Poeira Glacial',
     alias: '',
     description: 'Ataque de frio com bônus de Magia e congelamento assistidos.',
+    actionScope: 'attack',
     universal: false,
     requirements: { attributes: { habilidade: 2 }, advantages: ['magia'] },
     attribute: 'poder',
@@ -578,6 +583,7 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     name: 'Relâmpago',
     alias: '',
     description: 'Ataque elétrico com bônus de Magia e atordoamento assistidos.',
+    actionScope: 'attack',
     universal: false,
     requirements: { attributes: { habilidade: 2 }, advantages: ['magia'] },
     attribute: 'poder',
@@ -636,6 +642,7 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     name: 'Rajada de Golpes',
     alias: '',
     description: 'Sequência veloz de golpes com carga por movimentos no mesmo turno.',
+    actionScope: 'attack',
     universal: false,
     requirements: { attributes: { habilidade: 2 }, skills: ['luta'] },
     attribute: 'poder',
@@ -662,6 +669,7 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     name: 'Golpe Púrpura',
     alias: '',
     description: 'Ataque poderoso com crítico automático e arremesso assistido por críticos extras.',
+    actionScope: 'attack',
     universal: false,
     requirements: { attributes: { poder: 3 }, skills: ['luta'] },
     attribute: 'poder',
@@ -718,3 +726,5 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     gameplayPattern: technique.gameplayPattern || (technique.temporaryPackage ? 'temporary-package' : technique.persistentAssisted ? 'persistent-assisted' : technique.immediateAction ? 'immediate-action' : technique.variants?.length ? 'cycling-variant' : 'fixed-modifier'),
   };
 }) as TechniqueCatalogEntry[];
+
+export const ALL_TECHNIQUES = TECHNIQUES_CATALOG;

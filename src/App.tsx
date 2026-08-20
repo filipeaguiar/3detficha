@@ -5,17 +5,21 @@ import { ARCHETYPES_CATALOG } from './constants/app/archetypes';
 import { ADVANTAGES_CATALOG } from './constants/advantagesData';
 import { KITS_CATALOG } from './constants/app/kits';
 import { calculatePoints, getActiveBonusVariant, getArchetypeCost, getKitPowerModifier } from './utils/character';
-import type { CharacterForm, CharacterSheet, ImmediateActionConfig, KitPower, RollBonus, RollResult } from './types/character';
+import { getDerivedAdvantageEffects } from './utils/advantageEffects';
+import { resolveActionPlan } from './utils/actionResolver';
+import type { CharacterForm, CharacterSheet, ImmediateActionConfig, KitPower, PreparedMagicDraft, RollBonus, RollResult } from './types/character';
 import { useCharacterSheets } from './hooks/useCharacterSheets';
 import { useDiceBox } from './hooks/useDiceBox';
 import CharacterEditor from './components/editor/CharacterEditor';
 import PlayMode from './components/play/PlayMode';
 import AppModals from './components/modals/AppModals';
+import ActionWorkspace from './components/actions/ActionWorkspace';
+import type { AppMode } from './types/navigation';
 
 export default function App() {
   const { characterSheets, activeCharacterId, activeSheet, saveAllSheets, updateActiveSheet, updateCurrentForm } = useCharacterSheets();
 
-  const [mode, setMode] = useState<'edit' | 'play'>('play');
+  const [mode, setMode] = useState<AppMode>('play');
   const [activeTab, setActiveTab] = useState<'concept' | 'attributes' | 'advantages' | 'disadvantages' | 'skills' | 'techniques'>('concept');
   const [activeFormIndex, setActiveFormIndex] = useState<number>(0);
   
@@ -135,6 +139,7 @@ export default function App() {
   const maisAcao = currentForm.maisAcao || 0;
   const rollBonuses = useMemo(() => [
     ...(currentForm.rollBonuses || []),
+    ...getDerivedAdvantageEffects(currentForm),
     ...([...(currentArchetype?.grantedEffects || []), ...(((currentForm as any)._archetypeSelectedEffects) || [])].map((effect): RollBonus => ({
       id: effect.id,
       name: effect.name,
@@ -149,6 +154,7 @@ export default function App() {
       extraDice: effect.extraDice || 0,
       costValue: effect.costValue || 0,
       costResource: effect.costResource || 'none',
+      costTiming: effect.costTiming || 'instant',
       variants: undefined,
       selectedVariantId: undefined,
       variantSelectionMode: undefined,
@@ -168,6 +174,7 @@ export default function App() {
       extraDice: effect.extraDice || 0,
       costValue: effect.costValue || 0,
       costResource: effect.costResource || 'none',
+      costTiming: effect.costTiming || 'instant',
       variants: undefined,
       selectedVariantId: undefined,
       variantSelectionMode: undefined,
@@ -180,17 +187,21 @@ export default function App() {
   const maxPV = Math.max(1, (resistencia * 5) + (maisVida * 10));
   const maxPM = Math.max(1, (habilidade * 5) + (maisMana * 10));
   const maxPA = Math.max(1, (poder * 1) + (maisAcao * 2));
+  const preparedManaLocked = (currentForm.rollBonuses || [])
+    .filter((bonus) => bonus.gameplayPattern === 'prepared-magic' && bonus.assistedState?.prepared)
+    .reduce((total, bonus) => total + (bonus.costValue || 0), 0);
+  const recoverableMaxPM = Math.max(0, maxPM - preparedManaLocked);
 
   // Valores Atuais (Controláveis)
   const [currentPV, setCurrentPV] = useState(maxPV);
-  const [currentPM, setCurrentPM] = useState(maxPM);
+  const [currentPM, setCurrentPM] = useState(recoverableMaxPM);
   const [currentPA, setCurrentPA] = useState(maxPA);
   const [temporaryPM, setTemporaryPM] = useState(0);
 
   // Reset to full only when active character changes
   useEffect(() => {
     setCurrentPV(maxPV);
-    setCurrentPM(maxPM);
+    setCurrentPM(recoverableMaxPM);
     setCurrentPA(maxPA);
     setTemporaryPM(0);
     setActiveFormIndex(0);
@@ -199,9 +210,9 @@ export default function App() {
   // Clamp resources to new maximum when switching forms or modifying stats
   useEffect(() => {
     setCurrentPV(prev => Math.min(maxPV, prev));
-    setCurrentPM(prev => Math.min(maxPM, prev));
+    setCurrentPM(prev => Math.min(recoverableMaxPM, prev));
     setCurrentPA(prev => Math.min(maxPA, prev));
-  }, [maxPV, maxPM, maxPA]);
+  }, [maxPV, recoverableMaxPM, maxPA]);
 
   // Modificadores manuais de rolagem
   const [manualBonusDice, setManualBonusDice] = useState<0 | 1 | 2>(0);
@@ -219,20 +230,6 @@ export default function App() {
   const activeBonusesList = useMemo(() => {
     return rollBonuses.filter(b => activeBonuses.has(b.id));
   }, [rollBonuses, activeBonuses]);
-
-  const passiveArchetypeSkillEffects = useMemo(() => {
-    const effects: Array<{ id: string; name: string; attribute: 'habilidade'; bonusType: 'attr_mod'; value: number; duration: 'scene' }> = [];
-    if (selectedArchetypeId === 'aberrante') effects.push({ id: 'arch_aberrante_deformidade_passive', name: 'Deformidade', attribute: 'habilidade', bonusType: 'attr_mod', value: 1, duration: 'scene' });
-    if (selectedArchetypeId === 'osteon') effects.push({ id: 'arch_osteon_memoria_passive', name: 'Memória Póstuma', attribute: 'habilidade', bonusType: 'attr_mod', value: 1, duration: 'scene' });
-    if (selectedArchetypeId === 'anao') effects.push({ id: 'arch_anao_ferro_fogo_passive', name: 'A Ferro e Fogo', attribute: 'habilidade', bonusType: 'attr_mod', value: 1, duration: 'scene' });
-    if (selectedArchetypeId === 'dahllan') effects.push({ id: 'arch_dahllan_empatia_passive', name: 'Empatia Selvagem', attribute: 'habilidade', bonusType: 'attr_mod', value: 1, duration: 'scene' });
-    if (selectedArchetypeId === 'elfo') effects.push({ id: 'arch_elfo_natureza_mistica_passive', name: 'Natureza Mística', attribute: 'habilidade', bonusType: 'attr_mod', value: 1, duration: 'scene' });
-    if (selectedArchetypeId === 'goblin') effects.push({ id: 'arch_goblin_espertalhao_passive', name: 'Espertalhão', attribute: 'habilidade', bonusType: 'attr_mod', value: 1, duration: 'scene' });
-    if (selectedArchetypeId === 'hynne') effects.push({ id: 'arch_hynne_encantador_passive', name: 'Encantador', attribute: 'habilidade', bonusType: 'attr_mod', value: 1, duration: 'scene' });
-    if (selectedArchetypeId === 'kemono') effects.push({ id: 'arch_kemono_percepcao_passive', name: 'Percepção Apurada', attribute: 'habilidade', bonusType: 'attr_mod', value: 1, duration: 'scene' });
-    if (selectedArchetypeId === 'minotauro') effects.push({ id: 'arch_minotauro_atletico_passive', name: 'Atlético', attribute: 'habilidade', bonusType: 'attr_mod', value: 1, duration: 'scene' });
-    return effects;
-  }, [selectedArchetypeId]);
 
   // Kit Power Active Buffs (e.g. Frenesi de Combate P+3)
   const [activeKitBuffs, setActiveKitBuffs] = useState<Set<string>>(new Set());
@@ -279,40 +276,27 @@ export default function App() {
     return Math.max(-2, Math.min(2, extra));
   }, [activeBonusesList, activeKitBuffsList, manualBonusDice, currentForm.wildShapeAdvantages]);
 
-  // Restricted Attribute
-  const allowedAttributes = useMemo(() => { return { poder: true, habilidade: true, resistencia: true };
-    const required = new Set<'poder' | 'habilidade' | 'resistencia'>();
-    activeBonusesList.forEach(b => {
-      if (b.attribute && b.attribute !== 'any') {
-        required.add(b.attribute);
-      }
-    });
-
-    if (required.size === 0) {
-      return { poder: true, habilidade: true, resistencia: true };
-    }
-    return {
-      poder: required.has('poder'),
-      habilidade: required.has('habilidade'),
-      resistencia: required.has('resistencia')
-    };
-  }, [activeBonusesList]);
+  // Modificadores podem ser combinados; substituições de atributo são resolvidas
+  // pelo contexto da ação em handleRoll, sem bloquear as rolagens manuais.
+  const allowedAttributes = { poder: true, habilidade: true, resistencia: true };
 
   const { diceBoxRef, clearDiceTimeoutRef, clearDice } = useDiceBox(mode, accentColor);
 
-  const handleEdit = () => {
+  const navigateFromDrawer = (nextMode: AppMode) => {
     setIsDrawerClosingFast(true);
     setIsDrawerOpen(false);
     requestAnimationFrame(() => {
-      setMode('edit');
-      clearDice();
+      setMode(nextMode);
+      if (nextMode !== 'play') clearDice();
       setIsModalOpen(false);
       setIsClosing(false);
-      requestAnimationFrame(() => {
-        setIsDrawerClosingFast(false);
-      });
+      requestAnimationFrame(() => setIsDrawerClosingFast(false));
     });
   };
+
+  const handleEdit = () => navigateFromDrawer('edit');
+  const handleActions = () => navigateFromDrawer('actions');
+  const handlePlayMode = () => navigateFromDrawer('play');
 
   // Form management for active sheet
   const updateCurrentFormForActiveIndex = (updates: Partial<CharacterForm>) => {
@@ -447,6 +431,53 @@ export default function App() {
     };
     updateCurrentFormForActiveIndex({ rollBonuses: [...(currentForm.rollBonuses || []), newBonus] });
     setEditingBonusId(newId);
+  };
+
+  const createPreparedMagic = (draft: PreparedMagicDraft) => {
+    if (selectedKitId !== 'mago') return false;
+    const value = Math.max(1, Math.min(habilidade + 2, Math.floor(draft.value)));
+    const preparationCost = Math.ceil(value / 2);
+    if (currentPM + preparedManaLocked < maxPM) {
+      alert('Preparar magias exige estar com todos os PM disponíveis, sem gastos além das magias já preparadas.');
+      return false;
+    }
+    if (currentPM < preparationCost) {
+      alert('PM insuficientes para preparar esta magia.');
+      return false;
+    }
+    const newBonus: RollBonus = {
+      id: `prepared_magic_${Date.now()}`,
+      name: draft.name.trim() || 'Magia Preparada',
+      alias: '',
+      attribute: draft.attribute,
+      bonusType: 'flat',
+      value,
+      duration: 'instant',
+      costValue: preparationCost,
+      costResource: 'PM',
+      gameplayPattern: 'prepared-magic',
+      assistedState: { prepared: true },
+    };
+    setCurrentPM((pm) => Math.max(0, pm - preparationCost));
+    updateCurrentFormForActiveIndex({ rollBonuses: [...(currentForm.rollBonuses || []), newBonus] });
+    return true;
+  };
+
+  const prepareExistingMagic = (id: string) => {
+    const bonus = (currentForm.rollBonuses || []).find((entry) => entry.id === id && entry.gameplayPattern === 'prepared-magic');
+    if (!bonus) return false;
+    const preparationCost = Math.ceil(Math.max(1, bonus.value) / 2);
+    if (currentPM + preparedManaLocked < maxPM) {
+      alert('Recupere todos os PM disponíveis antes de preparar magias.');
+      return false;
+    }
+    if (currentPM < preparationCost) {
+      alert('PM insuficientes para preparar esta magia.');
+      return false;
+    }
+    setCurrentPM((pm) => Math.max(0, pm - preparationCost));
+    updateRollBonus(id, { costValue: preparationCost, costResource: 'PM', assistedState: { ...(bonus.assistedState || {}), prepared: true } });
+    return true;
   };
 
   const addPresetBonus = (preset: Omit<RollBonus, 'id'>) => {
@@ -624,28 +655,16 @@ export default function App() {
 
     if (bonus.gameplayPattern === 'prepared-magic') {
       if (!bonus.assistedState?.prepared) {
-        // State 0 -> State 1
-        const cost = typeof activeVariant?.costValue === 'number' ? activeVariant.costValue : (bonus.costValue || 0);
-        const resource = activeVariant?.costResource || bonus.costResource;
-        spendResource(resource, cost);
-        updateRollBonus(bonus.id, { assistedState: { ...(bonus.assistedState || {}), prepared: true } });
-        return;
-      } else if (!activeBonuses.has(id)) {
-        // State 1 -> State 2
-        setActiveBonuses((current) => { const next = new Set(current); next.add(id); return next; });
-        return;
-      } else {
-        // State 2 -> State 0
-        const cost = typeof activeVariant?.costValue === 'number' ? activeVariant.costValue : (bonus.costValue || 0);
-        const resource = activeVariant?.costResource || bonus.costResource;
-        if (resource === 'PM') setCurrentPM(prev => Math.min(maxPM, prev + cost));
-        else if (resource === 'PA') setCurrentPA(prev => Math.min(maxPA, prev + cost));
-        else if (resource === 'PV') setCurrentPV(prev => Math.min(maxPV, prev + cost));
-        
-        setActiveBonuses((current) => { const next = new Set(current); next.delete(id); return next; });
-        updateRollBonus(bonus.id, { assistedState: { ...(bonus.assistedState || {}), prepared: false } });
+        alert('Prepare esta magia na área Ações antes de usá-la.');
         return;
       }
+      setActiveBonuses((current) => {
+        const next = new Set(current);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        return next;
+      });
+      return;
     }
 
     if (bonus.temporaryPackage) {
@@ -665,25 +684,21 @@ export default function App() {
     }
 
     if (bonus.gameplayPattern === 'cycling-variant') {
-      if (!activeBonuses.has(id)) {
-        setActiveBonuses((current) => { const next = new Set(current); next.add(id); return next; });
-        if (bonus.variants && bonus.variants.length > 0) {
-           updateRollBonus(id, { selectedVariantId: bonus.variants[0].id });
-        }
-        return;
-      } else {
-        const currentIndex = bonus.variants?.findIndex(v => v.id === bonus.selectedVariantId) ?? 0;
-        if (bonus.variants && currentIndex < bonus.variants.length - 1) {
-          updateRollBonus(id, { selectedVariantId: bonus.variants[currentIndex + 1].id });
-          return;
-        } else {
-          setActiveBonuses((current) => { const next = new Set(current); next.delete(id); return next; });
-          if (bonus.variants && bonus.variants.length > 0) {
-             updateRollBonus(id, { selectedVariantId: bonus.variants[0].id });
-          }
-          return;
+      const becomingActive = !activeBonuses.has(id);
+      if (becomingActive && bonus.duration === 'scene') {
+        const effectiveCostResource = activeVariant?.costResource || bonus.costResource;
+        const effectiveCostValue = typeof activeVariant?.costValue === 'number' ? activeVariant.costValue : bonus.costValue;
+        if (effectiveCostResource && effectiveCostResource !== 'none' && effectiveCostValue) {
+          spendResource(effectiveCostResource, effectiveCostValue);
         }
       }
+      setActiveBonuses((current) => {
+        const next = new Set(current);
+        if (becomingActive) next.add(id);
+        else next.delete(id);
+        return next;
+      });
+      return;
     }
 
     if (bonus.gameplayPattern === 'narrative') {
@@ -774,7 +789,7 @@ export default function App() {
   // Descanso Completo (Recupera 100% de PV, PM e PA)
   const handleFullRest = () => {
     setCurrentPV(maxPV);
-    setCurrentPM(maxPM);
+    setCurrentPM(recoverableMaxPM);
     setCurrentPA(maxPA);
     handleResetScene();
     setIsDrawerOpen(false);
@@ -785,7 +800,7 @@ export default function App() {
     const recoverPV = Math.max(1, resistencia);
     const recoverPM = Math.max(1, habilidade);
     setCurrentPV(p => Math.min(maxPV, p + recoverPV));
-    setCurrentPM(p => Math.min(maxPM, p + recoverPM));
+    setCurrentPM(p => Math.min(recoverableMaxPM, p + recoverPM));
     handleResetScene();
     setIsDrawerOpen(false);
   };
@@ -797,9 +812,48 @@ export default function App() {
   };
 
   (window as any).debugState = { rolling, diceBox: diceBoxRef.current };
-  const handleRoll = async (attrName: 'poder' | 'habilidade' | 'resistencia') => {
+  const handleRoll = async (attrName: 'poder' | 'habilidade' | 'resistencia', options?: { extraDice?: number; label?: string; costPM?: number; actionType?: 'attack' | 'defense' | 'general'; skillId?: string }) => {
     if (!diceBoxRef.current || diceBoxRef.current === 'initializing' || rolling) return;
-    if (!allowedAttributes[attrName]) return;
+
+    const actionType = options?.actionType || 'general';
+    const activeBonusesList = rollBonuses.filter(b => activeBonuses.has(b.id));
+    const hasLuta = (currentForm.skills || []).includes('luta');
+    const hasMistica = (currentForm.skills || []).includes('mistica');
+    const hasMagia = (currentForm.advantages || []).some((advantageId) => advantageId.split('::')[0] === 'magia');
+    const usesMisticaForCombat = !hasLuta && hasMistica && hasMagia;
+
+    const plan = resolveActionPlan(
+      {
+        actionType,
+        targetAttribute: attrName,
+        selectedSkill: options?.skillId || (options?.actionType ? (hasLuta ? 'luta' : (usesMisticaForCombat ? 'mistica' : undefined)) : undefined),
+        activeBonusIds: activeBonuses,
+        manualBonusDice,
+        manualCritRange,
+      },
+      {
+        currentForm,
+        rollBonuses,
+        currentPV,
+        currentPM,
+        currentPA,
+        temporaryPM,
+        activeKitBuffsList,
+      }
+    );
+
+    if (plan.hasConflicts) {
+      alert(plan.conflictMessage || 'Conflito de bônus detectado.');
+      return;
+    }
+
+    if (!plan.canAfford) {
+      alert('Recursos insuficientes para esta ação.');
+      return;
+    }
+
+    const effectiveAttrName = plan.effectiveAttributeName;
+    if (!allowedAttributes[effectiveAttrName]) return;
 
     setRolling(true);
     setIsModalOpen(false);
@@ -810,116 +864,7 @@ export default function App() {
       clearDiceTimeoutRef.current = null;
     }
 
-    let baseAttrValue = 0;
-    let label = '';
-    if (attrName === 'poder') {
-      baseAttrValue = poder + (currentForm.wildShapeAdvantages?.includes('Forte') ? 1 : 0);
-      label = 'Poder';
-    } else if (attrName === 'habilidade') {
-      baseAttrValue = habilidade;
-      label = 'Habilidade';
-    } else if (attrName === 'resistencia') {
-      baseAttrValue = resistencia + (currentForm.wildShapeAdvantages?.includes('Vigoroso') ? 2 : 0);
-      label = 'Resistência';
-    }
-
-    let attrModValue = 0;
-    let flatBonusTotal = 0;
-    let automaticCriticalCount = 0;
-    const appliedBonuses: { name: string; alias?: string; desc: string; cost?: string }[] = [];
-
-    passiveArchetypeSkillEffects.forEach((effect) => {
-      attrModValue += effect.value;
-      appliedBonuses.push({ name: effect.name, desc: `+${effect.value} no Atributo (passivo do arquétipo)`, cost: '' });
-    });
-
-    activeBonusesList.forEach(bonus => {
-      let desc = '';
-      const activeVariant = getActiveBonusVariant(bonus);
-      const effectiveBonusType = activeVariant?.bonusType || bonus.bonusType;
-      const effectiveValue = typeof activeVariant?.value === 'number' ? activeVariant.value : bonus.value;
-      const effectiveCritThresholdMod = typeof activeVariant?.critThresholdMod === 'number' ? activeVariant.critThresholdMod : bonus.critThresholdMod;
-      const effectiveAutoCrit = typeof activeVariant?.autoCrit === 'boolean' ? activeVariant.autoCrit : bonus.autoCrit;
-      const effectiveAutomaticCriticals = typeof activeVariant?.automaticCriticals === 'number' ? activeVariant.automaticCriticals : (bonus.automaticCriticals || 0);
-      const effectiveExtraDice = typeof activeVariant?.extraDice === 'number' ? activeVariant.extraDice : bonus.extraDice;
-      const effectiveCostResource = activeVariant?.costResource || bonus.costResource;
-      const effectiveCostValue = typeof activeVariant?.costValue === 'number' ? activeVariant.costValue : bonus.costValue;
-
-      if (effectiveBonusType === 'attr_mod') {
-        attrModValue += effectiveValue;
-        desc = `+${effectiveValue} no Atributo`;
-      } else if (effectiveBonusType === 'flat') {
-        flatBonusTotal += effectiveValue;
-        desc = `+${effectiveValue} Total`;
-      } else if (effectiveBonusType === 'full_attr') {
-        const val = bonus.attrSource === 'poder' ? poder : bonus.attrSource === 'habilidade' ? habilidade : resistencia;
-        flatBonusTotal += val;
-        desc = `+${val} (${bonus.attrSource})`;
-      }
-
-      if (effectiveCritThresholdMod) {
-        const critValue = Math.max(4, 6 + effectiveCritThresholdMod);
-        desc += desc ? ` | Crítico ${critValue}+` : `Crítico ${critValue}+`;
-      }
-      if (effectiveAutoCrit || effectiveAutomaticCriticals > 0) {
-        automaticCriticalCount += Math.max(effectiveAutoCrit ? 1 : 0, effectiveAutomaticCriticals);
-        const count = Math.max(effectiveAutoCrit ? 1 : 0, effectiveAutomaticCriticals);
-        desc += desc ? ` | ${count} Crítico${count > 1 ? 's' : ''} Automático${count > 1 ? 's' : ''}` : `${count} Crítico${count > 1 ? 's' : ''} Automático${count > 1 ? 's' : ''}`;
-      }
-      if (effectiveExtraDice) {
-        desc += desc ? ` | ${effectiveExtraDice > 0 ? '+' : ''}${effectiveExtraDice}D` : `${effectiveExtraDice > 0 ? '+' : ''}${effectiveExtraDice}D`;
-      }
-
-      let costStr = '';
-      if (bonus.duration === 'instant' && effectiveCostResource && effectiveCostResource !== 'none' && effectiveCostValue) {
-        costStr = `-${effectiveCostValue} ${effectiveCostResource}`;
-      } else if (bonus.duration === 'scene') {
-        costStr = 'Buff de Cena';
-      }
-
-      appliedBonuses.push({
-        name: bonus.name,
-        alias: bonus.alias,
-        desc,
-        cost: costStr
-      });
-    });
-
-    // Apply Active Kit Buffs (e.g. Frenesi de Combate P+3)
-    activeKitBuffsList.forEach(k => {
-      const mod = k.mod;
-      let desc = '';
-      if (mod.bonusType === 'attr_mod' && (mod.attribute === attrName || mod.attribute === 'any')) {
-        attrModValue += mod.value;
-        desc = `+${mod.value} no Atributo`;
-      } else if (mod.bonusType === 'flat') {
-        flatBonusTotal += mod.value;
-        desc = `+${mod.value} Total`;
-      }
-
-      if (mod.critThresholdMod) {
-        const critValue = Math.max(4, 6 + mod.critThresholdMod);
-        desc += desc ? ` | Crítico ${critValue}+` : `Crítico ${critValue}+`;
-      }
-      if (mod.autoCrit) {
-        automaticCriticalCount += 1;
-        desc += desc ? ' | Crítico Automático' : 'Crítico Automático';
-      }
-      if (mod.extraDice) {
-        desc += desc ? ` | ${mod.extraDice > 0 ? '+' : ''}${mod.extraDice}D` : `${mod.extraDice > 0 ? '+' : ''}${mod.extraDice}D`;
-      }
-
-      appliedBonuses.push({
-        name: k.power.name,
-        desc: desc || 'Poder de Kit Ativo',
-        cost: 'Buff de Cena'
-      });
-    });
-
-    const totalEffectiveAttribute = Math.max(0, baseAttrValue + attrModValue);
-    const totalExtraDice = calculatedTotalExtraDice;
-    const diceCount = Math.max(1, Math.min(3, 1 + totalExtraDice));
-    const effectiveCritRange = calculatedCritRange;
+    const diceCount = Math.max(1, Math.min(3, plan.diceCount));
 
     try {
       if (soundOn) {
@@ -954,56 +899,52 @@ export default function App() {
         }
       }
 
-      let diceSum = rolls.reduce((sum, r) => sum + r, 0);
+      const diceSum = rolls.reduce((sum, r) => sum + r, 0);
       const isCriticalFail = rolls.length > 0 && rolls.every((r) => r === 1);
       
-      let rolledCrits = rolls.filter((r) => r >= effectiveCritRange).length;
-      if (isCriticalFail) {
-        rolledCrits = 0;
-      }
-      const autoCrits = !isCriticalFail ? automaticCriticalCount : 0;
+      const rolledCrits = isCriticalFail ? 0 : rolls.filter((r) => r >= plan.critRange).length;
+      const autoCrits = !isCriticalFail ? plan.automaticCriticals : 0;
       const criticals = rolledCrits + autoCrits;
 
-      const finalTotal = diceSum + totalEffectiveAttribute + (totalEffectiveAttribute * criticals) + flatBonusTotal;
+      const totalEffectiveAttribute = plan.totalEffectiveAttribute;
+      const flatBonusTotal = plan.flatBonusTotal;
+      const finalTotal = isCriticalFail ? 0 : diceSum + totalEffectiveAttribute + (totalEffectiveAttribute * criticals) + flatBonusTotal;
 
-      const instantBonuses = activeBonusesList.filter(b => b.duration === 'instant');
-      const instantBonusCosts = instantBonuses.map((b) => {
-        const activeVariant = getActiveBonusVariant(b);
-        return {
-          resource: activeVariant?.costResource || b.costResource,
-          value: typeof activeVariant?.costValue === 'number' ? activeVariant.costValue : (b.costValue || 0),
-        };
-      });
-      const costPV = instantBonusCosts.filter(b => b.resource === 'PV').reduce((sum, b) => sum + (b.value || 0), 0);
-      const costPM = instantBonusCosts.filter(b => b.resource === 'PM').reduce((sum, b) => sum + (b.value || 0), 0);
-      const costPA = instantBonusCosts.filter(b => b.resource === 'PA').reduce((sum, b) => sum + (b.value || 0), 0);
-
-      if (costPV > 0) setCurrentPV(prev => Math.max(0, prev - costPV));
-      if (costPM > 0) {
-        const tempSpent = Math.min(temporaryPM, costPM);
-        const remainingPMCost = Math.max(0, costPM - tempSpent);
+      // Deduct itemized resolved costs
+      if (plan.totalCostPV > 0) setCurrentPV(prev => Math.max(0, prev - plan.totalCostPV));
+      if (plan.totalCostPM > 0) {
+        const tempSpent = Math.min(temporaryPM, plan.totalCostPM);
+        const remainingPMCost = Math.max(0, plan.totalCostPM - tempSpent);
         if (remainingPMCost > 0) setCurrentPM(prev => Math.max(0, prev - remainingPMCost));
       }
-      if (costPA > 0) setCurrentPA(prev => Math.max(0, prev - costPA));
+      if (plan.totalCostPA > 0) setCurrentPA(prev => Math.max(0, prev - plan.totalCostPA));
       if (temporaryPM > 0) setTemporaryPM(0);
 
       // Auto-deactivate instant bonuses and reset prepared magic
+      const consumedBonusIds = new Set(
+        activeBonusesList
+          .filter((bonus) => bonus.duration === 'instant' && bonus.costTiming !== 'trigger' && bonus.costTiming !== 'maintenance')
+          .map((bonus) => bonus.id)
+      );
+
       setActiveBonuses(prev => {
         const next = new Set<string>();
         rollBonuses.forEach(b => {
-          if (b.duration === 'scene' && prev.has(b.id)) {
+          if (prev.has(b.id) && (b.duration === 'scene' || !consumedBonusIds.has(b.id))) {
             next.add(b.id);
           }
         });
         return next;
       });
 
-      // Reset prepared state for prepared-magic that were active (consumed)
+      // Reset prepared state only for prepared magic consumed by this action.
       activeBonusesList.forEach(b => {
         if (b.gameplayPattern === 'prepared-magic' && b.assistedState?.prepared) {
           updateRollBonus(b.id, { assistedState: { ...(b.assistedState || {}), prepared: false } });
         }
       });
+
+      const label = effectiveAttrName === 'poder' ? 'Poder' : effectiveAttrName === 'habilidade' ? 'Habilidade' : 'Resistência';
 
       setResult({
         rolls,
@@ -1011,13 +952,18 @@ export default function App() {
         criticals,
         isCriticalFail,
         finalTotal,
-        usedAttributeName: label,
-        baseAttributeValue: baseAttrValue,
-        attrBonusValue: attrModValue,
+        usedAttributeName: options?.label || label,
+        baseAttributeValue: plan.baseAttributeValue,
+        attrBonusValue: plan.attrBonusValue,
         totalEffectiveAttribute,
         flatBonusTotal,
-        critRangeUsed: effectiveCritRange,
-        appliedBonuses
+        critRangeUsed: plan.critRange,
+        appliedBonuses: plan.appliedBonuses.map(b => ({
+          name: b.name,
+          alias: b.alias,
+          desc: b.desc,
+          cost: b.cost,
+        }))
       });
       setRolling(false);
       setIsModalOpen(true);
@@ -1036,7 +982,7 @@ export default function App() {
     }, 400);
   };
 
-  const instantActiveBonuses = activeBonusesList.filter(b => b.duration === 'instant');
+  const instantActiveBonuses = activeBonusesList.filter(b => b.duration === 'instant' && b.gameplayPattern !== 'prepared-magic');
   const instantActiveBonusCosts = instantActiveBonuses.map((b) => {
     const activeVariant = getActiveBonusVariant(b);
     return {
@@ -1077,6 +1023,7 @@ export default function App() {
             setActiveTab={setActiveTab}
             totalPoints={totalPoints}
             setIsSheetsModalOpen={setIsSheetsModalOpen}
+            setIsDrawerOpen={setIsDrawerOpen}
             characterName={characterName}
             updateActiveSheet={updateActiveSheet}
             currentKit={currentKit}
@@ -1101,13 +1048,31 @@ export default function App() {
             maisVida={maisVida}
             maisMana={maisMana}
             maisAcao={maisAcao}
+            removeRollBonus={removeRollBonus}
+            setMode={setMode}
+          />
+        )}
+
+        {mode === 'actions' && (
+          <ActionWorkspace
+            characterName={characterName}
+            currentForm={currentForm}
+            forms={forms}
+            activeFormIndex={activeFormIndex}
+            selectedKitId={selectedKitId}
+            currentPM={currentPM}
+            maxPM={maxPM}
             visibleRollBonuses={visibleRollBonuses}
+            setActiveFormIndex={setActiveFormIndex}
+            setMode={setMode}
+            setIsDrawerOpen={setIsDrawerOpen}
             setEditingBonusId={setEditingBonusId}
             removeRollBonus={removeRollBonus}
+            updateRollBonus={updateRollBonus}
             setIsPresetModalOpen={setIsPresetModalOpen}
             addCustomBonus={addCustomBonus}
-            setIsPrepMagicModalOpen={() => {}}
-            setMode={setMode}
+            createPreparedMagic={createPreparedMagic}
+            prepareExistingMagic={prepareExistingMagic}
           />
         )}
 
@@ -1188,6 +1153,8 @@ export default function App() {
         updateActiveSheet={updateActiveSheet}
         soundOn={soundOn}
         handleEdit={handleEdit}
+        handleActions={handleActions}
+        handlePlayMode={handlePlayMode}
         isKitSelectModalOpen={isKitSelectModalOpen}
         setIsKitSelectModalOpen={setIsKitSelectModalOpen}
         filteredKits={filteredKits}

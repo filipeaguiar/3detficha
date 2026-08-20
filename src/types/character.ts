@@ -1,3 +1,11 @@
+export type ActionContext = 'attack' | 'defense' | 'general' | 'activation' | 'trigger' | 'maintenance' | 'any';
+
+export type AutomationLevel = 'automatic' | 'assisted' | 'narrative';
+
+export type CostTiming = 'instant' | 'activation' | 'trigger' | 'maintenance';
+
+export type SkillMode = 'fixed' | 'assisted' | 'combat' | 'none';
+
 export type PersistentAssistedConfig = {
   kind: 'repeatable-trigger' | 'stock';
   initialCostValue?: number;
@@ -35,8 +43,20 @@ export type ImmediateActionConfig = {
 export type RollBonusVariant = {
   id: string;
   label: string;
+  actionScope?: ActionContext;
+  attribute?: 'any' | 'poder' | 'habilidade' | 'resistencia';
+  attrSource?: 'poder' | 'habilidade' | 'resistencia';
+  replacementAttribute?: 'poder' | 'habilidade' | 'resistencia';
   costValue?: number;
   costResource?: 'none' | 'PV' | 'PM' | 'PA';
+  costTiming?: CostTiming;
+  costKey?: string;
+  effectKey?: string;
+  automationLevel?: AutomationLevel;
+  skillMode?: SkillMode;
+  requiredSkill?: string;
+  applicableSkill?: string;
+  conditionKey?: string;
   value?: number;
   bonusType?: 'attr_mod' | 'flat' | 'full_attr' | 'none';
   extraDice?: number;
@@ -54,6 +74,12 @@ export type StrikeSelection = {
   strikeIds: string[];
 };
 
+export type PreparedMagicDraft = {
+  name: string;
+  attribute: 'any' | 'poder' | 'habilidade' | 'resistencia';
+  value: number;
+};
+
 export type RollBonus = {
   id: string;
   name: string;
@@ -63,12 +89,24 @@ export type RollBonus = {
   value: number;
   duration: 'instant' | 'scene';
   attrSource?: 'poder' | 'habilidade' | 'resistencia';
+  actionScope?: ActionContext;
+  replacementAttribute?: 'poder' | 'habilidade' | 'resistencia';
   critThresholdMod?: number;
   autoCrit?: boolean;
   automaticCriticals?: number;
   extraDice?: number;
   costValue?: number;
   costResource?: 'none' | 'PV' | 'PM' | 'PA';
+  costTiming?: CostTiming;
+  costKey?: string;
+  effectKey?: string;
+  automationLevel?: AutomationLevel;
+  skillMode?: SkillMode;
+  requiredSkill?: string;
+  applicableSkill?: string;
+  conditionKey?: string;
+  isDerivedOfficial?: boolean;
+  originAdvantageId?: string;
   xpCost?: number;
   xpCategory?: 'trick' | 'common' | 'legendary' | 'generic';
   fundedBySourceIds?: string[];
@@ -89,6 +127,66 @@ export type RollBonus = {
     configuredStock?: number;
     packageChoices?: string[];
   };
+};
+
+export type ItemizedCost = {
+  resource: 'none' | 'PV' | 'PM' | 'PA';
+  value: number;
+  timing: CostTiming;
+  costKey?: string;
+  sourceName: string;
+};
+
+export type ActionRequest = {
+  actionType: 'attack' | 'defense' | 'general' | 'activation' | 'trigger' | 'maintenance';
+  targetAttribute?: 'poder' | 'habilidade' | 'resistencia';
+  selectedSkill?: string;
+  sourceBonusId?: string;
+  sourceVariantId?: string;
+  activeBonusIds?: string[] | Set<string>;
+  declaredConditions?: Record<string, boolean | string>;
+  manualBonusDice?: 0 | 1 | 2;
+  manualCritRange?: 5 | 6;
+  baseCostPM?: number;
+  baseCostPV?: number;
+  baseCostPA?: number;
+  label?: string;
+};
+
+export type ResolvedAppliedBonus = {
+  name: string;
+  alias?: string;
+  desc: string;
+  cost?: string;
+  sourceKey?: string;
+  automationLevel?: AutomationLevel;
+};
+
+export type ResolvedActionPlan = {
+  actionType: ActionContext;
+  effectiveAttributeName: 'poder' | 'habilidade' | 'resistencia';
+  baseAttributeValue: number;
+  attrBonusValue: number;
+  totalEffectiveAttribute: number;
+  flatBonusTotal: number;
+  applicableSkill?: string;
+  skillBonusDice: number;
+  extraDice: number;
+  diceCount: number;
+  critRange: number;
+  automaticCriticals: number;
+  itemizedCosts: ItemizedCost[];
+  totalCostPV: number;
+  totalCostPM: number;
+  totalCostPA: number;
+  canAfford: boolean;
+  unmetResources: string[];
+  hasConflicts: boolean;
+  conflictMessage?: string;
+  appliedBonuses: ResolvedAppliedBonus[];
+  consumedBonusIds: string[];
+  preservedBonusIds: string[];
+  assistedNotes: string[];
 };
 
 export type CharacterVariantSelection = {
