@@ -280,7 +280,7 @@ export default function App() {
   }, [activeBonusesList, activeKitBuffsList, manualBonusDice, currentForm.wildShapeAdvantages]);
 
   // Restricted Attribute
-  const allowedAttributes = useMemo(() => {
+  const allowedAttributes = useMemo(() => { return { poder: true, habilidade: true, resistencia: true };
     const required = new Set<'poder' | 'habilidade' | 'resistencia'>();
     activeBonusesList.forEach(b => {
       if (b.attribute && b.attribute !== 'any') {
