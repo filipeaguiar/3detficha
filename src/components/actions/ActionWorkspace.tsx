@@ -5,7 +5,7 @@ import type { ActionWorkspaceTab, AppMode } from '../../types/navigation';
 import { classifyFormActions } from '../../utils/actionClassification';
 import { getActiveBonusVariant, getBonusSubtitle } from '../../utils/character';
 import { resolveActionPlan } from '../../utils/actionResolver';
-import { BookIcon, CheckIcon, CloseIcon, HabilidadeIcon, HourglassIcon, MenuIcon, PencilIcon, PlusIcon, PoderIcon, ResistenciaIcon, SparklesIcon, TabTechniquesIcon, TrashIcon, WandSparklesIcon, ZapIcon, SwordsIcon, ShieldIcon } from '../common/Icons';
+import { BookIcon, CheckIcon, CloseIcon, HabilidadeIcon, HourglassIcon, MenuIcon, PencilIcon, PlusIcon, PoderIcon, ResistenciaIcon, SparklesIcon, TabTechniquesIcon, TrashIcon, WandSparklesIcon, ZapIcon, SwordsIcon, ShieldIcon, CubeIcon } from '../common/Icons';
 import SegmentedBar from '../common/SegmentedBar';
 import TabbedNavigation from '../common/TabbedNavigation';
 import EditorPillGroup from '../editor/EditorPillGroup';
@@ -70,7 +70,6 @@ export default function ActionWorkspace({ characterName, currentForm, forms, act
   }, [currentForm, visibleRollBonuses, currentPM, hasCombatSkill, hasLuta]);
 
   const attributeColor = (attribute: 'poder' | 'habilidade' | 'resistencia') => attribute === 'poder' ? '#FF9E00' : attribute === 'habilidade' ? '#894EC6' : '#5EB05D';
-  const attributeLetter = (attribute: 'poder' | 'habilidade' | 'resistencia') => attribute === 'poder' ? 'P' : attribute === 'habilidade' ? 'H' : 'R';
 
   const renderBonus = (bonus: RollBonus) => {
     const activeVariant = getActiveBonusVariant(bonus);
@@ -133,10 +132,25 @@ export default function ActionWorkspace({ characterName, currentForm, forms, act
             style={{ '--combat-action-color': attributeColor(attackPlan.effectiveAttributeName) } as React.CSSProperties}
           >
             <div className="action-corner top-left">
-              {attributeLetter(attackPlan.effectiveAttributeName)}
+              {attackPlan.effectiveAttributeName === 'poder' ? <PoderIcon size={18} /> : attackPlan.effectiveAttributeName === 'habilidade' ? <HabilidadeIcon size={18} /> : <ResistenciaIcon size={18} />}
             </div>
-            <div className="action-corner top-right">
-              {attackPlan.diceCount > 1 && <span style={{ marginRight: '4px', fontSize: '0.8rem' }}>{attackPlan.diceCount}D</span>}
+            <div className="action-corner top-right" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              {attackPlan.diceCount > 1 && (
+                <>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>{attackPlan.diceCount}</span>
+                  <CubeIcon size={14} />
+                </>
+              )}
+            </div>
+            {attackPlan.critRange < 6 && (
+              <div className="action-corner bottom-right">
+                Crítico {attackPlan.critRange}+
+              </div>
+            )}
+            <div className="combat-action-button-icon" style={{ marginTop: '-8px' }}>
+              <SwordsIcon size={38} />
+            </div>
+            <div style={{ position: 'absolute', bottom: '8px', left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
               {attackPlan.totalCostPM > 0 && (
                 <SegmentedBar
                   current={attackPlan.totalCostPM}
@@ -146,29 +160,31 @@ export default function ActionWorkspace({ characterName, currentForm, forms, act
                 />
               )}
             </div>
-            {attackPlan.applicableSkill && (
-              <div className="action-corner bottom-left">
-                {attackPlan.applicableSkill === 'luta' ? 'Luta' : 'Mística'}
-              </div>
-            )}
-            {attackPlan.critRange < 6 && (
-              <div className="action-corner bottom-right">
-                Crítico {attackPlan.critRange}+
-              </div>
-            )}
-            <div className="combat-action-button-icon">
-              <SwordsIcon size={38} />
-            </div>
           </article>
           <article
             className="bonus-toggle combat-action-button defense action-workspace-preview-card play-action-card-compact"
             style={{ '--combat-action-color': attributeColor(defensePlan.effectiveAttributeName) } as React.CSSProperties}
           >
             <div className="action-corner top-left">
-              {attributeLetter(defensePlan.effectiveAttributeName)}
+              {defensePlan.effectiveAttributeName === 'poder' ? <PoderIcon size={18} /> : defensePlan.effectiveAttributeName === 'habilidade' ? <HabilidadeIcon size={18} /> : <ResistenciaIcon size={18} />}
             </div>
-            <div className="action-corner top-right">
-              {defensePlan.diceCount > 1 && <span style={{ marginRight: '4px', fontSize: '0.8rem' }}>{defensePlan.diceCount}D</span>}
+            <div className="action-corner top-right" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              {defensePlan.diceCount > 1 && (
+                <>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>{defensePlan.diceCount}</span>
+                  <CubeIcon size={14} />
+                </>
+              )}
+            </div>
+            {defensePlan.critRange < 6 && (
+              <div className="action-corner bottom-right">
+                Crítico {defensePlan.critRange}+
+              </div>
+            )}
+            <div className="combat-action-button-icon" style={{ marginTop: '-8px' }}>
+              <ShieldIcon size={38} />
+            </div>
+            <div style={{ position: 'absolute', bottom: '8px', left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
               {defensePlan.totalCostPM > 0 && (
                 <SegmentedBar
                   current={defensePlan.totalCostPM}
@@ -177,19 +193,6 @@ export default function ActionWorkspace({ characterName, currentForm, forms, act
                   segmentWidth={8}
                 />
               )}
-            </div>
-            {defensePlan.applicableSkill && (
-              <div className="action-corner bottom-left">
-                {defensePlan.applicableSkill === 'luta' ? 'Luta' : 'Mística'}
-              </div>
-            )}
-            {defensePlan.critRange < 6 && (
-              <div className="action-corner bottom-right">
-                Crítico {defensePlan.critRange}+
-              </div>
-            )}
-            <div className="combat-action-button-icon">
-              <ShieldIcon size={38} />
             </div>
           </article>
           {actions.attacks.map(({ acquisitionId, strike }) => strike && <article key={`${acquisitionId}:${strike.id}`} className={`bonus-toggle action-workspace-preview-card ${strike.note.length > 70 ? 'play-action-card-detailed' : 'play-action-card-compact'}`}><div className="bonus-toggle-header"><span className="bonus-toggle-label">{strike.name}</span></div><span className="bonus-toggle-value">{strike.description}{strike.costResource !== 'none' && strike.costValue ? ` [-${strike.costValue} ${strike.costResource}]` : ''}</span><div className="bt-footer"><span>{strike.note}</span><span>Prévia no modo de jogo</span></div></article>)}

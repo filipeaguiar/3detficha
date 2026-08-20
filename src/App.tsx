@@ -826,7 +826,7 @@ export default function App() {
       {
         actionType,
         targetAttribute: attrName,
-        selectedSkill: options?.skillId || (options?.actionType ? (hasLuta ? 'luta' : (usesMisticaForCombat ? 'mistica' : undefined)) : undefined),
+        selectedSkill: options?.skillId || ((actionType === 'attack' || actionType === 'defense') ? (hasLuta ? 'luta' : (usesMisticaForCombat ? 'mistica' : undefined)) : undefined),
         activeBonusIds: activeBonuses,
         manualBonusDice,
         manualCritRange,

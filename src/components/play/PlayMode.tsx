@@ -6,7 +6,7 @@ import { createStrikeBonus, getActiveBonusVariant, getBonusSubtitle, getKnownStr
 import { resolveActionPlan } from '../../utils/actionResolver';
 import type { CharacterForm, CharacterKit, KitPower, RollBonus } from '../../types/character';
 import SegmentedBar from '../common/SegmentedBar';
-import { CheckIcon, ZapIcon, HourglassIcon, SquareIcon, CheckSquareIcon, CloseIcon, DiceCountIcon, HabilidadeIcon, InfoIcon, LeafIcon, MaskIcon, MenuIcon, PoderIcon, ResistenciaIcon, SkillsIcon, SparklesIcon, TransformIcon, BookIcon, CrownIcon, TriangleDownIcon, SwordsIcon, ShieldIcon } from '../common/Icons';
+import { CheckIcon, ZapIcon, HourglassIcon, SquareIcon, CheckSquareIcon, CloseIcon, DiceCountIcon, HabilidadeIcon, InfoIcon, LeafIcon, MaskIcon, MenuIcon, PoderIcon, ResistenciaIcon, SkillsIcon, SparklesIcon, TransformIcon, BookIcon, CrownIcon, TriangleDownIcon, SwordsIcon, ShieldIcon, CubeIcon } from '../common/Icons';
 import PlayAttacksSection from './PlayAttacksSection';
 import PlayTechniquesSection from './PlayTechniquesSection';
 
@@ -69,7 +69,6 @@ export default function PlayMode(props: PlayModeProps) {
   const [comboActive, setComboActive] = useState(false);
   const [isCharInfoOpen, setIsCharInfoOpen] = useState(false);
   const [showGeneralRolls, setShowGeneralRolls] = useState(false);
-  const [selectedGeneralSkill, setSelectedGeneralSkill] = useState<string | null>(null);
   const {
     characterName,
     currentKit,
@@ -127,7 +126,6 @@ export default function PlayMode(props: PlayModeProps) {
   const usesMisticaForCombat = !hasLuta && hasMistica && hasMagia;
   const hasCombatSkill = hasLuta || usesMisticaForCombat;
   const attributeColor = (attribute: 'poder' | 'habilidade' | 'resistencia') => attribute === 'poder' ? '#FF9E00' : attribute === 'habilidade' ? '#894EC6' : '#5EB05D';
-  const attributeLetter = (attribute: 'poder' | 'habilidade' | 'resistencia') => attribute === 'poder' ? 'P' : attribute === 'habilidade' ? 'H' : 'R';
   const techniqueActions = visibleRollBonuses.filter((bonus) => bonus.sourceCatalogId !== 'golpes');
   const hasCombo = (currentForm.rollBonuses || []).some((bonus) => bonus.name === 'Combo');
   const comboRemaining = Math.max(0, habilidade - comboUsedStrikeIds.length);
@@ -437,10 +435,27 @@ export default function PlayMode(props: PlayModeProps) {
                   title={attackPlan.conflictMessage || (!attackPlan.canAfford ? 'Recursos insuficientes' : 'Rolar Ataque')}
                 >
                   <div className="action-corner top-left">
-                    {attributeLetter(attackPlan.effectiveAttributeName)}
+                    {attackPlan.effectiveAttributeName === 'poder' ? <PoderIcon size={18} /> : attackPlan.effectiveAttributeName === 'habilidade' ? <HabilidadeIcon size={18} /> : <ResistenciaIcon size={18} />}
                   </div>
-                  <div className="action-corner top-right">
-                    {attackPlan.diceCount > 1 && <span style={{ marginRight: '4px', fontSize: '0.8rem' }}>{attackPlan.diceCount}D</span>}
+                  <div className="action-corner top-right" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {attackPlan.diceCount > 1 && (
+                      <>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>{attackPlan.diceCount}</span>
+                        <CubeIcon size={14} />
+                      </>
+                    )}
+                  </div>
+                  {attackPlan.critRange < 6 && (
+                    <div className="action-corner bottom-right">
+                      Crítico {attackPlan.critRange}+
+                    </div>
+                  )}
+
+                  <div className="combat-action-button-icon" style={{ marginTop: '-8px' }}>
+                    <SwordsIcon size={38} />
+                  </div>
+
+                  <div style={{ position: 'absolute', bottom: '8px', left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
                     {attackPlan.totalCostPM > 0 && (
                       <SegmentedBar
                         current={attackPlan.totalCostPM}
@@ -449,20 +464,6 @@ export default function PlayMode(props: PlayModeProps) {
                         segmentWidth={8}
                       />
                     )}
-                  </div>
-                  {attackPlan.applicableSkill && (
-                    <div className="action-corner bottom-left">
-                      {attackPlan.applicableSkill === 'luta' ? 'Luta' : 'Mística'}
-                    </div>
-                  )}
-                  {attackPlan.critRange < 6 && (
-                    <div className="action-corner bottom-right">
-                      Crítico {attackPlan.critRange}+
-                    </div>
-                  )}
-
-                  <div className="combat-action-button-icon">
-                    <SwordsIcon size={38} />
                   </div>
                 </button>
 
@@ -475,10 +476,27 @@ export default function PlayMode(props: PlayModeProps) {
                   title={defensePlan.conflictMessage || (!defensePlan.canAfford ? 'Recursos insuficientes' : 'Rolar Defesa')}
                 >
                   <div className="action-corner top-left">
-                    {attributeLetter(defensePlan.effectiveAttributeName)}
+                    {defensePlan.effectiveAttributeName === 'poder' ? <PoderIcon size={18} /> : defensePlan.effectiveAttributeName === 'habilidade' ? <HabilidadeIcon size={18} /> : <ResistenciaIcon size={18} />}
                   </div>
-                  <div className="action-corner top-right">
-                    {defensePlan.diceCount > 1 && <span style={{ marginRight: '4px', fontSize: '0.8rem' }}>{defensePlan.diceCount}D</span>}
+                  <div className="action-corner top-right" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {defensePlan.diceCount > 1 && (
+                      <>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>{defensePlan.diceCount}</span>
+                        <CubeIcon size={14} />
+                      </>
+                    )}
+                  </div>
+                  {defensePlan.critRange < 6 && (
+                    <div className="action-corner bottom-right">
+                      Crítico {defensePlan.critRange}+
+                    </div>
+                  )}
+
+                  <div className="combat-action-button-icon" style={{ marginTop: '-8px' }}>
+                    <ShieldIcon size={38} />
+                  </div>
+
+                  <div style={{ position: 'absolute', bottom: '8px', left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
                     {defensePlan.totalCostPM > 0 && (
                       <SegmentedBar
                         current={defensePlan.totalCostPM}
@@ -487,20 +505,6 @@ export default function PlayMode(props: PlayModeProps) {
                         segmentWidth={8}
                       />
                     )}
-                  </div>
-                  {defensePlan.applicableSkill && (
-                    <div className="action-corner bottom-left">
-                      {defensePlan.applicableSkill === 'luta' ? 'Luta' : 'Mística'}
-                    </div>
-                  )}
-                  {defensePlan.critRange < 6 && (
-                    <div className="action-corner bottom-right">
-                      Crítico {defensePlan.critRange}+
-                    </div>
-                  )}
-
-                  <div className="combat-action-button-icon">
-                    <ShieldIcon size={38} />
                   </div>
                 </button>
               </div>
@@ -525,45 +529,16 @@ export default function PlayMode(props: PlayModeProps) {
 
             {showGeneralRolls && (
               <div className="play-general-rolls-content slide-up">
-                {currentForm.skills && currentForm.skills.length > 0 && (
-                  <div style={{ marginBottom: '0.8rem', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>PERÍCIA ASSISTIDA (+1D):</span>
-                    <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                      <button
-                        type="button"
-                        className={`control-btn editor-pill-btn ${selectedGeneralSkill === null ? 'is-selected' : ''}`}
-                        onClick={() => setSelectedGeneralSkill(null)}
-                      >
-                        Nenhuma
-                      </button>
-                      {currentForm.skills.map((skillId) => {
-                        const skill = SKILLS_CATALOG.find((s) => s.id === skillId);
-                        const isSelected = selectedGeneralSkill === skillId;
-                        return (
-                          <button
-                            key={skillId}
-                            type="button"
-                            className={`control-btn editor-pill-btn ${isSelected ? 'is-selected' : ''}`}
-                            onClick={() => setSelectedGeneralSkill(isSelected ? null : skillId)}
-                          >
-                            {isSelected && <CheckIcon size={12} />} {skill?.name || skillId}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
                 <div className="stats-grid">
-                  <button className={`stat-box roll-btn ${!allowedAttributes.poder ? 'disabled-attribute' : ''}`} style={{ '--btn-color': '#FF9E00', '--btn-text-color': '#ffffff' } as React.CSSProperties} onClick={() => handleRoll('poder', { actionType: 'general', skillId: selectedGeneralSkill || undefined, label: selectedGeneralSkill ? `Poder (${SKILLS_CATALOG.find(s => s.id === selectedGeneralSkill)?.name || selectedGeneralSkill})` : 'Poder' })} disabled={rolling || !allowedAttributes.poder} title="Rolar teste de Poder">
+                  <button className={`stat-box roll-btn ${!allowedAttributes.poder ? 'disabled-attribute' : ''}`} style={{ '--btn-color': '#FF9E00', '--btn-text-color': '#ffffff' } as React.CSSProperties} onClick={() => handleRoll('poder', { actionType: 'general', label: 'Poder' })} disabled={rolling || !allowedAttributes.poder} title="Rolar teste de Poder">
                     <div className="stat-icon-container"><PoderIcon /></div>
                     <div className="stat-value corner">{poder + (currentForm.wildShapeAdvantages?.includes('Forte') ? 1 : 0)}</div>
                   </button>
-                  <button className={`stat-box roll-btn ${!allowedAttributes.habilidade ? 'disabled-attribute' : ''}`} style={{ '--btn-color': '#894EC6', '--btn-text-color': '#ffffff' } as React.CSSProperties} onClick={() => handleRoll('habilidade', { actionType: 'general', skillId: selectedGeneralSkill || undefined, label: selectedGeneralSkill ? `Habilidade (${SKILLS_CATALOG.find(s => s.id === selectedGeneralSkill)?.name || selectedGeneralSkill})` : 'Habilidade' })} disabled={rolling || !allowedAttributes.habilidade} title="Rolar teste de Habilidade">
+                  <button className={`stat-box roll-btn ${!allowedAttributes.habilidade ? 'disabled-attribute' : ''}`} style={{ '--btn-color': '#894EC6', '--btn-text-color': '#ffffff' } as React.CSSProperties} onClick={() => handleRoll('habilidade', { actionType: 'general', label: 'Habilidade' })} disabled={rolling || !allowedAttributes.habilidade} title="Rolar teste de Habilidade">
                     <div className="stat-icon-container"><HabilidadeIcon /></div>
                     <div className="stat-value corner">{habilidade}</div>
                   </button>
-                  <button className={`stat-box roll-btn ${!allowedAttributes.resistencia ? 'disabled-attribute' : ''}`} style={{ '--btn-color': '#5EB05D', '--btn-text-color': '#ffffff' } as React.CSSProperties} onClick={() => handleRoll('resistencia', { actionType: 'general', skillId: selectedGeneralSkill || undefined, label: selectedGeneralSkill ? `Resistência (${SKILLS_CATALOG.find(s => s.id === selectedGeneralSkill)?.name || selectedGeneralSkill})` : 'Resistência' })} disabled={rolling || !allowedAttributes.resistencia} title="Rolar teste de Resistência">
+                  <button className={`stat-box roll-btn ${!allowedAttributes.resistencia ? 'disabled-attribute' : ''}`} style={{ '--btn-color': '#5EB05D', '--btn-text-color': '#ffffff' } as React.CSSProperties} onClick={() => handleRoll('resistencia', { actionType: 'general', label: 'Resistência' })} disabled={rolling || !allowedAttributes.resistencia} title="Rolar teste de Resistência">
                     <div className="stat-icon-container"><ResistenciaIcon /></div>
                     <div className="stat-value corner">{resistencia + (currentForm.wildShapeAdvantages?.includes('Vigoroso') ? 2 : 0)}</div>
                   </button>
@@ -571,13 +546,13 @@ export default function PlayMode(props: PlayModeProps) {
 
                 <div className="play-manual-roll-controls">
                   <button className={`toggle-btn ${calculatedTotalExtraDice !== 0 ? 'active' : ''}`} onClick={() => setManualBonusDice(prev => (prev >= 2 ? 0 : (prev + 1) as 0 | 1 | 2))} title={`Ajuste manual: ${Math.max(1, Math.min(3, 1 + calculatedTotalExtraDice))}D`}>
-                    <DiceCountIcon count={Math.max(1, Math.min(3, 1 + calculatedTotalExtraDice)) as 1 | 2 | 3} size={22} />
+                    <CubeIcon size={22} />
+                    <span style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>+{calculatedTotalExtraDice}D</span>
                   </button>
                   <button className={`toggle-btn ${calculatedCritRange < 6 ? 'active' : ''}`} onClick={() => setManualCritRange(prev => (prev === 6 ? 5 : 6))} title={`Ajuste manual de crítico: ${calculatedCritRange === 6 ? '6' : `${calculatedCritRange}+`}`}>
                     <span className="play-critical-value">{calculatedCritRange === 6 ? '6' : `${calculatedCritRange}+`}</span>
                   </button>
                 </div>
-                <p className="play-general-rolls-help">Ganhos e modificadores de crítico ativos são aplicados automaticamente. Use estes ajustes apenas para condições narrativas ou de mesa.</p>
               </div>
             )}
           </section>
