@@ -6,7 +6,7 @@ import { createStrikeBonus, getActiveBonusVariant, getBonusSubtitle, getKnownStr
 import { resolveActionPlan } from '../../utils/actionResolver';
 import type { CharacterForm, CharacterKit, KitPower, RollBonus } from '../../types/character';
 import SegmentedBar from '../common/SegmentedBar';
-import { CheckIcon, ZapIcon, HourglassIcon, SquareIcon, CheckSquareIcon, CloseIcon, DiceCountIcon, HabilidadeIcon, InfoIcon, LeafIcon, MaskIcon, MenuIcon, PoderIcon, ResistenciaIcon, SkillsIcon, SparklesIcon, TransformIcon, BookIcon, CrownIcon, TriangleDownIcon, SwordsIcon, ShieldIcon, CubeIcon } from '../common/Icons';
+import { CheckIcon, ZapIcon, HourglassIcon, SquareIcon, CheckSquareIcon, CloseIcon, DiceCountIcon, HabilidadeIcon, InfoIcon, LeafIcon, MaskIcon, MenuIcon, PoderIcon, ResistenciaIcon, SkillsIcon, SparklesIcon, TransformIcon, BookIcon, CrownIcon, TriangleDownIcon, SwordsIcon, ShieldIcon } from '../common/Icons';
 import PlayAttacksSection from './PlayAttacksSection';
 import PlayTechniquesSection from './PlayTechniquesSection';
 
@@ -439,10 +439,7 @@ export default function PlayMode(props: PlayModeProps) {
                   </div>
                   <div className="action-corner top-right" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     {attackPlan.diceCount > 1 && (
-                      <>
-                        <span style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>{attackPlan.diceCount}</span>
-                        <CubeIcon size={14} />
-                      </>
+                      <DiceCountIcon count={Math.max(1, Math.min(3, attackPlan.diceCount)) as 1 | 2 | 3} size={14} />
                     )}
                   </div>
                   {attackPlan.critRange < 6 && (
@@ -480,10 +477,7 @@ export default function PlayMode(props: PlayModeProps) {
                   </div>
                   <div className="action-corner top-right" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     {defensePlan.diceCount > 1 && (
-                      <>
-                        <span style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>{defensePlan.diceCount}</span>
-                        <CubeIcon size={14} />
-                      </>
+                      <DiceCountIcon count={Math.max(1, Math.min(3, defensePlan.diceCount)) as 1 | 2 | 3} size={14} />
                     )}
                   </div>
                   {defensePlan.critRange < 6 && (
@@ -523,7 +517,7 @@ export default function PlayMode(props: PlayModeProps) {
             <button type="button" className={`control-btn editor-pill-btn play-general-rolls-toggle ${showGeneralRolls ? 'active' : ''}`} onClick={() => setShowGeneralRolls((open) => !open)} aria-expanded={showGeneralRolls}>
               <DiceCountIcon count={Math.max(1, Math.min(3, 1 + calculatedTotalExtraDice)) as 1 | 2 | 3} size={18} />
               <span>Testes fora de combate</span>
-              {(calculatedTotalExtraDice !== 0 || calculatedCritRange < 6) && <span className="bonus-attr-micro">{calculatedTotalExtraDice !== 0 ? `${Math.max(1, Math.min(3, 1 + calculatedTotalExtraDice))}D` : ''}{calculatedTotalExtraDice !== 0 && calculatedCritRange < 6 ? ' • ' : ''}{calculatedCritRange < 6 ? `Crítico ${calculatedCritRange}+` : ''}</span>}
+              {calculatedCritRange < 6 && <span className="bonus-attr-micro">Crítico {calculatedCritRange}+</span>}
               <TriangleDownIcon size={11} className={showGeneralRolls ? 'rotated' : ''} />
             </button>
 
@@ -546,8 +540,7 @@ export default function PlayMode(props: PlayModeProps) {
 
                 <div className="play-manual-roll-controls">
                   <button className={`toggle-btn ${calculatedTotalExtraDice !== 0 ? 'active' : ''}`} onClick={() => setManualBonusDice(prev => (prev >= 2 ? 0 : (prev + 1) as 0 | 1 | 2))} title={`Ajuste manual: ${Math.max(1, Math.min(3, 1 + calculatedTotalExtraDice))}D`}>
-                    <CubeIcon size={22} />
-                    <span style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>+{calculatedTotalExtraDice}D</span>
+                    <DiceCountIcon count={Math.max(1, Math.min(3, 1 + calculatedTotalExtraDice)) as 1 | 2 | 3} size={22} />
                   </button>
                   <button className={`toggle-btn ${calculatedCritRange < 6 ? 'active' : ''}`} onClick={() => setManualCritRange(prev => (prev === 6 ? 5 : 6))} title={`Ajuste manual de crítico: ${calculatedCritRange === 6 ? '6' : `${calculatedCritRange}+`}`}>
                     <span className="play-critical-value">{calculatedCritRange === 6 ? '6' : `${calculatedCritRange}+`}</span>

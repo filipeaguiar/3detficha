@@ -5,7 +5,7 @@ import type { ActionWorkspaceTab, AppMode } from '../../types/navigation';
 import { classifyFormActions } from '../../utils/actionClassification';
 import { getActiveBonusVariant, getBonusSubtitle } from '../../utils/character';
 import { resolveActionPlan } from '../../utils/actionResolver';
-import { BookIcon, CheckIcon, CloseIcon, HabilidadeIcon, HourglassIcon, MenuIcon, PencilIcon, PlusIcon, PoderIcon, ResistenciaIcon, SparklesIcon, TabTechniquesIcon, TrashIcon, WandSparklesIcon, ZapIcon, SwordsIcon, ShieldIcon, CubeIcon } from '../common/Icons';
+import { BookIcon, CheckIcon, CloseIcon, HabilidadeIcon, HourglassIcon, MenuIcon, PencilIcon, PlusIcon, PoderIcon, ResistenciaIcon, SparklesIcon, TabTechniquesIcon, TrashIcon, WandSparklesIcon, ZapIcon, SwordsIcon, ShieldIcon, DiceCountIcon } from '../common/Icons';
 import SegmentedBar from '../common/SegmentedBar';
 import TabbedNavigation from '../common/TabbedNavigation';
 import EditorPillGroup from '../editor/EditorPillGroup';
@@ -136,10 +136,7 @@ export default function ActionWorkspace({ characterName, currentForm, forms, act
             </div>
             <div className="action-corner top-right" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               {attackPlan.diceCount > 1 && (
-                <>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>{attackPlan.diceCount}</span>
-                  <CubeIcon size={14} />
-                </>
+                <DiceCountIcon count={Math.max(1, Math.min(3, attackPlan.diceCount)) as 1 | 2 | 3} size={14} />
               )}
             </div>
             {attackPlan.critRange < 6 && (
@@ -170,10 +167,7 @@ export default function ActionWorkspace({ characterName, currentForm, forms, act
             </div>
             <div className="action-corner top-right" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               {defensePlan.diceCount > 1 && (
-                <>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>{defensePlan.diceCount}</span>
-                  <CubeIcon size={14} />
-                </>
+                <DiceCountIcon count={Math.max(1, Math.min(3, defensePlan.diceCount)) as 1 | 2 | 3} size={14} />
               )}
             </div>
             {defensePlan.critRange < 6 && (
