@@ -5,7 +5,7 @@ import { SKILLS_CATALOG } from '../../constants/skillsData';
 import { createStrikeBonus, getActiveBonusVariant, getBonusSubtitle, getKnownStrikes, getKitPowerModifier } from '../../utils/character';
 import type { CharacterForm, CharacterKit, KitPower, RollBonus } from '../../types/character';
 import SegmentedBar from '../common/SegmentedBar';
-import { CheckIcon, ZapIcon, HourglassIcon, CrystalBallIcon, WandSparklesIcon, CloseIcon, DiceCountIcon, HabilidadeIcon, InfoIcon, LeafIcon, MaskIcon, MenuIcon, PoderIcon, ResistenciaIcon, SkillsIcon, SparklesIcon, TransformIcon } from '../common/Icons';
+import { CheckIcon, ZapIcon, HourglassIcon, SquareIcon, CheckSquareIcon, CloseIcon, DiceCountIcon, HabilidadeIcon, InfoIcon, LeafIcon, MaskIcon, MenuIcon, PoderIcon, ResistenciaIcon, SkillsIcon, SparklesIcon, TransformIcon } from '../common/Icons';
 
 type PlayModeProps = {
   characterName: string;
@@ -320,7 +320,7 @@ export default function PlayMode(props: PlayModeProps) {
                         {isImmediate && <span className="bonus-attr-micro" style={{ background: 'transparent', color: '#ffd166', fontSize: '0.85rem' }} title="Ação Imediata"><ZapIcon size={14} /></span>}
                         {isPersistentAssisted && <span className="bonus-attr-micro" style={{ background: bonus.assistedState?.active ? '#7bd389' : '#ff8fab', color: '#000' }}>{bonus.assistedState?.active ? (assistedConfig?.statusLabel || 'ATIVO') : 'ASSISTIDO'}</span>}
                         {isTemporaryPackage && <span className="bonus-attr-micro" style={{ background: bonus.assistedState?.active ? '#7bd389' : '#ffd166', color: '#000' }}>{bonus.assistedState?.active ? (temporaryConfig?.statusLabel || 'PACOTE') : 'PACOTE'}</span>}
-                        {bonus.gameplayPattern === 'prepared-magic' && <span className="bonus-attr-micro" style={{ background: 'transparent', color: bonus.assistedState?.prepared ? '#7bd389' : '#ff8fab', fontSize: '0.85rem' }} title={bonus.assistedState?.prepared ? 'Magia Preparada' : 'Magia Despreparada'}>{bonus.assistedState?.prepared ? <WandSparklesIcon size={14} /> : <CrystalBallIcon size={14} />}</span>}
+                        {bonus.gameplayPattern === 'prepared-magic' && <span className="bonus-attr-micro" style={{ background: 'transparent', color: bonus.assistedState?.prepared ? '#7bd389' : 'var(--text-muted)', fontSize: '0.85rem' }} title={bonus.assistedState?.prepared ? 'Magia Preparada' : 'Magia Despreparada'}>{bonus.assistedState?.prepared ? <CheckSquareIcon size={14} /> : <SquareIcon size={14} />}</span>}
                         {bonus.attribute !== 'any' && <span className="bonus-attr-micro" style={{ background: 'transparent', width: '14px', height: '14px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: 0, color: bonus.attribute === 'poder' ? '#FF9E00' : bonus.attribute === 'habilidade' ? '#894EC6' : '#5EB05D' }}>{bonus.attribute === 'poder' ? <PoderIcon /> : bonus.attribute === 'habilidade' ? <HabilidadeIcon /> : <ResistenciaIcon />}</span>}
                       </div>
                     </div>
