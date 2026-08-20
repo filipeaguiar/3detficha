@@ -979,6 +979,7 @@ export const ALL_KITS = [
       {
         "id": "mago_preparar_magias",
         "name": "Preparar magias",
+        "costPM": -1,
         "desc": "Sempre que estiver com Pon- tos de Mana completos (tipi- camente após um descanso) e não envolvido em conflito, você pode escolher deixar certas magias preparadas, otimizando o gasto de mana. Faça uma lista com os efeitos de Magia que preferir (por exemplo, +2 em ataque, +3 em defesa, +2 em uma perícia...). Você gasta me- tade dos PM para preparar essas magias. Elas não podem ser mudadas, e seus PM não podem ser recuperados, até você usá-las. Menestreamer",
         "type": "buff"
       }
