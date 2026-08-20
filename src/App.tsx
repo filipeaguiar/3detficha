@@ -617,7 +617,28 @@ export default function App() {
       return;
     }
 
+
+    if (bonus.gameplayPattern === 'prepared-magic') {
+      if (!bonus.assistedState?.prepared) {
+        // State 0 -> State 1
+        const cost = typeof activeVariant?.costValue === 'number' ? activeVariant.costValue : (bonus.costValue || 0);
+        const resource = activeVariant?.costResource || bonus.costResource;
+        spendResource(resource, cost);
+        updateRollBonus(bonus.id, { assistedState: { ...(bonus.assistedState || {}), prepared: true } });
+        return;
+      } else if (!activeBonuses.has(id)) {
+        // State 1 -> State 2
+        setActiveBonuses((current) => { const next = new Set(current); next.add(id); return next; });
+        return;
+      } else {
+        // State 2 -> State 1
+        setActiveBonuses((current) => { const next = new Set(current); next.delete(id); return next; });
+        return;
+      }
+    }
+
     if (bonus.temporaryPackage) {
+
       const becomingActive = !bonus.assistedState?.active;
       if (becomingActive && bonus.sourceCatalogId === 'area_de_batalha') {
         const packageCost = (bonus.assistedState?.packageChoices || []).reduce((sum, advantageId) => sum + Number(ADVANTAGES_CATALOG.find((advantage) => advantage.id === advantageId)?.cost.match(/^\d+/)?.[0] || 0), 0);
@@ -932,7 +953,7 @@ export default function App() {
       if (costPA > 0) setCurrentPA(prev => Math.max(0, prev - costPA));
       if (temporaryPM > 0) setTemporaryPM(0);
 
-      // Auto-deactivate instant bonuses
+      // Auto-deactivate instant bonuses and reset prepared magic
       setActiveBonuses(prev => {
         const next = new Set<string>();
         rollBonuses.forEach(b => {
@@ -941,6 +962,13 @@ export default function App() {
           }
         });
         return next;
+      });
+
+      // Reset prepared state for prepared-magic that were active (consumed)
+      activeBonusesList.forEach(b => {
+        if (b.gameplayPattern === 'prepared-magic' && b.assistedState?.prepared) {
+          updateRollBonus(b.id, { assistedState: { ...(b.assistedState || {}), prepared: false } });
+        }
       });
 
       setResult({

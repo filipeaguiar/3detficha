@@ -73,7 +73,7 @@ export type RollBonus = {
   xpCategory?: 'trick' | 'common' | 'legendary' | 'generic';
   fundedBySourceIds?: string[];
   sourceCatalogId?: string;
-  gameplayPattern?: 'fixed-modifier' | 'cycling-variant' | 'immediate-action' | 'persistent-assisted' | 'temporary-package' | 'narrative';
+  gameplayPattern?: 'fixed-modifier' | 'cycling-variant' | 'immediate-action' | 'persistent-assisted' | 'temporary-package' | 'narrative' | 'prepared-magic';
   tableNotes?: string[];
   variants?: RollBonusVariant[];
   selectedVariantId?: string;
@@ -82,6 +82,7 @@ export type RollBonus = {
   persistentAssisted?: PersistentAssistedConfig;
   temporaryPackage?: TemporaryPackageConfig;
   assistedState?: {
+    prepared?: boolean;
     active?: boolean;
     remainingUses?: number;
     stockCount?: number;

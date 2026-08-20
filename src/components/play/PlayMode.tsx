@@ -316,7 +316,10 @@ export default function PlayMode(props: PlayModeProps) {
                       {isImmediate && <span className="bonus-attr-micro" style={{ background: '#ffd166', color: '#000' }}>AÇÃO</span>}
                       {isPersistentAssisted && <span className="bonus-attr-micro" style={{ background: bonus.assistedState?.active ? '#7bd389' : '#ff8fab', color: '#000' }}>{bonus.assistedState?.active ? (assistedConfig?.statusLabel || 'ATIVO') : 'ASSISTIDO'}</span>}
                       {isTemporaryPackage && <span className="bonus-attr-micro" style={{ background: bonus.assistedState?.active ? '#7bd389' : '#ffd166', color: '#000' }}>{bonus.assistedState?.active ? (temporaryConfig?.statusLabel || 'PACOTE') : 'PACOTE'}</span>}
+
+                      {bonus.gameplayPattern === 'prepared-magic' && <span className="bonus-attr-micro" style={{ background: bonus.assistedState?.prepared ? '#7bd389' : '#ff8fab', color: '#000' }}>{bonus.assistedState?.prepared ? 'PREPARADA' : 'DESPREPARADA'}</span>}
                       {bonus.gameplayPattern === 'narrative' && <span className="bonus-attr-micro" style={{ background: '#ff8fab', color: '#000' }}>MESA</span>}
+
                       {bonus.attribute !== 'any' && <span className="bonus-attr-micro" style={{ color: bonus.attribute === 'poder' ? '#FF9E00' : bonus.attribute === 'habilidade' ? '#894EC6' : '#5EB05D' }}>{bonus.attribute.charAt(0).toUpperCase()}</span>}
                     </div>
                     {bonus.alias && <span className="bonus-toggle-raw-name">{bonus.name}</span>}
@@ -327,7 +330,10 @@ export default function PlayMode(props: PlayModeProps) {
                     {isPersistentAssisted && bonus.assistedState?.active ? <span className="bonus-toggle-raw-name" onClick={(event) => event.stopPropagation()}><button type="button" className="bonus-remove-btn" onClick={() => endAssistedBonus(bonus.id)}>Encerrar sem acionar</button></span> : null}
                     {isTemporaryPackage ? <span className="bonus-toggle-raw-name">{bonus.assistedState?.active ? `Pacote: ${(bonus.assistedState.packageChoices || []).map((id) => ADVANTAGES_CATALOG.find((advantage) => advantage.id === id)?.name || id).join(', ') || 'escolhas narrativas'}` : 'Toque para ativar o pacote assistido'}</span> : null}
                     {isTemporaryPackage && bonus.assistedState?.active && temporaryConfig?.maintenanceCostValue ? <span className="bonus-toggle-raw-name" onClick={(event) => event.stopPropagation()}><button type="button" className="bonus-remove-btn" onClick={() => maintainTemporaryPackage(bonus.id)}>Manter [-{temporaryConfig.maintenanceCostValue} {temporaryConfig.maintenanceCostResource || 'PM'}]</button></span> : null}
+
+                    {bonus.gameplayPattern === 'prepared-magic' && bonus.assistedState?.prepared && !isActive ? <span className="bonus-toggle-raw-name" onClick={(event) => event.stopPropagation()}><button type="button" className="bonus-remove-btn" onClick={() => configureAssistedBonus(bonus.id, { prepared: false })}>Cancelar preparo</button></span> : null}
                     {bonus.tableNotes?.length ? <span className="bonus-toggle-raw-name" style={{ color: '#ffd166' }}>Mesa: {bonus.tableNotes.join(' • ')}</span> : null}
+
                     {bonus.variants && bonus.variants.length > 1 ? <span className="bonus-toggle-raw-name" style={{ marginTop: '0.25rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}><button type="button" className="bonus-remove-btn" style={{ minWidth: 'auto' }} onClick={(e) => { e.stopPropagation(); cycleBonusVariant(bonus.id); }} title="Alternar variante">↻</button><span>{activeVariant?.label || 'Variante'}</span></span> : null}
                   </button>
                 );
