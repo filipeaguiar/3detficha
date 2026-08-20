@@ -33,7 +33,7 @@ export default function SegmentedBar({ current, max, color, onClick, halfWidth, 
           backgroundColor: isFilled
             ? color
             : `color-mix(in srgb, ${color} 18%, rgba(255, 255, 255, 0.06))`,
-          transform: 'skewX(-20deg)',
+          transform: 'skewX(-10deg)',
           borderRadius: '1px',
           boxShadow: isFilled
             ? 'inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 -1px 0 rgba(0, 0, 0, 0.2)'

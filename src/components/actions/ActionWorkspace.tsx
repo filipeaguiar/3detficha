@@ -157,7 +157,7 @@ export default function ActionWorkspace({ characterName, currentForm, forms, act
               </div>
             )}
             <div className="combat-action-button-icon">
-              <SwordsIcon size={46} />
+              <SwordsIcon size={38} />
             </div>
           </article>
           <article
@@ -189,7 +189,7 @@ export default function ActionWorkspace({ characterName, currentForm, forms, act
               </div>
             )}
             <div className="combat-action-button-icon">
-              <ShieldIcon size={46} />
+              <ShieldIcon size={38} />
             </div>
           </article>
           {actions.attacks.map(({ acquisitionId, strike }) => strike && <article key={`${acquisitionId}:${strike.id}`} className={`bonus-toggle action-workspace-preview-card ${strike.note.length > 70 ? 'play-action-card-detailed' : 'play-action-card-compact'}`}><div className="bonus-toggle-header"><span className="bonus-toggle-label">{strike.name}</span></div><span className="bonus-toggle-value">{strike.description}{strike.costResource !== 'none' && strike.costValue ? ` [-${strike.costValue} ${strike.costResource}]` : ''}</span><div className="bt-footer"><span>{strike.note}</span><span>Prévia no modo de jogo</span></div></article>)}

@@ -209,7 +209,7 @@ export default function PlayMode(props: PlayModeProps) {
         </div>
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', paddingRight: '2.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', paddingRight: '2.5rem', transform: 'translateX(6px)' }}>
             <h1 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.8rem', margin: '0', color: '#fff', letterSpacing: '1px', textTransform: 'uppercase', textShadow: '2px 2px 0px #000' }}>
               {characterName || 'HERÓI DESCONHECIDO'}
             </h1>
@@ -221,9 +221,9 @@ export default function PlayMode(props: PlayModeProps) {
             )}
           </div>
 
-          <SegmentedBar current={currentPV} max={maxPV} color="#5EB05D" onClick={() => setIsEditingStats(true)} pulseCount={totalCostPV} />
-          <SegmentedBar current={currentPM} max={maxPM} color="#894EC6" onClick={() => setIsEditingStats(true)} pulseCount={totalCostPM} offsetX={-7} />
-          <SegmentedBar current={currentPA} max={maxPA} color="#FF9E00" onClick={() => setIsEditingStats(true)} halfWidth={true} pulseCount={totalCostPA} offsetX={-14} />
+          <SegmentedBar current={currentPV} max={maxPV} color="#5EB05D" onClick={() => setIsEditingStats(true)} pulseCount={totalCostPV} offsetX={2} />
+          <SegmentedBar current={currentPM} max={maxPM} color="#894EC6" onClick={() => setIsEditingStats(true)} pulseCount={totalCostPM} offsetX={-2} />
+          <SegmentedBar current={currentPA} max={maxPA} color="#FF9E00" onClick={() => setIsEditingStats(true)} halfWidth={true} pulseCount={totalCostPA} offsetX={-6} />
         </div>
       </div>
 
@@ -430,7 +430,7 @@ export default function PlayMode(props: PlayModeProps) {
               <div className="generic-combat-actions-grid">
                 <button
                   type="button"
-                  className={`bonus-toggle combat-action-button attack play-action-card-compact ${!attackPlan.canAfford || attackPlan.hasConflicts ? 'disabled-attribute' : ''}`}
+                  className={`bonus-toggle combat-action-button attack ${!attackPlan.canAfford || attackPlan.hasConflicts ? 'disabled-attribute' : ''}`}
                   style={{ '--combat-action-color': attributeColor(attackPlan.effectiveAttributeName) } as React.CSSProperties}
                   disabled={rolling || !attackPlan.canAfford || attackPlan.hasConflicts}
                   onClick={() => handleRoll(attackPlan.effectiveAttributeName, { label: 'Ataque', actionType: 'attack' })}
@@ -462,13 +462,13 @@ export default function PlayMode(props: PlayModeProps) {
                   )}
 
                   <div className="combat-action-button-icon">
-                    <SwordsIcon size={46} />
+                    <SwordsIcon size={38} />
                   </div>
                 </button>
 
                 <button
                   type="button"
-                  className={`bonus-toggle combat-action-button defense play-action-card-compact ${!defensePlan.canAfford || defensePlan.hasConflicts ? 'disabled-attribute' : ''}`}
+                  className={`bonus-toggle combat-action-button defense ${!defensePlan.canAfford || defensePlan.hasConflicts ? 'disabled-attribute' : ''}`}
                   style={{ '--combat-action-color': attributeColor(defensePlan.effectiveAttributeName) } as React.CSSProperties}
                   disabled={rolling || !defensePlan.canAfford || defensePlan.hasConflicts}
                   onClick={() => handleRoll(defensePlan.effectiveAttributeName, { label: 'Defesa', actionType: 'defense' })}
@@ -500,7 +500,7 @@ export default function PlayMode(props: PlayModeProps) {
                   )}
 
                   <div className="combat-action-button-icon">
-                    <ShieldIcon size={46} />
+                    <ShieldIcon size={38} />
                   </div>
                 </button>
               </div>
