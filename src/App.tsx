@@ -578,8 +578,12 @@ export default function App() {
     const activeVariant = getActiveBonusVariant(bonus);
 
     if (id.startsWith('arch_')) {
-      if (usedArchetypeEffects[id]) return;
-      setUsedArchetypeEffects(prev => ({ ...prev, [id]: 1 }));
+      if (activeBonuses.has(id)) {
+        setUsedArchetypeEffects(prev => { const next = { ...prev }; delete next[id]; return next; });
+      } else {
+        if (usedArchetypeEffects[id]) return;
+        setUsedArchetypeEffects(prev => ({ ...prev, [id]: 1 }));
+      }
     }
 
     const immediateAction = activeVariant?.immediateAction || bonus.immediateAction;
