@@ -684,20 +684,52 @@ export default function App() {
     }
 
     if (bonus.gameplayPattern === 'cycling-variant') {
-      const becomingActive = !activeBonuses.has(id);
-      if (becomingActive && bonus.duration === 'scene') {
-        const effectiveCostResource = activeVariant?.costResource || bonus.costResource;
-        const effectiveCostValue = typeof activeVariant?.costValue === 'number' ? activeVariant.costValue : bonus.costValue;
-        if (effectiveCostResource && effectiveCostResource !== 'none' && effectiveCostValue) {
-          spendResource(effectiveCostResource, effectiveCostValue);
+      const isCurrentlyActive = activeBonuses.has(id);
+      
+      if (!isCurrentlyActive) {
+        if (bonus.duration === 'scene') {
+          const effectiveCostResource = activeVariant?.costResource || bonus.costResource;
+          const effectiveCostValue = typeof activeVariant?.costValue === 'number' ? activeVariant.costValue : bonus.costValue;
+          if (effectiveCostResource && effectiveCostResource !== 'none' && effectiveCostValue) {
+            spendResource(effectiveCostResource, effectiveCostValue);
+          }
+        }
+        setActiveBonuses((current) => {
+          const next = new Set(current);
+          next.add(id);
+          return next;
+        });
+      } else {
+        if (bonus.variants && bonus.variants.length > 1) {
+          const currentIndex = bonus.variants.findIndex(v => v.id === bonus.selectedVariantId);
+          const isLastVariant = currentIndex === bonus.variants.length - 1;
+          
+          if (isLastVariant) {
+            setActiveBonuses((current) => {
+              const next = new Set(current);
+              next.delete(id);
+              return next;
+            });
+          } else if (bonus.duration === 'scene') {
+            const nextVariant = bonus.variants[currentIndex + 1];
+            const currentCost = typeof activeVariant?.costValue === 'number' ? activeVariant.costValue : (bonus.costValue || 0);
+            const nextCost = typeof nextVariant.costValue === 'number' ? nextVariant.costValue : (bonus.costValue || 0);
+            if (nextCost > currentCost) {
+              const resource = nextVariant.costResource || bonus.costResource;
+              if (resource && resource !== 'none') {
+                spendResource(resource, nextCost - currentCost);
+              }
+            }
+          }
+          cycleBonusVariant(id);
+        } else {
+          setActiveBonuses((current) => {
+            const next = new Set(current);
+            next.delete(id);
+            return next;
+          });
         }
       }
-      setActiveBonuses((current) => {
-        const next = new Set(current);
-        if (becomingActive) next.add(id);
-        else next.delete(id);
-        return next;
-      });
       return;
     }
 
