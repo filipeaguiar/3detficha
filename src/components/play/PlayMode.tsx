@@ -173,7 +173,7 @@ export default function PlayMode(props: PlayModeProps) {
   return (
     <div style={{ gridColumn: '1 / -1', maxWidth: '600px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column' }}>
       <div className="slide-up" style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', padding: '0.8rem', background: 'rgba(0,0,0,0.5)', borderTop: '2px solid var(--accent-color)', borderBottom: '2px solid var(--accent-color)', position: 'relative', animationDelay: '0.05s', zIndex: 20 }}>
-        <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex' }}>
+        <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', zIndex: 50 }}>
           <button onClick={() => setIsDrawerOpen(true)} className="hud-menu-trigger" title="Menu do Personagem (Deslize para a direita ou clique)">
             <MenuIcon />
           </button>
