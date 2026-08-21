@@ -145,7 +145,7 @@ export type ActionRequest = {
   sourceVariantId?: string;
   activeBonusIds?: string[] | Set<string>;
   declaredConditions?: Record<string, boolean | string>;
-  manualBonusDice?: 0 | 1 | 2;
+  manualBonusDice?: -2 | -1 | 0 | 1 | 2;
   manualCritRange?: 5 | 6;
   baseCostPM?: number;
   baseCostPV?: number;

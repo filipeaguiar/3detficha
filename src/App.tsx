@@ -215,7 +215,7 @@ export default function App() {
   }, [maxPV, recoverableMaxPM, maxPA]);
 
   // Modificadores manuais de rolagem
-  const [manualBonusDice, setManualBonusDice] = useState<0 | 1 | 2>(0);
+  const [manualBonusDice, setManualBonusDice] = useState<-2 | -1 | 0 | 1 | 2>(0);
 
   // Bônus e Técnicas Ativas
   const [activeBonuses, setActiveBonuses] = useState<Set<string>>(new Set());

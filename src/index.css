@@ -1488,7 +1488,7 @@ input.stat-input:focus {
 
 .play-dice-segmented-bar {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   background: rgba(10, 13, 20, 0.95);
   border-bottom: 1px solid var(--border-color);
   padding: 4px;
@@ -1499,11 +1499,11 @@ input.stat-input:focus {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 5px;
   background: transparent;
   border: 1px solid transparent;
   border-radius: 6px;
-  padding: 6px 4px;
+  padding: 6px 2px;
   color: var(--text-muted);
   cursor: pointer;
   transition: all 0.15s ease;
@@ -1521,12 +1521,43 @@ input.stat-input:focus {
   box-shadow: 0 0 10px rgba(0, 255, 255, 0.25);
 }
 
+.dice-seg-btn.perda.active {
+  background: rgba(255, 77, 109, 0.15);
+  border-color: #ff4d6d;
+  color: #ff8fab;
+  box-shadow: 0 0 10px rgba(255, 77, 109, 0.25);
+}
+
+.dice-seg-btn.ganho.active {
+  background: rgba(123, 223, 242, 0.15);
+  border-color: #7bdff2;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(123, 223, 242, 0.25);
+}
+
+.dice-seg-btn.ganho-max.active {
+  background: rgba(255, 209, 102, 0.15);
+  border-color: #ffd166;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(255, 209, 102, 0.25);
+}
+
+.dice-seg-badge {
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 0.5px;
+}
+.dice-seg-badge.perda {
+  color: #ff4d6d;
+}
+
 .dice-seg-label {
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 700;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
 }
 
 .dice-seg-sub {

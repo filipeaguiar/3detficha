@@ -174,6 +174,15 @@ export function resolveActionPlan(
     });
   }
 
+  // Manual dice adjustment (Ganho / Perda de mesa)
+  if (typeof request.manualBonusDice === 'number' && request.manualBonusDice !== 0) {
+    appliedBonuses.push({
+      name: request.manualBonusDice > 0 ? 'Ganho (Mestre/Mesa)' : 'Perda (Mestre/Mesa)',
+      desc: `${request.manualBonusDice > 0 ? `+${request.manualBonusDice}` : request.manualBonusDice}D na rolagem`,
+      automationLevel: 'assisted',
+    });
+  }
+
   // 7. Accumulate active bonuses
   for (const bonus of deduplicatedBonuses) {
     const variant = getActiveBonusVariant(bonus);
