@@ -173,7 +173,7 @@ export default function PlayMode(props: PlayModeProps) {
   return (
     <div style={{ gridColumn: '1 / -1', maxWidth: '600px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ position: 'sticky', top: 0, zIndex: 100, background: 'var(--bg-color)' }}>
-        <div className="slide-up" style={{ display: 'flex', gap: '1rem', padding: '0.8rem', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', borderTop: '2px solid var(--accent-color)', borderBottom: '2px solid var(--accent-color)', position: 'relative', animationDelay: '0.05s', zIndex: 20 }}>
+        <div className="slide-up" style={{ display: 'flex', gap: '1rem', padding: '0.8rem', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', borderTop: '2px solid var(--accent-color)', position: 'relative', animationDelay: '0.05s', zIndex: 20 }}>
           <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', zIndex: 50 }}>
             <button onClick={() => setIsDrawerOpen(true)} className="hud-menu-trigger" title="Menu do Personagem (Deslize para a direita ou clique)">
               <MenuIcon />
@@ -226,30 +226,29 @@ export default function PlayMode(props: PlayModeProps) {
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.5rem', padding: '0.5rem 1.5rem', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', borderBottom: '2px solid var(--border-color)', marginBottom: '1rem', boxShadow: '0 4px 10px rgba(0,0,0,0.3)' }}>
+        <div style={{ display: 'flex', width: '100%', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', borderBottom: '2px solid var(--accent-color)', boxShadow: '0 4px 10px rgba(0,0,0,0.3)', marginBottom: '1rem' }}>
           {(currentKit || currentArchetypeName || (currentForm.advantages && currentForm.advantages.length > 0) || (currentForm.skills && currentForm.skills.length > 0) || (currentForm.disadvantages && currentForm.disadvantages.length > 0)) && (
             <button
               type="button"
-              className={`char-info-toggle-btn ${isCharInfoOpen ? 'open' : ''}`}
-              style={{ flex: 1, margin: 0, padding: '0.3rem' }}
+              className="play-header-tab-btn"
+              style={{ flex: 1, padding: '0.4rem 0', margin: 0, border: 'none', background: 'transparent', color: 'var(--accent-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: 'pointer', outline: 'none' }}
               onClick={() => setIsCharInfoOpen(prev => !prev)}
             >
-              <div className="char-info-toggle-content">
-                <TriangleDownIcon size={9} className={`char-info-triangle ${isCharInfoOpen ? 'rotated' : ''}`} />
-                <span style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>PERSONAGEM</span>
-              </div>
+              <TriangleDownIcon size={9} className={`char-info-triangle ${isCharInfoOpen ? 'rotated' : ''}`} />
+              <span style={{ fontSize: '0.9rem', fontWeight: 'bold', fontFamily: 'Bebas Neue, sans-serif', letterSpacing: '1px' }}>PERSONAGEM</span>
             </button>
           )}
+
+          <div style={{ width: '2px', backgroundColor: 'var(--accent-color)', transform: 'skewX(-10deg)' }} />
+
           <button
             type="button"
-            className={`char-info-toggle-btn ${showGeneralRolls ? 'open' : ''}`}
-            style={{ flex: 1, margin: 0, padding: '0.3rem' }}
+            className="play-header-tab-btn"
+            style={{ flex: 1, padding: '0.4rem 0', margin: 0, border: 'none', background: 'transparent', color: 'var(--accent-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: 'pointer', outline: 'none' }}
             onClick={() => setShowGeneralRolls(open => !open)}
           >
-            <div className="char-info-toggle-content">
-              <span style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>OUTROS TESTES</span>
-              <TriangleDownIcon size={9} className={`char-info-triangle ${showGeneralRolls ? 'rotated' : ''}`} />
-            </div>
+            <span style={{ fontSize: '0.9rem', fontWeight: 'bold', fontFamily: 'Bebas Neue, sans-serif', letterSpacing: '1px' }}>OUTROS TESTES</span>
+            <TriangleDownIcon size={9} className={`char-info-triangle ${showGeneralRolls ? 'rotated' : ''}`} />
           </button>
         </div>
       </div>
