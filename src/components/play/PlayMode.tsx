@@ -42,8 +42,8 @@ type PlayModeProps = {
   poder: number;
   habilidade: number;
   resistencia: number;
-  manualDiceCount: 1 | 2 | 3;
-  setManualDiceCount: React.Dispatch<React.SetStateAction<1 | 2 | 3>>;
+  manualDiceCount: 1 | 2 | 3 | null;
+  setManualDiceCount: React.Dispatch<React.SetStateAction<1 | 2 | 3 | null>>;
   setIsDrawerOpen: (open: boolean) => void;
   setCurrentPM: React.Dispatch<React.SetStateAction<number>>;
   setActiveFormIndex: (index: number) => void;
@@ -551,8 +551,8 @@ export default function PlayMode(props: PlayModeProps) {
                 <button
                   type="button"
                   className={`dice-seg-btn ${manualDiceCount === 1 ? 'active' : ''}`}
-                  onClick={() => setManualDiceCount(1)}
-                  title="Rolar 1 Dado (1D)"
+                  onClick={() => setManualDiceCount(prev => prev === 1 ? null : 1)}
+                  title={manualDiceCount === 1 ? '1 Dado fixado (Clique para voltar ao Automático)' : 'Fixar 1 Dado (1D)'}
                   aria-label="1 Dado"
                 >
                   <DiceCountIcon count={1} size={18} />
@@ -561,8 +561,8 @@ export default function PlayMode(props: PlayModeProps) {
                 <button
                   type="button"
                   className={`dice-seg-btn ${manualDiceCount === 2 ? 'active' : ''}`}
-                  onClick={() => setManualDiceCount(2)}
-                  title="Rolar 2 Dados (2D)"
+                  onClick={() => setManualDiceCount(prev => prev === 2 ? null : 2)}
+                  title={manualDiceCount === 2 ? '2 Dados fixados (Clique para voltar ao Automático)' : 'Fixar 2 Dados (2D)'}
                   aria-label="2 Dados"
                 >
                   <DiceCountIcon count={2} size={18} />
@@ -571,8 +571,8 @@ export default function PlayMode(props: PlayModeProps) {
                 <button
                   type="button"
                   className={`dice-seg-btn ${manualDiceCount === 3 ? 'active' : ''}`}
-                  onClick={() => setManualDiceCount(3)}
-                  title="Rolar 3 Dados (3D)"
+                  onClick={() => setManualDiceCount(prev => prev === 3 ? null : 3)}
+                  title={manualDiceCount === 3 ? '3 Dados fixados (Clique para voltar ao Automático)' : 'Fixar 3 Dados (3D)'}
                   aria-label="3 Dados"
                 >
                   <DiceCountIcon count={3} size={18} />

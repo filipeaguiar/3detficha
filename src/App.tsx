@@ -214,8 +214,8 @@ export default function App() {
     setCurrentPA(prev => Math.min(maxPA, prev));
   }, [maxPV, recoverableMaxPM, maxPA]);
 
-  // Modificadores manuais de rolagem (1, 2 ou 3 dados)
-  const [manualDiceCount, setManualDiceCount] = useState<1 | 2 | 3>(1);
+  // Modificadores manuais de rolagem (1, 2 ou 3 dados, ou null para automático)
+  const [manualDiceCount, setManualDiceCount] = useState<1 | 2 | 3 | null>(null);
 
   // Bônus e Técnicas Ativas
   const [activeBonuses, setActiveBonuses] = useState<Set<string>>(new Set());
