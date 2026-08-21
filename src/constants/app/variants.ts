@@ -5,6 +5,10 @@ export const ADVANTAGE_VARIANT_OPTIONS: Record<string, Array<{ key: string; labe
     { key: 'perigoso', label: 'Perigoso (Crítico 5+)' },
     { key: 'preciso', label: 'Preciso (Usa H no ataque)' },
     { key: 'choque', label: 'Choque (Usa R no ataque)' },
+    { key: 'area', label: 'Área (Afeta todos Perto)' },
+    { key: 'distante', label: 'Distante (Ataque Longe)' },
+    { key: 'amplo', label: 'Amplo (Múltiplos alvos)' },
+    { key: 'penetrante', label: 'Penetrante (Perda na Defesa)' },
     { key: 'titanico', label: 'Titânico (Crítico Automático)' },
   ],
   defesa_especial: [
@@ -13,6 +17,8 @@ export const ADVANTAGE_VARIANT_OPTIONS: Record<string, Array<{ key: string; labe
     { key: 'blindada', label: 'Blindada (Crítico 5+)' },
     { key: 'esquiva', label: 'Esquiva (Usa H na defesa)' },
     { key: 'bloqueio', label: 'Bloqueio (Usa P na defesa)' },
+    { key: 'cobertura', label: 'Cobertura (Protege aliado Perto)' },
+    { key: 'reflexao', label: 'Reflexão (Devolve ataque em crítico)' },
     { key: 'titanica', label: 'Titânica (Crítico Automático)' },
   ],
   alcance: [
@@ -127,8 +133,8 @@ export const DISADVANTAGE_VARIANT_OPTIONS: Record<string, Array<{ key: string; l
     { key: 'grave', label: 'Restrição grave', cost: '-2pt' },
   ],
   fraqueza: [
-    { key: 'leve', label: 'Fraqueza leve', cost: '-1pt' },
-    { key: 'grave', label: 'Fraqueza grave', cost: '-2pt' },
+    { key: 'leve', label: 'Fraqueza leve (Incomum)', cost: '-1pt' },
+    { key: 'grave', label: 'Fraqueza grave (Comum)', cost: '-2pt' },
   ],
   aura: [
     { key: 'leve', label: 'Aura leve', cost: '-1pt' },

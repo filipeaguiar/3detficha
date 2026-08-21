@@ -92,6 +92,70 @@ export function getDerivedAdvantageEffects(currentForm: CharacterForm): RollBonu
           originAdvantageId: advId,
           automationLevel: 'automatic',
         });
+      } else if (variant === 'area') {
+        effects.push({
+          id: `derived_adv_${advId}`,
+          name: 'Ataque Especial (Área)',
+          attribute: 'poder',
+          actionScope: 'attack',
+          bonusType: 'none',
+          value: 0,
+          duration: 'instant',
+          costValue: 1,
+          costResource: 'PM',
+          effectKey: 'ataque_especial_area',
+          isDerivedOfficial: true,
+          originAdvantageId: advId,
+          automationLevel: 'assisted',
+        });
+      } else if (variant === 'distante') {
+        effects.push({
+          id: `derived_adv_${advId}`,
+          name: 'Ataque Especial (Distante)',
+          attribute: 'poder',
+          actionScope: 'attack',
+          bonusType: 'none',
+          value: 0,
+          duration: 'instant',
+          costValue: 1,
+          costResource: 'PM',
+          effectKey: 'ataque_especial_distante',
+          isDerivedOfficial: true,
+          originAdvantageId: advId,
+          automationLevel: 'assisted',
+        });
+      } else if (variant === 'amplo') {
+        effects.push({
+          id: `derived_adv_${advId}`,
+          name: 'Ataque Especial (Amplo)',
+          attribute: 'poder',
+          actionScope: 'attack',
+          bonusType: 'none',
+          value: 0,
+          duration: 'instant',
+          costValue: 1,
+          costResource: 'PM',
+          effectKey: 'ataque_especial_amplo',
+          isDerivedOfficial: true,
+          originAdvantageId: advId,
+          automationLevel: 'assisted',
+        });
+      } else if (variant === 'penetrante') {
+        effects.push({
+          id: `derived_adv_${advId}`,
+          name: 'Ataque Especial (Penetrante)',
+          attribute: 'poder',
+          actionScope: 'attack',
+          bonusType: 'none',
+          value: 0,
+          duration: 'instant',
+          costValue: 1,
+          costResource: 'PM',
+          effectKey: 'ataque_especial_penetrante',
+          isDerivedOfficial: true,
+          originAdvantageId: advId,
+          automationLevel: 'assisted',
+        });
       } else if (variant === 'titanico') {
         effects.push({
           id: `derived_adv_${advId}`,
@@ -194,6 +258,38 @@ export function getDerivedAdvantageEffects(currentForm: CharacterForm): RollBonu
           isDerivedOfficial: true,
           originAdvantageId: advId,
           automationLevel: 'automatic',
+        });
+      } else if (variant === 'cobertura') {
+        effects.push({
+          id: `derived_adv_${advId}`,
+          name: 'Defesa Especial (Cobertura)',
+          attribute: 'resistencia',
+          actionScope: 'defense',
+          bonusType: 'none',
+          value: 0,
+          duration: 'instant',
+          costValue: 1,
+          costResource: 'PM',
+          effectKey: 'defesa_especial_cobertura',
+          isDerivedOfficial: true,
+          originAdvantageId: advId,
+          automationLevel: 'assisted',
+        });
+      } else if (variant === 'reflexao') {
+        effects.push({
+          id: `derived_adv_${advId}`,
+          name: 'Defesa Especial (Reflexão)',
+          attribute: 'resistencia',
+          actionScope: 'defense',
+          bonusType: 'none',
+          value: 0,
+          duration: 'instant',
+          costValue: 2,
+          costResource: 'PM',
+          effectKey: 'defesa_especial_reflexao',
+          isDerivedOfficial: true,
+          originAdvantageId: advId,
+          automationLevel: 'assisted',
         });
       } else if (variant === 'titanica') {
         effects.push({

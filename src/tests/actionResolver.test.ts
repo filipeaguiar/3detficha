@@ -279,6 +279,34 @@ export function runActionResolverTests() {
     assert(percepcaoBonus.temporaryPackage?.statusLabel === 'Percepção Cósmica', 'Percepção Cósmica has temporary package status');
   }
 
+  // 11. Ataque Especial Área Derived Effect
+  {
+    const form = createMockForm({
+      poder: 3,
+      advantages: ['ataque_especial::area', 'ataque_especial::potente'],
+    });
+    const derived = getDerivedAdvantageEffects(form);
+    const areaEffect = derived.find((e) => e.effectKey === 'ataque_especial_area');
+    const potenteEffect = derived.find((e) => e.effectKey === 'ataque_especial_potente');
+    assert(Boolean(areaEffect), 'Derived effect for Ataque Especial (Área) is generated');
+    assert(areaEffect?.costValue === 1, 'Ataque Especial (Área) costs 1 PM');
+    assert(areaEffect?.actionScope === 'attack', 'Ataque Especial (Área) is scoped to attack');
+    assert(Boolean(potenteEffect), 'Derived effect for Ataque Especial (Potente) is generated alongside Área');
+  }
+
+  // 12. Defesa Especial Cobertura Derived Effect
+  {
+    const form = createMockForm({
+      resistencia: 2,
+      advantages: ['defesa_especial::cobertura'],
+    });
+    const derived = getDerivedAdvantageEffects(form);
+    const cobertura = derived.find((e) => e.effectKey === 'defesa_especial_cobertura');
+    assert(Boolean(cobertura), 'Derived effect for Defesa Especial (Cobertura) is generated');
+    assert(cobertura?.costValue === 1, 'Defesa Especial (Cobertura) costs 1 PM');
+    assert(cobertura?.actionScope === 'defense', 'Defesa Especial (Cobertura) is scoped to defense');
+  }
+
   console.log(`--- TEST RESULTS: ${passed} passed, ${failed} failed ---`);
   return { passed, failed };
 }
