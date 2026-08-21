@@ -283,18 +283,18 @@ export function getBonusSubtitle(bonus: RollBonus): string {
   if (bonus.duration === 'scene') parts.push('Cena');
 
   let text = parts.join(' • ');
-  if (!text && bonus.name) text = bonus.name;
-
   const effectiveCostResource = activeVariant?.costResource || bonus.costResource;
   const effectiveCostValue = typeof activeVariant?.costValue === 'number' ? activeVariant.costValue : bonus.costValue;
+  
   if (bonus.gameplayPattern === 'prepared-magic' && effectiveCostValue) {
-    text += bonus.assistedState?.prepared ? ` [Preparada • ${effectiveCostValue} PM pagos]` : ` [Preparar: -${effectiveCostValue} PM]`;
+    text += (text ? ' ' : '') + (bonus.assistedState?.prepared ? `[Preparada • ${effectiveCostValue} PM pagos]` : `[Preparar: -${effectiveCostValue} PM]`);
   } else if (effectiveCostResource && effectiveCostResource !== 'none' && effectiveCostValue) {
     if (effectiveCostResource !== 'PM') {
-      text += ` [-${effectiveCostValue} ${effectiveCostResource}]`;
+      text += (text ? ' ' : '') + `[-${effectiveCostValue} ${effectiveCostResource}]`;
     }
   }
-  return text || 'Sem bônus direto';
+  
+  return text;
 }
 
 export function getKitPowerModifier(power: KitPower) {

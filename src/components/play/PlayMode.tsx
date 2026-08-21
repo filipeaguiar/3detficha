@@ -590,7 +590,17 @@ export default function PlayMode(props: PlayModeProps) {
                     <div className="bt-top">
                       <div className="bt-title">
                         <span className="bt-name">{bonus.alias ? bonus.alias : bonus.name}</span>
-                        {bonus.alias && <span className="bt-raw-name">{bonus.name}</span>}
+                        {(() => {
+                          const variantLabel = activeVariant?.label;
+                          const isBaseVariant = !variantLabel || variantLabel.toLowerCase() === 'base' || variantLabel.toLowerCase() === 'normal' || variantLabel.toLowerCase() === 'padrão';
+                          
+                          if (!isBaseVariant) {
+                            return <span className="bt-raw-name">{variantLabel}</span>;
+                          } else if (bonus.alias) {
+                            return <span className="bt-raw-name">{bonus.name}</span>;
+                          }
+                          return null;
+                        })()}
                       </div>
                       <div className="bt-badges">
                         {bonus.duration === 'scene' && <span className="bonus-attr-micro" style={{ background: 'transparent', color: '#33ccff', padding: 0 }} title="Dura até o fim da cena"><HourglassIcon size={14} /></span>}
@@ -603,7 +613,10 @@ export default function PlayMode(props: PlayModeProps) {
                     </div>
                     
                     <div className="bt-body" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
-                      <span className="bt-effect">{getBonusSubtitle(bonus)}</span>
+                      {(() => {
+                        const subtitleText = getBonusSubtitle(bonus);
+                        return subtitleText ? <span className="bt-effect">{subtitleText}</span> : null;
+                      })()}
                       {(() => {
                         const effectiveCostValue = typeof activeVariant?.costValue === 'number' ? activeVariant.costValue : bonus.costValue;
                         const effectiveCostResource = activeVariant?.costResource || bonus.costResource;
@@ -614,7 +627,7 @@ export default function PlayMode(props: PlayModeProps) {
                       })()}
                     </div>
 
-                    {(isPersistentAssisted || isTemporaryPackage || (bonus.variants && bonus.variants.length > 1)) && (
+                    {(isPersistentAssisted || isTemporaryPackage || (bonus.variants && bonus.variants.length > 1 && bonus.gameplayPattern !== 'cycling-variant')) && (
                       <div className="bt-footer" onClick={(event) => event.stopPropagation()}>
                         {isPersistentAssisted && assistedConfig?.triggerCostValue ? <span>{assistedConfig.triggerLabel || 'Acionar'} [-{assistedConfig.triggerCostValue} {assistedConfig.triggerCostResource || 'PM'}]</span> : null}
                         {isPersistentAssisted && typeof bonus.assistedState?.stockCount === 'number' ? <span>Estoque: {bonus.assistedState.stockCount}</span> : null}
@@ -622,8 +635,7 @@ export default function PlayMode(props: PlayModeProps) {
                         {isPersistentAssisted && bonus.assistedState?.active ? <span><button type="button" className="bonus-remove-btn" onClick={() => endAssistedBonus(bonus.id)}>Encerrar sem acionar</button></span> : null}
                         {isTemporaryPackage ? <span>{bonus.assistedState?.active ? `Pacote: ${(bonus.assistedState.packageChoices || []).map((id) => ADVANTAGES_CATALOG.find((advantage) => advantage.id === id)?.name || id).join(', ') || 'escolhas narrativas'}` : 'Ative o pacote assistido'}</span> : null}
                         {isTemporaryPackage && bonus.assistedState?.active && temporaryConfig?.maintenanceCostValue ? <span><button type="button" className="bonus-remove-btn" onClick={() => maintainTemporaryPackage(bonus.id)}>Manter [-{temporaryConfig.maintenanceCostValue} {temporaryConfig.maintenanceCostResource || 'PM'}]</button></span> : null}
-                        {bonus.variants && bonus.variants.length > 1 && bonus.gameplayPattern !== 'cycling-variant' ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}><button type="button" className="bonus-remove-btn" style={{ minWidth: 'auto' }} onClick={() => cycleBonusVariant(bonus.id)} title="Alternar variante">↻</button><span>{activeVariant?.label || 'Variante'}</span></span> : null}
-                        {bonus.gameplayPattern === 'cycling-variant' && isActive ? <span style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--text-muted)' }}>Variante: {activeVariant?.label || 'Base'}</span> : null}
+                        {bonus.variants && bonus.variants.length > 1 && bonus.gameplayPattern !== 'cycling-variant' ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}><button type="button" className="bonus-remove-btn" style={{ minWidth: 'auto' }} onClick={() => cycleBonusVariant(bonus.id)} title="Alternar variante">↻ Alternar Variante</button></span> : null}
                       </div>
                     )}
                   </div>
