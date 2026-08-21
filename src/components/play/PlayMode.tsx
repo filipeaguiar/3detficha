@@ -42,7 +42,6 @@ type PlayModeProps = {
   poder: number;
   habilidade: number;
   resistencia: number;
-  calculatedTotalExtraDice: number;
   manualBonusDice: 0 | 1 | 2;
   setManualBonusDice: React.Dispatch<React.SetStateAction<0 | 1 | 2>>;
   setIsDrawerOpen: (open: boolean) => void;
@@ -98,7 +97,7 @@ export default function PlayMode(props: PlayModeProps) {
     poder,
     habilidade,
     resistencia,
-    calculatedTotalExtraDice,
+    manualBonusDice,
     setManualBonusDice,
     setIsDrawerOpen,
     setActiveFormIndex,
@@ -542,29 +541,84 @@ export default function PlayMode(props: PlayModeProps) {
       <div className={`play-drawer-section ${showGeneralRolls ? 'open' : ''}`}>
         <div className="play-drawer-inner">
           <div className="play-general-rolls-content">
-            <div className="stats-grid">
-              <button className={`stat-box roll-btn ${!allowedAttributes.poder ? 'disabled-attribute' : ''}`} style={{ '--btn-color': '#FF9E00', '--btn-text-color': '#ffffff' } as React.CSSProperties} onClick={() => handleRoll('poder', { actionType: 'general', label: 'Poder' })} disabled={rolling || !allowedAttributes.poder} title="Rolar teste de Poder">
-                <div className="stat-icon-container"><PoderIcon /></div>
-                <div className="stat-value corner">{poder + (currentForm.wildShapeAdvantages?.includes('Forte') ? 1 : 0)}</div>
-              </button>
-              <button className={`stat-box roll-btn ${!allowedAttributes.habilidade ? 'disabled-attribute' : ''}`} style={{ '--btn-color': '#894EC6', '--btn-text-color': '#ffffff' } as React.CSSProperties} onClick={() => handleRoll('habilidade', { actionType: 'general', label: 'Habilidade' })} disabled={rolling || !allowedAttributes.habilidade} title="Rolar teste de Habilidade">
-                <div className="stat-icon-container"><HabilidadeIcon /></div>
-                <div className="stat-value corner">{habilidade}</div>
-              </button>
-              <button className={`stat-box roll-btn ${!allowedAttributes.resistencia ? 'disabled-attribute' : ''}`} style={{ '--btn-color': '#5EB05D', '--btn-text-color': '#ffffff' } as React.CSSProperties} onClick={() => handleRoll('resistencia', { actionType: 'general', label: 'Resistência' })} disabled={rolling || !allowedAttributes.resistencia} title="Rolar teste de Resistência">
-                <div className="stat-icon-container"><ResistenciaIcon /></div>
-                <div className="stat-value corner">{resistencia + (currentForm.wildShapeAdvantages?.includes('Vigoroso') ? 2 : 0)}</div>
-              </button>
-            </div>
+            <div className="play-unified-roll-widget">
+              {/* Top Bar: Segmented Dice Selector (1D, 2D, 3D) */}
+              <div className="play-dice-segmented-bar">
+                <button
+                  type="button"
+                  className={`dice-seg-btn ${manualBonusDice === 0 ? 'active' : ''}`}
+                  onClick={() => setManualBonusDice(0)}
+                  title="Rolagem padrão: 1D"
+                >
+                  <DiceCountIcon count={1} size={13} />
+                  <span className="dice-seg-label">1D <span className="dice-seg-sub">Padrão</span></span>
+                </button>
 
-            <div className="play-manual-roll-controls">
-              <button
-                className={`toggle-btn ${calculatedTotalExtraDice !== 0 ? 'active' : ''}`}
-                onClick={() => setManualBonusDice(prev => (prev >= 2 ? 0 : (prev + 1) as 0 | 1 | 2))}
-                title={`Ajuste manual de dados: ${Math.max(1, Math.min(3, 1 + calculatedTotalExtraDice))}D (Ganho/Perda)`}
-              >
-                <DiceCountIcon count={Math.max(1, Math.min(3, 1 + calculatedTotalExtraDice)) as 1 | 2 | 3} size={22} />
-              </button>
+                <button
+                  type="button"
+                  className={`dice-seg-btn ${manualBonusDice === 1 ? 'active' : ''}`}
+                  onClick={() => setManualBonusDice(1)}
+                  title="Ganho situacional: 2D (+1D Ganho)"
+                >
+                  <DiceCountIcon count={2} size={13} />
+                  <span className="dice-seg-label">2D <span className="dice-seg-sub">+1D Ganho</span></span>
+                </button>
+
+                <button
+                  type="button"
+                  className={`dice-seg-btn ${manualBonusDice === 2 ? 'active' : ''}`}
+                  onClick={() => setManualBonusDice(2)}
+                  title="Ganho máximo: 3D (+2D Ganho)"
+                >
+                  <DiceCountIcon count={3} size={13} />
+                  <span className="dice-seg-label">3D <span className="dice-seg-sub">+2D Máx</span></span>
+                </button>
+              </div>
+
+              {/* Bottom Grid: 3 Attribute Roll Cards */}
+              <div className="play-attribute-buttons-grid">
+                <button
+                  type="button"
+                  className={`unified-attr-btn poder ${!allowedAttributes.poder ? 'disabled-attribute' : ''}`}
+                  onClick={() => handleRoll('poder', { actionType: 'general', label: 'Poder' })}
+                  disabled={rolling || !allowedAttributes.poder}
+                  title="Rolar teste de Poder"
+                >
+                  <div className="attr-icon-wrapper"><PoderIcon size="2rem" /></div>
+                  <div className="attr-info">
+                    <span className="attr-title">PODER</span>
+                    <span className="attr-score">{poder + (currentForm.wildShapeAdvantages?.includes('Forte') ? 1 : 0)}</span>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  className={`unified-attr-btn habilidade ${!allowedAttributes.habilidade ? 'disabled-attribute' : ''}`}
+                  onClick={() => handleRoll('habilidade', { actionType: 'general', label: 'Habilidade' })}
+                  disabled={rolling || !allowedAttributes.habilidade}
+                  title="Rolar teste de Habilidade"
+                >
+                  <div className="attr-icon-wrapper"><HabilidadeIcon size="2rem" /></div>
+                  <div className="attr-info">
+                    <span className="attr-title">HABILIDADE</span>
+                    <span className="attr-score">{habilidade}</span>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  className={`unified-attr-btn resistencia ${!allowedAttributes.resistencia ? 'disabled-attribute' : ''}`}
+                  onClick={() => handleRoll('resistencia', { actionType: 'general', label: 'Resistência' })}
+                  disabled={rolling || !allowedAttributes.resistencia}
+                  title="Rolar teste de Resistência"
+                >
+                  <div className="attr-icon-wrapper"><ResistenciaIcon size="2rem" /></div>
+                  <div className="attr-info">
+                    <span className="attr-title">RESISTÊNCIA</span>
+                    <span className="attr-score">{resistencia + (currentForm.wildShapeAdvantages?.includes('Vigoroso') ? 2 : 0)}</span>
+                  </div>
+                </button>
+              </div>
             </div>
           </div>
         </div>

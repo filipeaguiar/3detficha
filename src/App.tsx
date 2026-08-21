@@ -243,23 +243,6 @@ export default function App() {
       }));
   }, [currentKit, activeKitBuffs]);
 
-  // Derived Extra Dice from active bonuses + active kit buffs + Druid Wild Shape Ágil
-  const calculatedTotalExtraDice = useMemo(() => {
-    let extra = manualBonusDice;
-    activeBonusesList.forEach(b => {
-      const variant = getActiveBonusVariant(b);
-      const extraDice = typeof variant?.extraDice === 'number' ? variant.extraDice : b.extraDice;
-      if (extraDice) extra += extraDice;
-    });
-    activeKitBuffsList.forEach(k => {
-      if (k.mod.extraDice) extra += k.mod.extraDice;
-    });
-    if (currentForm.wildShapeAdvantages?.includes('Ágil')) {
-      extra += 1;
-    }
-    return Math.max(-2, Math.min(2, extra));
-  }, [activeBonusesList, activeKitBuffsList, manualBonusDice, currentForm.wildShapeAdvantages]);
-
   // Modificadores podem ser combinados; substituições de atributo são resolvidas
   // pelo contexto da ação em handleRoll, sem bloquear as rolagens manuais.
   const allowedAttributes = { poder: true, habilidade: true, resistencia: true };
@@ -1124,7 +1107,6 @@ export default function App() {
             poder={poder}
             habilidade={habilidade}
             resistencia={resistencia}
-            calculatedTotalExtraDice={calculatedTotalExtraDice}
             manualBonusDice={manualBonusDice}
             setManualBonusDice={setManualBonusDice}
             setIsDrawerOpen={setIsDrawerOpen}
