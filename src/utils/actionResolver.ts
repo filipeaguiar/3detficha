@@ -108,11 +108,33 @@ export function resolveActionPlan(
     (b) => b.sourceCatalogId === 'raio_mistico' || b.sourceCatalogId === 'barreira_mistica' || b.sourceCatalogId === 'bola_de_fogo'
   );
 
-  if (request.actionType === 'attack' || request.actionType === 'defense') {
+  const availablePM = currentPM + temporaryPM;
+  let canUseMisticaDefense = false;
+
+  if (request.actionType === 'attack') {
     if (hasLuta) {
       applicableSkill = 'luta';
       skillBonusDice = 1;
     } else if (hasMistica && (hasMagia || hasCombatMagicBonus)) {
+      applicableSkill = 'mistica';
+      skillBonusDice = 1;
+    }
+  } else if (request.actionType === 'defense') {
+    if (hasLuta) {
+      applicableSkill = 'luta';
+      skillBonusDice = 1;
+    } else if (hasMistica && hasMagia) {
+      if (availablePM >= 1) {
+        applicableSkill = 'mistica';
+        skillBonusDice = 1;
+        canUseMisticaDefense = true;
+      } else {
+        // Fallback: without PM for magical defense, roll basic 1D defense without PM cost
+        applicableSkill = undefined;
+        skillBonusDice = 0;
+        canUseMisticaDefense = false;
+      }
+    } else if (hasMistica && hasCombatMagicBonus) {
       applicableSkill = 'mistica';
       skillBonusDice = 1;
     }
@@ -156,12 +178,20 @@ export function resolveActionPlan(
 
   // Add combat skill notice to applied bonuses if in combat
   if (request.actionType === 'attack' || request.actionType === 'defense') {
-    const skillDesc = skillBonusDice > 0 ? `+1D por perícia (${applicableSkill === 'luta' ? 'Luta' : 'Mística'})` : 'Rolagem padrão';
-    appliedBonuses.push({
-      name: request.label || (request.actionType === 'attack' ? 'Ataque' : 'Defesa'),
-      desc: skillDesc,
-      automationLevel: 'automatic',
-    });
+    if (request.actionType === 'defense' && !hasLuta && hasMistica && hasMagia && !canUseMisticaDefense) {
+      appliedBonuses.push({
+        name: 'Defesa Básica',
+        desc: 'Sem PM para Mística (rolagem padrão 1D)',
+        automationLevel: 'automatic',
+      });
+    } else {
+      const skillDesc = skillBonusDice > 0 ? `+1D por perícia (${applicableSkill === 'luta' ? 'Luta' : 'Mística'})` : 'Rolagem padrão';
+      appliedBonuses.push({
+        name: request.label || (request.actionType === 'attack' ? 'Ataque' : 'Defesa'),
+        desc: skillDesc,
+        automationLevel: 'automatic',
+      });
+    }
   }
 
   // Wildshape Ágil grants +1D
@@ -322,7 +352,7 @@ export function resolveActionPlan(
   const rawCosts: ItemizedCost[] = [];
 
   // Base action cost (e.g. Mística defense default 1 PM when not using Luta)
-  if (request.actionType === 'defense' && !hasLuta && hasMistica && hasMagia) {
+  if (request.actionType === 'defense' && canUseMisticaDefense) {
     rawCosts.push({
       resource: 'PM',
       value: 1,
@@ -397,7 +427,6 @@ export function resolveActionPlan(
   const totalCostPM = itemizedCosts.filter((c) => c.resource === 'PM').reduce((sum, c) => sum + c.value, 0);
   const totalCostPA = itemizedCosts.filter((c) => c.resource === 'PA').reduce((sum, c) => sum + c.value, 0);
 
-  const availablePM = currentPM + temporaryPM;
   const canAffordPV = totalCostPV <= currentPV;
   const canAffordPM = totalCostPM <= availablePM;
   const canAffordPA = totalCostPA <= currentPA;

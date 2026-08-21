@@ -159,6 +159,36 @@ export function runActionResolverTests() {
     assert(plan.diceCount === 2, 'Dice count is 2D (1 base + 1D Ganho from Mística)');
   }
 
+  // 5b. Mística Defense Fallback when 0 PM
+  {
+    const form = createMockForm({
+      poder: 1,
+      habilidade: 2,
+      resistencia: 3,
+      skills: ['mistica'],
+      advantages: ['magia'],
+    });
+
+    const plan = resolveActionPlan(
+      {
+        actionType: 'defense',
+        targetAttribute: 'resistencia',
+        selectedSkill: 'mistica',
+      },
+      {
+        currentForm: form,
+        rollBonuses: [],
+        currentPV: 15,
+        currentPM: 0,
+        currentPA: 0,
+      }
+    );
+
+    assert(plan.totalCostPM === 0, 'Mística Defense with 0 PM costs 0 PM (fallback to basic defense)');
+    assert(plan.diceCount === 1, 'Mística Defense with 0 PM falls back to 1D (no skill bonus)');
+    assert(plan.canAfford, 'Can afford basic defense with 0 PM');
+  }
+
   // 6. Incompatible Simultaneous Replacements Conflict Detection
   {
     const form = createMockForm({
