@@ -522,10 +522,26 @@ export default function PlayMode(props: PlayModeProps) {
                 if (!strike) return null;
                 const comboLocked = hasCombo && comboActive && comboRemaining <= 0;
                 const alreadyUsed = comboUsedStrikeIds.includes(strike.id);
-                const subtitle = `${strike.description}${strike.costResource !== 'none' && strike.costValue ? ` [-${strike.costValue} ${strike.costResource}]` : ''}`;
+                const subtitle = strike.description;
                 const hint = strike.id === 'finta' ? 'Reação' : strike.id === 'derrubar' ? 'Escolha em mesa' : strike.id === 'golpe_atordoante' ? 'Exige dano > R' : strike.id === 'golpe_debilitante' ? 'Escolha atributo em mesa' : strike.id === 'recuperar_folego' ? 'Ação imediata' : undefined;
                 const cardSizeClass = hint || subtitle.length > 70 ? 'play-action-card-detailed' : 'play-action-card-compact';
-                return <button key={`${acquisitionId}:${strike.id}`} className={`bonus-toggle ${cardSizeClass} ${alreadyUsed ? 'active' : ''}`} disabled={(comboActive && (comboLocked || alreadyUsed)) || false} onClick={() => { activateStrike(createStrikeBonus(strike, acquisitionId)); if (hasCombo && comboActive) setComboUsedStrikeIds((prev) => prev.includes(strike.id) ? prev : [...prev, strike.id]); }} onContextMenu={(e) => { e.preventDefault(); setDetailModal({ title: strike.name, subtitle, body: strike.note, tone: 'technique' }); }} title={`${strike.name}: ${subtitle}`}><div className="bonus-toggle-header"><span className="bonus-toggle-label">{strike.name}</span>{hint ? <span className="bonus-attr-micro" style={{ background: '#ff8fab', color: '#000' }}>{hint}</span> : null}{hasCombo && comboActive ? <span className="bonus-attr-micro" style={{ background: alreadyUsed ? '#ffd166' : '#33ccff', color: '#000' }}>{alreadyUsed ? 'USADO' : comboUsedStrikeIds.length === 0 ? 'ABRE' : 'COMBO'}</span> : null}</div><span className="bonus-toggle-value">{subtitle}</span></button>;
+                return (
+                  <button key={`${acquisitionId}:${strike.id}`} className={`bonus-toggle ${cardSizeClass} ${alreadyUsed ? 'active' : ''}`} disabled={(comboActive && (comboLocked || alreadyUsed)) || false} onClick={() => { activateStrike(createStrikeBonus(strike, acquisitionId)); if (hasCombo && comboActive) setComboUsedStrikeIds((prev) => prev.includes(strike.id) ? prev : [...prev, strike.id]); }} onContextMenu={(e) => { e.preventDefault(); setDetailModal({ title: strike.name, subtitle, body: strike.note, tone: 'technique' }); }} title={`${strike.name}: ${subtitle}`}>
+                    <div className="bonus-toggle-header">
+                      <span className="bonus-toggle-label">{strike.name}</span>
+                      {hint ? <span className="bonus-attr-micro" style={{ background: '#ff8fab', color: '#000' }}>{hint}</span> : null}
+                      {hasCombo && comboActive ? <span className="bonus-attr-micro" style={{ background: alreadyUsed ? '#ffd166' : '#33ccff', color: '#000' }}>{alreadyUsed ? 'USADO' : comboUsedStrikeIds.length === 0 ? 'ABRE' : 'COMBO'}</span> : null}
+                    </div>
+                    <div className="bt-body" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', width: '100%', padding: '0.25rem 0.75rem 0.75rem' }}>
+                      <span className="bt-effect" style={{ flex: 1, textAlign: 'left', fontSize: '0.85rem', fontWeight: 500, lineHeight: 1.3, color: 'var(--text-main)' }}>{subtitle}</span>
+                      {strike.costResource === 'PM' && strike.costValue ? (
+                        <SegmentedBar current={strike.costValue} max={strike.costValue} color={alreadyUsed ? "#ffffff" : "#894EC6"} segmentWidth={8} />
+                      ) : strike.costResource !== 'none' && strike.costValue ? (
+                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>[-{strike.costValue}{strike.costResource}]</span>
+                      ) : null}
+                    </div>
+                  </button>
+                );
               })}
           </PlayAttacksSection>
 

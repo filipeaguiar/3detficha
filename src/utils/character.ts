@@ -290,7 +290,9 @@ export function getBonusSubtitle(bonus: RollBonus): string {
   if (bonus.gameplayPattern === 'prepared-magic' && effectiveCostValue) {
     text += bonus.assistedState?.prepared ? ` [Preparada • ${effectiveCostValue} PM pagos]` : ` [Preparar: -${effectiveCostValue} PM]`;
   } else if (effectiveCostResource && effectiveCostResource !== 'none' && effectiveCostValue) {
-    text += ` [-${effectiveCostValue} ${effectiveCostResource}]`;
+    if (effectiveCostResource !== 'PM') {
+      text += ` [-${effectiveCostValue} ${effectiveCostResource}]`;
+    }
   }
   return text || 'Sem bônus direto';
 }
