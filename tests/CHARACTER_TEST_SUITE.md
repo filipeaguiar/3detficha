@@ -286,3 +286,42 @@ Este documento contém a suíte completa de testes automatizáveis em formato de
     - Toda a seção abaixo (Técnicas & Bônus) desliza para baixo no mesmo movimento.
     - Ao desativar, o painel encolhe suavemente para cima (`1fr` $\rightarrow$ `0fr`) e puxa a UI de volta.
   - **Critério de Falha:** Painel abrir em local incorreto, saltos bruscos sem transição suave ou sobreposição de elementos.
+
+---
+
+## 📊 INSTRUÇÃO OBRIGATÓRIA: GERAÇÃO DO RELATÓRIO DE RESULTADOS
+
+> [!IMPORTANT]
+> **ORDEM DIRETA AO AGENTE DE IA / EXECUTOR:**
+> Ao finalizar a execução de todos os casos de teste acima, você **DEVE OBRIGATORIAMENTE** gerar e salvar um arquivo de relatório consolidado no caminho:
+> `tests/TEST_EXECUTION_REPORT.md`
+>
+> Este relatório servirá de insumo técnico imediato para a equipe priorizar correções de bugs, ajustes de regras e elaboração de novas especificações.
+
+### Estrutura Obrigatória do Arquivo `tests/TEST_EXECUTION_REPORT.md`:
+
+O relatório gerado deve conter rigorosamente as seguintes seções em formato Markdown:
+
+1. **Sumário Executivo:**
+   - Data/Hora da Execução.
+   - Total de Casos de Teste Executados.
+   - Taxa de Sucesso (`Total Passados` / `Total Falhados` / `Total Bloqueados`).
+   - Veredito Geral de Estabilidade e Conformidade com as Regras de 3DeT Vitória.
+
+2. **Tabela de Resultados por Teste:**
+   - Tabela listando ID do Teste (`TEST-FRAN-01`, etc.), Nome, Status (`PASS` / `FAIL` / `BLOCKED`), e Observações Relevantes.
+
+3. **Registro Detalhado de Falhas e Inconsistências (Bugs Encontrados):**
+   - Para cada teste marcado como `FAIL`:
+     - **ID do Teste & Funcionalidade Afetada.**
+     - **Comportamento Observado (Actual Result).**
+     - **Comportamento Esperado (Expected Result).**
+     - **Severidade:** (`Crítica` / `Alta` / `Média` / `Baixa` / `Melhoria de UX`).
+     - **Evidência:** Trecho de log de console, JSON de estado ou referência visual.
+
+4. **Insumos para Novas Especificações e Correções:**
+   - Lista acionável de melhorias sugeridas na interface, regras ou catálogo (ex: inclusão da variante *Ataque Especial — Área*, refinamentos de UI em múltiplas formas, tooltips, atalhos de descanso).
+
+5. **Auditoria de Console & Performance:**
+   - Registro de warnings, erros de JavaScript ou problemas de renderização capturados pelo DevTools durante os testes.
+
