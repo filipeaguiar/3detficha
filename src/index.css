@@ -1488,7 +1488,7 @@ input.stat-input:focus {
 
 .play-dice-segmented-bar {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   background: rgba(10, 13, 20, 0.95);
   border-bottom: 1px solid var(--border-color);
   padding: 4px;
@@ -1499,57 +1499,26 @@ input.stat-input:focus {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  min-height: 42px;
   background: transparent;
   border: 1px solid transparent;
   border-radius: 6px;
-  padding: 6px 2px;
+  padding: 6px 4px;
   color: var(--text-muted);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .dice-seg-btn:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.05);
   color: var(--text-main);
 }
 
 .dice-seg-btn.active {
-  background: rgba(0, 255, 255, 0.12);
+  background: rgba(0, 255, 255, 0.15);
   border-color: var(--accent-color);
   color: #ffffff;
-  box-shadow: 0 0 10px rgba(0, 255, 255, 0.25);
-}
-
-.dice-seg-btn.perda.active {
-  background: rgba(255, 77, 109, 0.15);
-  border-color: #ff4d6d;
-  color: #ff8fab;
-  box-shadow: 0 0 10px rgba(255, 77, 109, 0.25);
-}
-
-.dice-seg-btn.ganho.active {
-  background: rgba(123, 223, 242, 0.15);
-  border-color: #7bdff2;
-  color: #ffffff;
-  box-shadow: 0 0 10px rgba(123, 223, 242, 0.25);
-}
-
-.dice-seg-btn.ganho-max.active {
-  background: rgba(255, 209, 102, 0.15);
-  border-color: #ffd166;
-  color: #ffffff;
-  box-shadow: 0 0 10px rgba(255, 209, 102, 0.25);
-}
-
-.dice-seg-badge {
-  font-size: 0.8rem;
-  font-weight: 700;
-  font-family: 'Bebas Neue', sans-serif;
-  letter-spacing: 0.5px;
-}
-.dice-seg-badge.perda {
-  color: #ff4d6d;
+  box-shadow: 0 0 12px rgba(0, 255, 255, 0.3);
 }
 
 .dice-seg-label {

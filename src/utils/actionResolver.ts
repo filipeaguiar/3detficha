@@ -174,8 +174,14 @@ export function resolveActionPlan(
     });
   }
 
-  // Manual dice adjustment (Ganho / Perda de mesa)
-  if (typeof request.manualBonusDice === 'number' && request.manualBonusDice !== 0) {
+  // Manual dice adjustment
+  if (typeof request.manualDiceCount === 'number') {
+    appliedBonuses.push({
+      name: `Dados (${request.manualDiceCount}D)`,
+      desc: `Rolagem com ${request.manualDiceCount} dado(s)`,
+      automationLevel: 'assisted',
+    });
+  } else if (typeof request.manualBonusDice === 'number' && request.manualBonusDice !== 0) {
     appliedBonuses.push({
       name: request.manualBonusDice > 0 ? 'Ganho (Mestre/Mesa)' : 'Perda (Mestre/Mesa)',
       desc: `${request.manualBonusDice > 0 ? `+${request.manualBonusDice}` : request.manualBonusDice}D na rolagem`,
@@ -307,7 +313,8 @@ export function resolveActionPlan(
 
   // Calculate dice count & crit range
   const clampedExtraDice = Math.max(-2, Math.min(2, totalExtraDice));
-  const diceCount = Math.max(1, Math.min(3, 1 + clampedExtraDice));
+  const defaultDiceCount = Math.max(1, Math.min(3, 1 + clampedExtraDice));
+  const diceCount = typeof request.manualDiceCount === 'number' ? request.manualDiceCount : defaultDiceCount;
   const critRange = Math.max(4, Math.min(6, (request.manualCritRange || 6) + totalCritMod));
   const totalEffectiveAttribute = Math.max(0, baseAttributeValue + attrBonusValue);
 

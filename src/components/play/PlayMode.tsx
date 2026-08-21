@@ -42,8 +42,8 @@ type PlayModeProps = {
   poder: number;
   habilidade: number;
   resistencia: number;
-  manualBonusDice: -2 | -1 | 0 | 1 | 2;
-  setManualBonusDice: React.Dispatch<React.SetStateAction<-2 | -1 | 0 | 1 | 2>>;
+  manualDiceCount: 1 | 2 | 3;
+  setManualDiceCount: React.Dispatch<React.SetStateAction<1 | 2 | 3>>;
   setIsDrawerOpen: (open: boolean) => void;
   setCurrentPM: React.Dispatch<React.SetStateAction<number>>;
   setActiveFormIndex: (index: number) => void;
@@ -97,8 +97,8 @@ export default function PlayMode(props: PlayModeProps) {
     poder,
     habilidade,
     resistencia,
-    manualBonusDice,
-    setManualBonusDice,
+    manualDiceCount,
+    setManualDiceCount,
     setIsDrawerOpen,
     setActiveFormIndex,
     setIsTransformModalOpen,
@@ -114,14 +114,20 @@ export default function PlayMode(props: PlayModeProps) {
     maintainTemporaryPackage,
   } = props;
 
+  const { hasLuta, hasCombatSkill } = useMemo(() => {
+    const skills = currentForm.skills || [];
+    const advantages = currentForm.advantages || [];
+    const hasLuta = skills.includes('luta');
+    const hasMistica = skills.includes('mistica');
+    const hasMagia = advantages.some((adv) => adv.split('::')[0] === 'magia');
+    const hasCombatSkill = hasLuta || (hasMistica && hasMagia);
+    return { hasLuta, hasCombatSkill };
+  }, [currentForm.skills, currentForm.advantages]);
+
   const attackActions = getKnownStrikes(currentForm);
-  const hasLuta = (currentForm.skills || []).includes('luta');
-  const hasMistica = (currentForm.skills || []).includes('mistica');
-  const hasMagia = (currentForm.advantages || []).some((advantageId) => advantageId.split('::')[0] === 'magia');
-  const usesMisticaForCombat = !hasLuta && hasMistica && hasMagia;
-  const hasCombatSkill = hasLuta || usesMisticaForCombat;
   const attributeColor = (attribute: 'poder' | 'habilidade' | 'resistencia') => attribute === 'poder' ? '#FF9E00' : attribute === 'habilidade' ? '#894EC6' : '#5EB05D';
   const techniqueActions = visibleRollBonuses.filter((bonus) => bonus.sourceCatalogId !== 'golpes');
+
   const hasCombo = (currentForm.rollBonuses || []).some((bonus) => bonus.name === 'Combo');
   const comboRemaining = Math.max(0, habilidade - comboUsedStrikeIds.length);
 
@@ -132,7 +138,7 @@ export default function PlayMode(props: PlayModeProps) {
         targetAttribute: 'poder',
         selectedSkill: hasCombatSkill ? (hasLuta ? 'luta' : 'mistica') : undefined,
         activeBonusIds: activeBonuses,
-        manualBonusDice,
+        manualDiceCount,
       },
       {
         currentForm,
@@ -142,7 +148,7 @@ export default function PlayMode(props: PlayModeProps) {
         currentPA,
       }
     );
-  }, [currentForm, visibleRollBonuses, activeBonuses, currentPV, currentPM, currentPA, hasCombatSkill, hasLuta, manualBonusDice]);
+  }, [currentForm, visibleRollBonuses, activeBonuses, currentPV, currentPM, currentPA, hasCombatSkill, hasLuta, manualDiceCount]);
 
   const defensePlan = useMemo(() => {
     return resolveActionPlan(
@@ -151,7 +157,7 @@ export default function PlayMode(props: PlayModeProps) {
         targetAttribute: 'resistencia',
         selectedSkill: hasCombatSkill ? (hasLuta ? 'luta' : 'mistica') : undefined,
         activeBonusIds: activeBonuses,
-        manualBonusDice,
+        manualDiceCount,
       },
       {
         currentForm,
@@ -161,7 +167,7 @@ export default function PlayMode(props: PlayModeProps) {
         currentPA,
       }
     );
-  }, [currentForm, visibleRollBonuses, activeBonuses, currentPV, currentPM, currentPA, hasCombatSkill, hasLuta, manualBonusDice]);
+  }, [currentForm, visibleRollBonuses, activeBonuses, currentPV, currentPM, currentPA, hasCombatSkill, hasLuta, manualDiceCount]);
 
   return (
     <div style={{ gridColumn: '1 / -1', maxWidth: '600px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -540,46 +546,36 @@ export default function PlayMode(props: PlayModeProps) {
         <div className="play-drawer-inner">
           <div className="play-general-rolls-content">
             <div className="play-unified-roll-widget">
-              {/* Top Bar: Segmented Dice Selector (Perda, Padrão, Ganho, Máx) */}
+              {/* Top Bar: Segmented Dice Selector (1, 2, 3 Dados) - Somente Ícones */}
               <div className="play-dice-segmented-bar">
                 <button
                   type="button"
-                  className={`dice-seg-btn perda ${manualBonusDice === -1 ? 'active' : ''}`}
-                  onClick={() => setManualBonusDice(prev => prev === -1 ? 0 : -1)}
-                  title="Perda situacional: -1D no teste (rola 1 dado a menos)"
+                  className={`dice-seg-btn ${manualDiceCount === 1 ? 'active' : ''}`}
+                  onClick={() => setManualDiceCount(1)}
+                  title="Rolar 1 Dado (1D)"
+                  aria-label="1 Dado"
                 >
-                  <span className="dice-seg-badge perda">−1D</span>
-                  <span className="dice-seg-label"><span className="dice-seg-sub">Perda</span></span>
+                  <DiceCountIcon count={1} size={18} />
                 </button>
 
                 <button
                   type="button"
-                  className={`dice-seg-btn ${manualBonusDice === 0 ? 'active' : ''}`}
-                  onClick={() => setManualBonusDice(0)}
-                  title="Rolagem padrão: sem bônus extra de dados"
+                  className={`dice-seg-btn ${manualDiceCount === 2 ? 'active' : ''}`}
+                  onClick={() => setManualDiceCount(2)}
+                  title="Rolar 2 Dados (2D)"
+                  aria-label="2 Dados"
                 >
-                  <DiceCountIcon count={1} size={12} />
-                  <span className="dice-seg-label">0 <span className="dice-seg-sub">Padrão</span></span>
+                  <DiceCountIcon count={2} size={18} />
                 </button>
 
                 <button
                   type="button"
-                  className={`dice-seg-btn ganho ${manualBonusDice === 1 ? 'active' : ''}`}
-                  onClick={() => setManualBonusDice(prev => prev === 1 ? 0 : 1)}
-                  title="Ganho situacional: +1D no teste"
+                  className={`dice-seg-btn ${manualDiceCount === 3 ? 'active' : ''}`}
+                  onClick={() => setManualDiceCount(3)}
+                  title="Rolar 3 Dados (3D)"
+                  aria-label="3 Dados"
                 >
-                  <DiceCountIcon count={2} size={12} />
-                  <span className="dice-seg-label">+1D <span className="dice-seg-sub">Ganho</span></span>
-                </button>
-
-                <button
-                  type="button"
-                  className={`dice-seg-btn ganho-max ${manualBonusDice === 2 ? 'active' : ''}`}
-                  onClick={() => setManualBonusDice(prev => prev === 2 ? 0 : 2)}
-                  title="Ganho máximo: +2D no teste"
-                >
-                  <DiceCountIcon count={3} size={12} />
-                  <span className="dice-seg-label">+2D <span className="dice-seg-sub">Máx</span></span>
+                  <DiceCountIcon count={3} size={18} />
                 </button>
               </div>
 

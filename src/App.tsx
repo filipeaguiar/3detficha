@@ -214,8 +214,8 @@ export default function App() {
     setCurrentPA(prev => Math.min(maxPA, prev));
   }, [maxPV, recoverableMaxPM, maxPA]);
 
-  // Modificadores manuais de rolagem
-  const [manualBonusDice, setManualBonusDice] = useState<-2 | -1 | 0 | 1 | 2>(0);
+  // Modificadores manuais de rolagem (1, 2 ou 3 dados)
+  const [manualDiceCount, setManualDiceCount] = useState<1 | 2 | 3>(1);
 
   // Bônus e Técnicas Ativas
   const [activeBonuses, setActiveBonuses] = useState<Set<string>>(new Set());
@@ -827,7 +827,7 @@ export default function App() {
         targetAttribute: attrName,
         selectedSkill: options?.skillId || ((actionType === 'attack' || actionType === 'defense') ? (hasLuta ? 'luta' : (usesMisticaForCombat ? 'mistica' : undefined)) : undefined),
         activeBonusIds: activeBonuses,
-        manualBonusDice,
+        manualDiceCount,
       },
       {
         currentForm,
@@ -1107,8 +1107,8 @@ export default function App() {
             poder={poder}
             habilidade={habilidade}
             resistencia={resistencia}
-            manualBonusDice={manualBonusDice}
-            setManualBonusDice={setManualBonusDice}
+            manualDiceCount={manualDiceCount}
+            setManualDiceCount={setManualDiceCount}
             setIsDrawerOpen={setIsDrawerOpen}
             setCurrentPM={setCurrentPM}
             setActiveFormIndex={setActiveFormIndex}
@@ -1183,7 +1183,7 @@ export default function App() {
         setIsTransformModalOpen={setIsTransformModalOpen}
         updateCurrentForm={updateCurrentFormForActiveIndex}
         setCurrentPM={setCurrentPM}
-        setManualBonusDice={setManualBonusDice}
+        setManualDiceCount={setManualDiceCount}
         currentPM={currentPM}
         isEditingStats={isEditingStats}
         setIsEditingStats={setIsEditingStats}
