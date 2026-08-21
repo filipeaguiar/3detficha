@@ -172,56 +172,85 @@ export default function PlayMode(props: PlayModeProps) {
 
   return (
     <div style={{ gridColumn: '1 / -1', maxWidth: '600px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column' }}>
-      <div className="slide-up" style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', padding: '0.8rem', background: 'rgba(0,0,0,0.5)', borderTop: '2px solid var(--accent-color)', borderBottom: '2px solid var(--accent-color)', position: 'relative', animationDelay: '0.05s', zIndex: 20 }}>
-        <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', zIndex: 50 }}>
-          <button onClick={() => setIsDrawerOpen(true)} className="hud-menu-trigger" title="Menu do Personagem (Deslize para a direita ou clique)">
-            <MenuIcon />
-          </button>
-        </div>
+      <div style={{ position: 'sticky', top: 0, zIndex: 100, background: 'var(--bg-color)' }}>
+        <div className="slide-up" style={{ display: 'flex', gap: '1rem', padding: '0.8rem', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', borderTop: '2px solid var(--accent-color)', borderBottom: '2px solid var(--accent-color)', position: 'relative', animationDelay: '0.05s', zIndex: 20 }}>
+          <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', zIndex: 50 }}>
+            <button onClick={() => setIsDrawerOpen(true)} className="hud-menu-trigger" title="Menu do Personagem (Deslize para a direita ou clique)">
+              <MenuIcon />
+            </button>
+          </div>
 
-        <div
-          style={{ width: '90px', height: '110px', backgroundColor: 'var(--surface-hover)', border: '3px solid var(--accent-color)', transform: 'skewX(-10deg)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 15px var(--accent-transparent)', overflow: 'hidden', position: 'relative', cursor: forms.length > 1 ? 'pointer' : 'default' }}
-          onClick={() => {
-            if (forms.length > 1) {
-              const nextIndex = (activeFormIndex + 1) % forms.length;
-              setActiveFormIndex(nextIndex);
-              if (['druida', 'gigante_da_luz', 'guerreira_magica', 'alquimista'].includes(selectedKitId) && nextIndex > 0) {
-                setIsTransformModalOpen(true);
+          <div
+            style={{ width: '90px', height: '110px', backgroundColor: 'var(--surface-hover)', border: '3px solid var(--accent-color)', transform: 'skewX(-10deg)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 15px var(--accent-transparent)', overflow: 'hidden', position: 'relative', cursor: forms.length > 1 ? 'pointer' : 'default' }}
+            onClick={() => {
+              if (forms.length > 1) {
+                const nextIndex = (activeFormIndex + 1) % forms.length;
+                setActiveFormIndex(nextIndex);
+                if (['druida', 'gigante_da_luz', 'guerreira_magica', 'alquimista'].includes(selectedKitId) && nextIndex > 0) {
+                  setIsTransformModalOpen(true);
+                }
               }
-            }
-          }}
-          title={forms.length > 1 ? `Clique para transformar: Próxima forma (${forms[(activeFormIndex + 1) % forms.length].name})` : currentForm.name}
-        >
-          {currentForm.avatarUrl ? (
-            <img src={currentForm.avatarUrl} alt={currentForm.name} style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'skewX(10deg) scale(1.15)' }} />
-          ) : (
-            <div style={{ transform: 'skewX(10deg)', fontSize: '3.5rem', fontWeight: 'bold', color: 'var(--accent-color)', fontFamily: 'Bebas Neue, sans-serif' }}>
-              {characterName ? characterName.charAt(0).toUpperCase() : '?'}
-            </div>
-          )}
-          {forms.length > 1 && (
-            <div className="avatar-transform-indicator" title="Clique para transformar">
-              <TransformIcon size={12} />
-            </div>
-          )}
-        </div>
-
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', paddingRight: '2.5rem', transform: 'translateX(6px)' }}>
-            <h1 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.8rem', margin: '0', color: '#fff', letterSpacing: '1px', textTransform: 'uppercase', textShadow: '2px 2px 0px #000' }}>
-              {characterName || 'HERÓI DESCONHECIDO'}
-            </h1>
-            {currentKit && (
-              <button className="kit-pill-badge" onClick={() => setIsKitInfoModalOpen(true)} title="Ver detalhes dos poderes do Kit">
-                <span>{currentKit.name}</span>
-                <InfoIcon />
-              </button>
+            }}
+            title={forms.length > 1 ? `Clique para transformar: Próxima forma (${forms[(activeFormIndex + 1) % forms.length].name})` : currentForm.name}
+          >
+            {currentForm.avatarUrl ? (
+              <img src={currentForm.avatarUrl} alt={currentForm.name} style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'skewX(10deg) scale(1.15)' }} />
+            ) : (
+              <div style={{ transform: 'skewX(10deg)', fontSize: '3.5rem', fontWeight: 'bold', color: 'var(--accent-color)', fontFamily: 'Bebas Neue, sans-serif' }}>
+                {characterName ? characterName.charAt(0).toUpperCase() : '?'}
+              </div>
+            )}
+            {forms.length > 1 && (
+              <div className="avatar-transform-indicator" title="Clique para transformar">
+                <TransformIcon size={12} />
+              </div>
             )}
           </div>
 
-          <SegmentedBar current={currentPV} max={maxPV} color="#5EB05D" onClick={() => setIsEditingStats(true)} pulseCount={totalCostPV} offsetX={2} />
-          <SegmentedBar current={currentPM} max={maxPM} color="#894EC6" onClick={() => setIsEditingStats(true)} pulseCount={totalCostPM} offsetX={-2} />
-          <SegmentedBar current={currentPA} max={maxPA} color="#FF9E00" onClick={() => setIsEditingStats(true)} halfWidth={true} pulseCount={totalCostPA} offsetX={-6} />
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', paddingRight: '2.5rem', transform: 'translateX(6px)' }}>
+              <h1 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.8rem', margin: '0', color: '#fff', letterSpacing: '1px', textTransform: 'uppercase', textShadow: '2px 2px 0px #000' }}>
+                {characterName || 'HERÓI DESCONHECIDO'}
+              </h1>
+              {currentKit && (
+                <button className="kit-pill-badge" onClick={() => setIsKitInfoModalOpen(true)} title="Ver detalhes dos poderes do Kit">
+                  <span>{currentKit.name}</span>
+                  <InfoIcon />
+                </button>
+              )}
+            </div>
+
+            <SegmentedBar current={currentPV} max={maxPV} color="#5EB05D" onClick={() => setIsEditingStats(true)} pulseCount={totalCostPV} offsetX={2} />
+            <SegmentedBar current={currentPM} max={maxPM} color="#894EC6" onClick={() => setIsEditingStats(true)} pulseCount={totalCostPM} offsetX={-2} />
+            <SegmentedBar current={currentPA} max={maxPA} color="#FF9E00" onClick={() => setIsEditingStats(true)} halfWidth={true} pulseCount={totalCostPA} offsetX={-6} />
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.5rem', padding: '0.5rem 1.5rem', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', borderBottom: '2px solid var(--border-color)', marginBottom: '1rem', boxShadow: '0 4px 10px rgba(0,0,0,0.3)' }}>
+          {(currentKit || currentArchetypeName || (currentForm.advantages && currentForm.advantages.length > 0) || (currentForm.skills && currentForm.skills.length > 0) || (currentForm.disadvantages && currentForm.disadvantages.length > 0)) && (
+            <button
+              type="button"
+              className={`char-info-toggle-btn ${isCharInfoOpen ? 'open' : ''}`}
+              style={{ flex: 1, margin: 0, padding: '0.3rem' }}
+              onClick={() => setIsCharInfoOpen(prev => !prev)}
+            >
+              <div className="char-info-toggle-content">
+                <TriangleDownIcon size={9} className={`char-info-triangle ${isCharInfoOpen ? 'rotated' : ''}`} />
+                <span style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>PERSONAGEM</span>
+              </div>
+            </button>
+          )}
+          <button
+            type="button"
+            className={`char-info-toggle-btn ${showGeneralRolls ? 'open' : ''}`}
+            style={{ flex: 1, margin: 0, padding: '0.3rem' }}
+            onClick={() => setShowGeneralRolls(open => !open)}
+          >
+            <div className="char-info-toggle-content">
+              <span style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>OUTROS TESTES</span>
+              <TriangleDownIcon size={9} className={`char-info-triangle ${showGeneralRolls ? 'rotated' : ''}`} />
+            </div>
+          </button>
         </div>
       </div>
 
@@ -274,23 +303,10 @@ export default function PlayMode(props: PlayModeProps) {
         </div>
       )}
 
-      <div className="panel slide-up" style={{ animationDelay: '0.15s', width: '100%' }}>
-        {(currentKit || currentArchetypeName || (currentForm.advantages && currentForm.advantages.length > 0) || (currentForm.skills && currentForm.skills.length > 0) || (currentForm.disadvantages && currentForm.disadvantages.length > 0)) && (
-          <div className="char-info-section">
-            <button
-              type="button"
-              className={`char-info-toggle-btn ${isCharInfoOpen ? 'open' : ''}`}
-              onClick={() => setIsCharInfoOpen(prev => !prev)}
-              title="Alternar visibilidade das informações do personagem"
-            >
-              <div className="char-info-toggle-content">
-                <TriangleDownIcon size={9} className={`char-info-triangle ${isCharInfoOpen ? 'rotated' : ''}`} />
-                <span>INFORMAÇÕES DO PERSONAGEM</span>
-                <TriangleDownIcon size={9} className={`char-info-triangle ${isCharInfoOpen ? 'rotated' : ''}`} />
-              </div>
-            </button>
-
-            <div className={`char-info-collapsible ${isCharInfoOpen ? 'open' : ''}`}>
+      {isCharInfoOpen && (
+        <div className="panel slide-up" style={{ animationDelay: '0s', width: '100%', marginBottom: '1rem' }}>
+          {(currentKit || currentArchetypeName || (currentForm.advantages && currentForm.advantages.length > 0) || (currentForm.skills && currentForm.skills.length > 0) || (currentForm.disadvantages && currentForm.disadvantages.length > 0)) && (
+            <div className="char-info-collapsible open">
               <div className="char-info-inner">
                 {currentKit && (
                   <div className="char-info-row">
@@ -421,10 +437,11 @@ export default function PlayMode(props: PlayModeProps) {
                 )}
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+      )}
 
-        <PlayAttacksSection comboControls={hasCombo ? <div className="play-combo-controls"><div className="play-combo-status">Combo: {comboActive ? `${comboRemaining} extras restantes` : 'pronto para iniciar'}{comboUsedStrikeIds.length > 0 ? ` • usados: ${comboUsedStrikeIds.length}` : ''}</div><div className="play-combo-actions"><button className="control-btn editor-pill-btn" onClick={() => { setComboActive((active) => !active); if (comboActive) setComboUsedStrikeIds([]); }}>{comboActive ? 'Encerrar Combo' : 'Iniciar Combo'}</button><button className="control-btn editor-pill-btn" onClick={() => { setComboActive(false); setComboUsedStrikeIds([]); }}>Resetar</button></div></div> : undefined}>
+      <PlayAttacksSection comboControls={hasCombo ? <div className="play-combo-controls"><div className="play-combo-status">Combo: {comboActive ? `${comboRemaining} extras restantes` : 'pronto para iniciar'}{comboUsedStrikeIds.length > 0 ? ` • usados: ${comboUsedStrikeIds.length}` : ''}</div><div className="play-combo-actions"><button className="control-btn editor-pill-btn" onClick={() => { setComboActive((active) => !active); if (comboActive) setComboUsedStrikeIds([]); }}>{comboActive ? 'Encerrar Combo' : 'Iniciar Combo'}</button><button className="control-btn editor-pill-btn" onClick={() => { setComboActive(false); setComboUsedStrikeIds([]); }}>Resetar</button></div></div> : undefined}>
               <div className="generic-combat-actions-grid">
                 <button
                   type="button"
@@ -513,16 +530,9 @@ export default function PlayMode(props: PlayModeProps) {
               })}
           </PlayAttacksSection>
 
-          <section className="play-general-rolls-section">
-            <button type="button" className={`control-btn editor-pill-btn play-general-rolls-toggle ${showGeneralRolls ? 'active' : ''}`} onClick={() => setShowGeneralRolls((open) => !open)} aria-expanded={showGeneralRolls}>
-              <DiceCountIcon count={Math.max(1, Math.min(3, 1 + calculatedTotalExtraDice)) as 1 | 2 | 3} size={18} />
-              <span>Testes fora de combate</span>
-              {calculatedCritRange < 6 && <span className="bonus-attr-micro">Crítico {calculatedCritRange}+</span>}
-              <TriangleDownIcon size={11} className={showGeneralRolls ? 'rotated' : ''} />
-            </button>
-
-            {showGeneralRolls && (
-              <div className="play-general-rolls-content slide-up">
+      {showGeneralRolls && (
+        <section className="play-general-rolls-section slide-up" style={{ marginBottom: '1rem' }}>
+          <div className="play-general-rolls-content open">
                 <div className="stats-grid">
                   <button className={`stat-box roll-btn ${!allowedAttributes.poder ? 'disabled-attribute' : ''}`} style={{ '--btn-color': '#FF9E00', '--btn-text-color': '#ffffff' } as React.CSSProperties} onClick={() => handleRoll('poder', { actionType: 'general', label: 'Poder' })} disabled={rolling || !allowedAttributes.poder} title="Rolar teste de Poder">
                     <div className="stat-icon-container"><PoderIcon /></div>
@@ -547,8 +557,8 @@ export default function PlayMode(props: PlayModeProps) {
                   </button>
                 </div>
               </div>
-            )}
-          </section>
+        </section>
+      )}
 
         {techniqueActions.length > 0 && (
           <PlayTechniquesSection>
@@ -606,7 +616,6 @@ export default function PlayMode(props: PlayModeProps) {
               })}
           </PlayTechniquesSection>
         )}
-      </div>
       {detailModal && (
         <div className="modal-overlay pop-in" style={{ zIndex: 340, alignItems: 'center' }} onClick={(e) => { if (e.target === e.currentTarget) setDetailModal(null); }}>
           <div className="modal-content detail-modal-content">
