@@ -30,6 +30,8 @@ export const ADVANTAGE_VARIANT_OPTIONS: Record<string, Array<{ key: string; labe
     { key: 'resiliente', label: 'Resiliente (Venenos e Doenças)' },
     { key: 'sem_mente', label: 'Sem Mente (Imunidade Mental)' },
     { key: 'sem_vida', label: 'Sem Vida (Sem Necessidades Vitais)' },
+    { key: 'abiotico', label: 'Abiótico (Fome, Sede e Ar)' },
+    { key: 'sono', label: 'Sem Sono (Não Precisa Dormir)' },
   ],
   sentido: [
     { key: 'infravisao', label: 'Infravisão' },
@@ -90,6 +92,20 @@ export const ADVANTAGE_VARIANT_OPTIONS: Record<string, Array<{ key: string; labe
     { key: 'saber', label: 'Saber' },
     { key: 'sobrevivencia', label: 'Sobrevivência' },
   ],
+  instrutor: [
+    { key: 'animais', label: 'Animais' },
+    { key: 'arte', label: 'Arte' },
+    { key: 'esporte', label: 'Esporte' },
+    { key: 'influencia', label: 'Influência' },
+    { key: 'luta', label: 'Luta' },
+    { key: 'manha', label: 'Manha' },
+    { key: 'maquinas', label: 'Máquinas' },
+    { key: 'medicina', label: 'Medicina' },
+    { key: 'mistica', label: 'Mística' },
+    { key: 'percepcao', label: 'Percepção' },
+    { key: 'saber', label: 'Saber' },
+    { key: 'sobrevivencia', label: 'Sobrevivência' },
+  ],
   punicao: [
     { key: 'leve', label: 'Leve', cost: '1pt' },
     { key: 'grave', label: 'Grave', cost: '2pt' },
@@ -124,6 +140,32 @@ export const ADVANTAGE_VARIANT_OPTIONS: Record<string, Array<{ key: string; labe
 };
 
 export const DISADVANTAGE_VARIANT_OPTIONS: Record<string, Array<{ key: string; label: string; cost?: string }>> = {
+  ambiente: [
+    { key: 'agua', label: 'Água / Aquático', cost: '-1pt' },
+    { key: 'ceu', label: 'Céu / Aéreo', cost: '-1pt' },
+    { key: 'ermos', label: 'Ermos / Floresta', cost: '-1pt' },
+    { key: 'subterraneo', label: 'Subterrâneo', cost: '-1pt' },
+    { key: 'urbano', label: 'Urbano', cost: '-1pt' },
+    { key: 'espaco', label: 'Espaço / Outro Plano', cost: '-1pt' },
+  ],
+  inapto: [
+    { key: 'animais', label: 'Animais', cost: '-1pt' },
+    { key: 'arte', label: 'Arte', cost: '-1pt' },
+    { key: 'esporte', label: 'Esporte', cost: '-1pt' },
+    { key: 'influencia', label: 'Influência', cost: '-1pt' },
+    { key: 'luta', label: 'Luta', cost: '-1pt' },
+    { key: 'manha', label: 'Manha', cost: '-1pt' },
+    { key: 'maquinas', label: 'Máquinas', cost: '-1pt' },
+    { key: 'medicina', label: 'Medicina', cost: '-1pt' },
+    { key: 'mistica', label: 'Mística', cost: '-1pt' },
+    { key: 'percepcao', label: 'Percepção', cost: '-1pt' },
+    { key: 'saber', label: 'Saber', cost: '-1pt' },
+    { key: 'sobrevivencia', label: 'Sobrevivência', cost: '-1pt' },
+  ],
+  protegido: [
+    { key: 'comum', label: 'Protegido comum', cost: '-1pt' },
+    { key: 'indefeso', label: 'Protegido indefeso', cost: '-2pt' },
+  ],
   utensilio: [
     { key: 'comum', label: 'Utensílio comum', cost: '-1pt' },
     { key: 'vital', label: 'Utensílio vital', cost: '-2pt' },
@@ -160,10 +202,20 @@ export const DISADVANTAGE_VARIANT_OPTIONS: Record<string, Array<{ key: string; l
     { key: 'pacifismo', label: 'Código de Pacifismo', cost: '-1pt' },
     { key: 'lealdade', label: 'Código de Lealdade', cost: '-1pt' },
     { key: 'dahllan', label: 'Código Dahllan', cost: '-1pt' },
+    { key: 'dragoes', label: 'Código dos Dragões', cost: '-1pt' },
+    { key: 'gratidao', label: 'Código da Gratidão', cost: '-1pt' },
+    { key: 'cacador', label: 'Código do Caçador', cost: '-1pt' },
+    { key: 'combate', label: 'Código de Combate', cost: '-1pt' },
+    { key: 'derrota', label: 'Código da Derrota', cost: '-1pt' },
+    { key: 'redencao', label: 'Código da Redenção', cost: '-1pt' },
   ],
   transtorno: [
     { key: 'fobia', label: 'Fobia', cost: '-1pt' },
     { key: 'mitomania', label: 'Mitomania', cost: '-1pt' },
     { key: 'compulsao', label: 'Compulsão', cost: '-1pt' },
+    { key: 'cleptomania', label: 'Cleptomania', cost: '-1pt' },
+    { key: 'distracao', label: 'Distração', cost: '-1pt' },
+    { key: 'fantasia', label: 'Fantasia', cost: '-1pt' },
+    { key: 'timidez', label: 'Timidez', cost: '-1pt' },
   ],
 };
