@@ -302,144 +302,6 @@ export default function PlayMode(props: PlayModeProps) {
         </div>
       )}
 
-      {isCharInfoOpen && (
-        <div className="panel slide-up" style={{ animationDelay: '0s', width: '100%', marginBottom: '1rem' }}>
-          {(currentKit || currentArchetypeName || (currentForm.advantages && currentForm.advantages.length > 0) || (currentForm.skills && currentForm.skills.length > 0) || (currentForm.disadvantages && currentForm.disadvantages.length > 0)) && (
-            <div className="char-info-collapsible open">
-              <div className="char-info-inner">
-                {currentKit && (
-                  <div className="char-info-row">
-                    <span className="char-info-row-label">Kit</span>
-                    <div className="char-info-badge-group">
-                      <button
-                        type="button"
-                        className="char-info-badge kit-badge"
-                        onClick={() => setDetailModal({
-                          title: `Kit — ${currentKit.name}`,
-                          body: [...(currentKitNotes || []), ...(currentKitUnsupportedNotes || []).map(note => `Manual/Narrador: ${note}`)].join('\n\n') || 'Sem detalhes adicionais.',
-                          tone: 'technique'
-                        })}
-                      >
-                        <BookIcon size={13} />
-                        <span>{currentKit.name}</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {currentArchetypeName && (
-                  <div className="char-info-row">
-                    <span className="char-info-row-label">Arquétipo</span>
-                    <div className="char-info-badge-group">
-                      <button
-                        type="button"
-                        className="char-info-badge archetype-badge"
-                        onClick={() => setDetailModal({
-                          title: `Arquétipo — ${currentArchetypeName}`,
-                          body: [...(currentArchetypeNotes || []), ...(currentArchetypeUnsupportedNotes || []).map(note => `Manual/Narrador: ${note}`)].join('\n\n') || 'Sem detalhes adicionais.',
-                          tone: 'technique'
-                        })}
-                      >
-                        <CrownIcon size={13} />
-                        <span>{currentArchetypeName}</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {currentForm.advantages && currentForm.advantages.length > 0 && (
-                  <div className="char-info-row">
-                    <span className="char-info-row-label">Vantagens</span>
-                    <div className="char-info-badge-group">
-                      {currentForm.advantages.map(id => {
-                        const [baseId, variantKey] = id.split('::');
-                        const adv = ADVANTAGES_CATALOG.find(a => a.id === baseId);
-                        const variant = variantKey ? ADVANTAGE_VARIANT_OPTIONS[baseId]?.find(v => v.key === variantKey) : undefined;
-                        const displayName = adv ? (variant ? `${adv.name} — ${variant.label}` : adv.name) : id;
-                        const displayCost = variant?.cost || adv?.cost || '';
-                        return adv ? (
-                          <button
-                            key={id}
-                            type="button"
-                            className="char-info-badge advantage-badge"
-                            onClick={() => setDetailModal({
-                              title: displayName,
-                              subtitle: displayCost ? `Custo: ${displayCost}` : undefined,
-                              body: adv.desc,
-                              tone: 'advantage'
-                            })}
-                          >
-                            <SparklesIcon size={12} />
-                            <span>{displayName}</span>
-                          </button>
-                        ) : null;
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {currentForm.skills && currentForm.skills.length > 0 && (
-                  <div className="char-info-row">
-                    <span className="char-info-row-label">Perícias</span>
-                    <div className="char-info-badge-group">
-                      {currentForm.skills.map(id => {
-                        const skill = SKILLS_CATALOG.find(a => a.id === id);
-                        return skill ? (
-                          <button
-                            key={id}
-                            type="button"
-                            className="char-info-badge skill-badge"
-                            onClick={() => setDetailModal({
-                              title: skill.name,
-                              body: skill.desc,
-                              tone: 'skill'
-                            })}
-                          >
-                            <SkillsIcon size={12} />
-                            <span>{skill.name}</span>
-                          </button>
-                        ) : null;
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {currentForm.disadvantages && currentForm.disadvantages.length > 0 && (
-                  <div className="char-info-row">
-                    <span className="char-info-row-label">Desvantagens</span>
-                    <div className="char-info-badge-group">
-                      {currentForm.disadvantages.map(id => {
-                        const [baseId, variantKey] = id.split('::');
-                        const disadv = DISADVANTAGES_CATALOG.find(a => a.id === baseId);
-                        const variant = variantKey ? DISADVANTAGE_VARIANT_OPTIONS[baseId]?.find(v => v.key === variantKey) : undefined;
-                        const displayName = disadv ? (variant ? `${disadv.name} — ${variant.label}` : disadv.name) : id;
-                        const displayCost = variant?.cost || disadv?.cost || '';
-                        return disadv ? (
-                          <button
-                            key={id}
-                            type="button"
-                            className="char-info-badge disadvantage-badge"
-                            onClick={() => setDetailModal({
-                              title: displayName,
-                              subtitle: displayCost ? `Custo: ${displayCost}` : undefined,
-                              body: disadv.desc,
-                              tone: 'disadvantage'
-                            })}
-                          >
-                            <MaskIcon size={12} />
-                            <span>{displayName}</span>
-                          </button>
-                        ) : null;
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
       <PlayAttacksSection comboControls={hasCombo ? <div className="play-combo-controls"><div className="play-combo-status">Combo: {comboActive ? `${comboRemaining} extras restantes` : 'pronto para iniciar'}{comboUsedStrikeIds.length > 0 ? ` • usados: ${comboUsedStrikeIds.length}` : ''}</div><div className="play-combo-actions"><button className="control-btn editor-pill-btn" onClick={() => { setComboActive((active) => !active); if (comboActive) setComboUsedStrikeIds([]); }}>{comboActive ? 'Encerrar Combo' : 'Iniciar Combo'}</button><button className="control-btn editor-pill-btn" onClick={() => { setComboActive(false); setComboUsedStrikeIds([]); }}>Resetar</button></div></div> : undefined}>
               <div className="generic-combat-actions-grid">
                 <button
@@ -545,35 +407,171 @@ export default function PlayMode(props: PlayModeProps) {
               })}
           </PlayAttacksSection>
 
-      {showGeneralRolls && (
-        <section className="play-general-rolls-section slide-up" style={{ marginBottom: '1rem' }}>
-          <div className="play-general-rolls-content open">
-                <div className="stats-grid">
-                  <button className={`stat-box roll-btn ${!allowedAttributes.poder ? 'disabled-attribute' : ''}`} style={{ '--btn-color': '#FF9E00', '--btn-text-color': '#ffffff' } as React.CSSProperties} onClick={() => handleRoll('poder', { actionType: 'general', label: 'Poder' })} disabled={rolling || !allowedAttributes.poder} title="Rolar teste de Poder">
-                    <div className="stat-icon-container"><PoderIcon /></div>
-                    <div className="stat-value corner">{poder + (currentForm.wildShapeAdvantages?.includes('Forte') ? 1 : 0)}</div>
-                  </button>
-                  <button className={`stat-box roll-btn ${!allowedAttributes.habilidade ? 'disabled-attribute' : ''}`} style={{ '--btn-color': '#894EC6', '--btn-text-color': '#ffffff' } as React.CSSProperties} onClick={() => handleRoll('habilidade', { actionType: 'general', label: 'Habilidade' })} disabled={rolling || !allowedAttributes.habilidade} title="Rolar teste de Habilidade">
-                    <div className="stat-icon-container"><HabilidadeIcon /></div>
-                    <div className="stat-value corner">{habilidade}</div>
-                  </button>
-                  <button className={`stat-box roll-btn ${!allowedAttributes.resistencia ? 'disabled-attribute' : ''}`} style={{ '--btn-color': '#5EB05D', '--btn-text-color': '#ffffff' } as React.CSSProperties} onClick={() => handleRoll('resistencia', { actionType: 'general', label: 'Resistência' })} disabled={rolling || !allowedAttributes.resistencia} title="Rolar teste de Resistência">
-                    <div className="stat-icon-container"><ResistenciaIcon /></div>
-                    <div className="stat-value corner">{resistencia + (currentForm.wildShapeAdvantages?.includes('Vigoroso') ? 2 : 0)}</div>
-                  </button>
-                </div>
-
-                <div className="play-manual-roll-controls">
-                  <button className={`toggle-btn ${calculatedTotalExtraDice !== 0 ? 'active' : ''}`} onClick={() => setManualBonusDice(prev => (prev >= 2 ? 0 : (prev + 1) as 0 | 1 | 2))} title={`Ajuste manual: ${Math.max(1, Math.min(3, 1 + calculatedTotalExtraDice))}D`}>
-                    <DiceCountIcon count={Math.max(1, Math.min(3, 1 + calculatedTotalExtraDice)) as 1 | 2 | 3} size={22} />
-                  </button>
-                  <button className={`toggle-btn ${calculatedCritRange < 6 ? 'active' : ''}`} onClick={() => setManualCritRange(prev => (prev === 6 ? 5 : 6))} title={`Ajuste manual de crítico: ${calculatedCritRange === 6 ? '6' : `${calculatedCritRange}+`}`}>
-                    <span className="play-critical-value">{calculatedCritRange === 6 ? '6' : `${calculatedCritRange}+`}</span>
+      {/* Character Info Drawer */}
+      <div className={`play-drawer-section ${isCharInfoOpen ? 'open' : ''}`}>
+        <div className="play-drawer-inner">
+          <div className="char-info-card">
+            {currentKit && (
+              <div className="char-info-row">
+                <span className="char-info-row-label">Kit</span>
+                <div className="char-info-badge-group">
+                  <button
+                    type="button"
+                    className="char-info-badge kit-badge"
+                    onClick={() => setDetailModal({
+                      title: `Kit — ${currentKit.name}`,
+                      body: [...(currentKitNotes || []), ...(currentKitUnsupportedNotes || []).map(note => `Manual/Narrador: ${note}`)].join('\n\n') || 'Sem detalhes adicionais.',
+                      tone: 'technique'
+                    })}
+                  >
+                    <BookIcon size={13} />
+                    <span>{currentKit.name}</span>
                   </button>
                 </div>
               </div>
-        </section>
-      )}
+            )}
+
+            {currentArchetypeName && (
+              <div className="char-info-row">
+                <span className="char-info-row-label">Arquétipo</span>
+                <div className="char-info-badge-group">
+                  <button
+                    type="button"
+                    className="char-info-badge archetype-badge"
+                    onClick={() => setDetailModal({
+                      title: `Arquétipo — ${currentArchetypeName}`,
+                      body: [...(currentArchetypeNotes || []), ...(currentArchetypeUnsupportedNotes || []).map(note => `Manual/Narrador: ${note}`)].join('\n\n') || 'Sem detalhes adicionais.',
+                      tone: 'technique'
+                    })}
+                  >
+                    <CrownIcon size={13} />
+                    <span>{currentArchetypeName}</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {currentForm.advantages && currentForm.advantages.length > 0 && (
+              <div className="char-info-row">
+                <span className="char-info-row-label">Vantagens</span>
+                <div className="char-info-badge-group">
+                  {currentForm.advantages.map(id => {
+                    const [baseId, variantKey] = id.split('::');
+                    const adv = ADVANTAGES_CATALOG.find(a => a.id === baseId);
+                    const variant = variantKey ? ADVANTAGE_VARIANT_OPTIONS[baseId]?.find(v => v.key === variantKey) : undefined;
+                    const displayName = adv ? (variant ? `${adv.name} — ${variant.label}` : adv.name) : id;
+                    const displayCost = variant?.cost || adv?.cost || '';
+                    return adv ? (
+                      <button
+                        key={id}
+                        type="button"
+                        className="char-info-badge advantage-badge"
+                        onClick={() => setDetailModal({
+                          title: displayName,
+                          subtitle: displayCost ? `Custo: ${displayCost}` : undefined,
+                          body: adv.desc,
+                          tone: 'advantage'
+                        })}
+                      >
+                        <SparklesIcon size={12} />
+                        <span>{displayName}</span>
+                      </button>
+                    ) : null;
+                  })}
+                </div>
+              </div>
+            )}
+
+            {currentForm.skills && currentForm.skills.length > 0 && (
+              <div className="char-info-row">
+                <span className="char-info-row-label">Perícias</span>
+                <div className="char-info-badge-group">
+                  {currentForm.skills.map(id => {
+                    const skill = SKILLS_CATALOG.find(a => a.id === id);
+                    return skill ? (
+                      <button
+                        key={id}
+                        type="button"
+                        className="char-info-badge skill-badge"
+                        onClick={() => setDetailModal({
+                          title: skill.name,
+                          body: skill.desc,
+                          tone: 'skill'
+                        })}
+                      >
+                        <SkillsIcon size={12} />
+                        <span>{skill.name}</span>
+                      </button>
+                    ) : null;
+                  })}
+                </div>
+              </div>
+            )}
+
+            {currentForm.disadvantages && currentForm.disadvantages.length > 0 && (
+              <div className="char-info-row">
+                <span className="char-info-row-label">Desvantagens</span>
+                <div className="char-info-badge-group">
+                  {currentForm.disadvantages.map(id => {
+                    const [baseId, variantKey] = id.split('::');
+                    const disadv = DISADVANTAGES_CATALOG.find(a => a.id === baseId);
+                    const variant = variantKey ? DISADVANTAGE_VARIANT_OPTIONS[baseId]?.find(v => v.key === variantKey) : undefined;
+                    const displayName = disadv ? (variant ? `${disadv.name} — ${variant.label}` : disadv.name) : id;
+                    const displayCost = variant?.cost || disadv?.cost || '';
+                    return disadv ? (
+                      <button
+                        key={id}
+                        type="button"
+                        className="char-info-badge disadvantage-badge"
+                        onClick={() => setDetailModal({
+                          title: displayName,
+                          subtitle: displayCost ? `Custo: ${displayCost}` : undefined,
+                          body: disadv.desc,
+                          tone: 'disadvantage'
+                        })}
+                      >
+                        <MaskIcon size={12} />
+                        <span>{displayName}</span>
+                      </button>
+                    ) : null;
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* General Rolls Drawer */}
+      <div className={`play-drawer-section ${showGeneralRolls ? 'open' : ''}`}>
+        <div className="play-drawer-inner">
+          <div className="play-general-rolls-content">
+            <div className="stats-grid">
+              <button className={`stat-box roll-btn ${!allowedAttributes.poder ? 'disabled-attribute' : ''}`} style={{ '--btn-color': '#FF9E00', '--btn-text-color': '#ffffff' } as React.CSSProperties} onClick={() => handleRoll('poder', { actionType: 'general', label: 'Poder' })} disabled={rolling || !allowedAttributes.poder} title="Rolar teste de Poder">
+                <div className="stat-icon-container"><PoderIcon /></div>
+                <div className="stat-value corner">{poder + (currentForm.wildShapeAdvantages?.includes('Forte') ? 1 : 0)}</div>
+              </button>
+              <button className={`stat-box roll-btn ${!allowedAttributes.habilidade ? 'disabled-attribute' : ''}`} style={{ '--btn-color': '#894EC6', '--btn-text-color': '#ffffff' } as React.CSSProperties} onClick={() => handleRoll('habilidade', { actionType: 'general', label: 'Habilidade' })} disabled={rolling || !allowedAttributes.habilidade} title="Rolar teste de Habilidade">
+                <div className="stat-icon-container"><HabilidadeIcon /></div>
+                <div className="stat-value corner">{habilidade}</div>
+              </button>
+              <button className={`stat-box roll-btn ${!allowedAttributes.resistencia ? 'disabled-attribute' : ''}`} style={{ '--btn-color': '#5EB05D', '--btn-text-color': '#ffffff' } as React.CSSProperties} onClick={() => handleRoll('resistencia', { actionType: 'general', label: 'Resistência' })} disabled={rolling || !allowedAttributes.resistencia} title="Rolar teste de Resistência">
+                <div className="stat-icon-container"><ResistenciaIcon /></div>
+                <div className="stat-value corner">{resistencia + (currentForm.wildShapeAdvantages?.includes('Vigoroso') ? 2 : 0)}</div>
+              </button>
+            </div>
+
+            <div className="play-manual-roll-controls">
+              <button className={`toggle-btn ${calculatedTotalExtraDice !== 0 ? 'active' : ''}`} onClick={() => setManualBonusDice(prev => (prev >= 2 ? 0 : (prev + 1) as 0 | 1 | 2))} title={`Ajuste manual: ${Math.max(1, Math.min(3, 1 + calculatedTotalExtraDice))}D`}>
+                <DiceCountIcon count={Math.max(1, Math.min(3, 1 + calculatedTotalExtraDice)) as 1 | 2 | 3} size={22} />
+              </button>
+              <button className={`toggle-btn ${calculatedCritRange < 6 ? 'active' : ''}`} onClick={() => setManualCritRange(prev => (prev === 6 ? 5 : 6))} title={`Ajuste manual de crítico: ${calculatedCritRange === 6 ? '6' : `${calculatedCritRange}+`}`}>
+                <span className="play-critical-value">{calculatedCritRange === 6 ? '6' : `${calculatedCritRange}+`}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
         {techniqueActions.length > 0 && (
           <PlayTechniquesSection>
