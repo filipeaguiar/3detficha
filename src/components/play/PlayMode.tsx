@@ -596,7 +596,7 @@ export default function PlayMode(props: PlayModeProps) {
                           
                           if (!isBaseVariant) {
                             return <span className="bt-raw-name">{variantLabel}</span>;
-                          } else if (bonus.alias) {
+                          } else if (bonus.alias && (!bonus.variants || bonus.variants.length <= 1)) {
                             return <span className="bt-raw-name">{bonus.name}</span>;
                           }
                           return null;
