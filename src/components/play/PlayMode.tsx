@@ -43,10 +43,8 @@ type PlayModeProps = {
   habilidade: number;
   resistencia: number;
   calculatedTotalExtraDice: number;
-  calculatedCritRange: number;
   manualBonusDice: 0 | 1 | 2;
   setManualBonusDice: React.Dispatch<React.SetStateAction<0 | 1 | 2>>;
-  setManualCritRange: React.Dispatch<React.SetStateAction<5 | 6>>;
   setIsDrawerOpen: (open: boolean) => void;
   setCurrentPM: React.Dispatch<React.SetStateAction<number>>;
   setActiveFormIndex: (index: number) => void;
@@ -101,9 +99,7 @@ export default function PlayMode(props: PlayModeProps) {
     habilidade,
     resistencia,
     calculatedTotalExtraDice,
-    calculatedCritRange,
     setManualBonusDice,
-    setManualCritRange,
     setIsDrawerOpen,
     setActiveFormIndex,
     setIsTransformModalOpen,
@@ -562,11 +558,12 @@ export default function PlayMode(props: PlayModeProps) {
             </div>
 
             <div className="play-manual-roll-controls">
-              <button className={`toggle-btn ${calculatedTotalExtraDice !== 0 ? 'active' : ''}`} onClick={() => setManualBonusDice(prev => (prev >= 2 ? 0 : (prev + 1) as 0 | 1 | 2))} title={`Ajuste manual: ${Math.max(1, Math.min(3, 1 + calculatedTotalExtraDice))}D`}>
+              <button
+                className={`toggle-btn ${calculatedTotalExtraDice !== 0 ? 'active' : ''}`}
+                onClick={() => setManualBonusDice(prev => (prev >= 2 ? 0 : (prev + 1) as 0 | 1 | 2))}
+                title={`Ajuste manual de dados: ${Math.max(1, Math.min(3, 1 + calculatedTotalExtraDice))}D (Ganho/Perda)`}
+              >
                 <DiceCountIcon count={Math.max(1, Math.min(3, 1 + calculatedTotalExtraDice)) as 1 | 2 | 3} size={22} />
-              </button>
-              <button className={`toggle-btn ${calculatedCritRange < 6 ? 'active' : ''}`} onClick={() => setManualCritRange(prev => (prev === 6 ? 5 : 6))} title={`Ajuste manual de crítico: ${calculatedCritRange === 6 ? '6' : `${calculatedCritRange}+`}`}>
-                <span className="play-critical-value">{calculatedCritRange === 6 ? '6' : `${calculatedCritRange}+`}</span>
               </button>
             </div>
           </div>

@@ -216,7 +216,6 @@ export default function App() {
 
   // Modificadores manuais de rolagem
   const [manualBonusDice, setManualBonusDice] = useState<0 | 1 | 2>(0);
-  const [manualCritRange, setManualCritRange] = useState<5 | 6>(6);
 
   // Bônus e Técnicas Ativas
   const [activeBonuses, setActiveBonuses] = useState<Set<string>>(new Set());
@@ -243,21 +242,6 @@ export default function App() {
         mod: getKitPowerModifier(p)
       }));
   }, [currentKit, activeKitBuffs]);
-
-  // Derived Critical Threshold from active bonuses & active kit buffs
-  const calculatedCritRange = useMemo(() => {
-    let totalCritMod = 0;
-    activeBonusesList.forEach(b => {
-      const variant = getActiveBonusVariant(b);
-      const modifier = typeof variant?.critThresholdMod === 'number' ? variant.critThresholdMod : b.critThresholdMod;
-      if (modifier) totalCritMod += modifier;
-    });
-    activeKitBuffsList.forEach(k => {
-      if (k.mod.critThresholdMod) totalCritMod += k.mod.critThresholdMod;
-    });
-    const range = manualCritRange + totalCritMod;
-    return Math.max(4, Math.min(6, range));
-  }, [activeBonusesList, activeKitBuffsList, manualCritRange]);
 
   // Derived Extra Dice from active bonuses + active kit buffs + Druid Wild Shape Ágil
   const calculatedTotalExtraDice = useMemo(() => {
@@ -861,7 +845,6 @@ export default function App() {
         selectedSkill: options?.skillId || ((actionType === 'attack' || actionType === 'defense') ? (hasLuta ? 'luta' : (usesMisticaForCombat ? 'mistica' : undefined)) : undefined),
         activeBonusIds: activeBonuses,
         manualBonusDice,
-        manualCritRange,
       },
       {
         currentForm,
@@ -1142,10 +1125,8 @@ export default function App() {
             habilidade={habilidade}
             resistencia={resistencia}
             calculatedTotalExtraDice={calculatedTotalExtraDice}
-            calculatedCritRange={calculatedCritRange}
             manualBonusDice={manualBonusDice}
             setManualBonusDice={setManualBonusDice}
-            setManualCritRange={setManualCritRange}
             setIsDrawerOpen={setIsDrawerOpen}
             setCurrentPM={setCurrentPM}
             setActiveFormIndex={setActiveFormIndex}
