@@ -612,20 +612,22 @@ export default function PlayMode(props: PlayModeProps) {
                       </div>
                     </div>
                     
-                    <div className="bt-body" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
-                      {(() => {
-                        const subtitleText = getBonusSubtitle(bonus);
-                        return subtitleText ? <span className="bt-effect">{subtitleText}</span> : null;
-                      })()}
-                      {(() => {
-                        const effectiveCostValue = typeof activeVariant?.costValue === 'number' ? activeVariant.costValue : bonus.costValue;
-                        const effectiveCostResource = activeVariant?.costResource || bonus.costResource;
-                        if (bonus.gameplayPattern !== 'prepared-magic' && effectiveCostResource === 'PM' && effectiveCostValue && effectiveCostValue > 0) {
-                          return <SegmentedBar current={effectiveCostValue} max={effectiveCostValue} color={isActive ? "#ffffff" : "#894EC6"} segmentWidth={8} />;
-                        }
-                        return null;
-                      })()}
-                    </div>
+                    {(() => {
+                      const subtitleText = getBonusSubtitle(bonus);
+                      return (
+                        <div className="bt-body" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: subtitleText ? 'space-between' : 'flex-end', gap: '0.5rem' }}>
+                          {subtitleText ? <span className="bt-effect">{subtitleText}</span> : null}
+                          {(() => {
+                            const effectiveCostValue = typeof activeVariant?.costValue === 'number' ? activeVariant.costValue : bonus.costValue;
+                            const effectiveCostResource = activeVariant?.costResource || bonus.costResource;
+                            if (bonus.gameplayPattern !== 'prepared-magic' && effectiveCostResource === 'PM' && effectiveCostValue && effectiveCostValue > 0) {
+                              return <SegmentedBar current={effectiveCostValue} max={effectiveCostValue} color={isActive ? "#ffffff" : "#894EC6"} segmentWidth={8} />;
+                            }
+                            return null;
+                          })()}
+                        </div>
+                      );
+                    })()}
 
                     {(isPersistentAssisted || isTemporaryPackage || (bonus.variants && bonus.variants.length > 1 && bonus.gameplayPattern !== 'cycling-variant')) && (
                       <div className="bt-footer" onClick={(event) => event.stopPropagation()}>

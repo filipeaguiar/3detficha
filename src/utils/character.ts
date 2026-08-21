@@ -283,6 +283,11 @@ export function getBonusSubtitle(bonus: RollBonus): string {
   if (bonus.duration === 'scene') parts.push('Cena');
 
   let text = parts.join(' • ');
+  
+  if (!text && bonus.alias) {
+    text = bonus.name;
+  }
+
   const effectiveCostResource = activeVariant?.costResource || bonus.costResource;
   const effectiveCostValue = typeof activeVariant?.costValue === 'number' ? activeVariant.costValue : bonus.costValue;
   
