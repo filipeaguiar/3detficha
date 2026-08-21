@@ -72,12 +72,9 @@
 2. **Nomenclaturas de Interface:**
    - **Ação:** Substituir `"Fraqueza leve"` e `"Fraqueza grave"` por nomes alinhados a alguns supplements/percepções (`Fraqueza Incomum` e `Fraqueza Comum` ou manter o base caso seja a terminologia final).
 
-3. **Sugestão de UX (Rest e Ciclo de Vida):**
-   - Atualmente descansos ocorrem exclusivamente no painel lateral do menu. Criar um "atalho na barra de PM e PV" para descanso rápido poderá dinamizar as rolagens na tela tátil.
-
 ---
 
 ## 5. Auditoria de Console & Performance
 - **Avisos do Vite / PWA:** Warning padrão de Chunk limit no rollup (alguns chunks > 500kb).
 - **DOM / Acessibilidade:** Aviso inofensivo `[issue] No label associated with a form field`.
-- **Runtime Errors:** Zero erros não tratados (`0 exceptions`), indicando que as refatorações de grid do accordion e do catalog-card mantiveram a estrutura JSX íntegra e eficiente.
+t- **Runtime Errors:** Zero erros não tratados (`0 exceptions`), indicando que as refatorações de grid do accordion e do catalog-card mantiveram a estrutura JSX íntegra e eficiente.
