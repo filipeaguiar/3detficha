@@ -1167,6 +1167,7 @@ export default function App() {
             configureAssistedBonus={configureAssistedBonus}
             endAssistedBonus={endAssistedBonus}
             maintainTemporaryPackage={maintainTemporaryPackage}
+            createPreparedMagic={createPreparedMagic}
           />
         )}
       </div>

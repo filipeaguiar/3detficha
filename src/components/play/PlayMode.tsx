@@ -4,7 +4,7 @@ import { ADVANTAGE_VARIANT_OPTIONS, DISADVANTAGE_VARIANT_OPTIONS } from '../../c
 import { SKILLS_CATALOG } from '../../constants/skillsData';
 import { createStrikeBonus, getActiveBonusVariant, getBonusSubtitle, getKnownStrikes, getKitPowerModifier } from '../../utils/character';
 import { resolveActionPlan } from '../../utils/actionResolver';
-import type { CharacterForm, CharacterKit, KitPower, RollBonus } from '../../types/character';
+import type { CharacterForm, CharacterKit, KitPower, RollBonus, PreparedMagicDraft } from '../../types/character';
 import SegmentedBar from '../common/SegmentedBar';
 import { CheckIcon, ZapIcon, HourglassIcon, SquareIcon, CheckSquareIcon, CloseIcon, DiceCountIcon, HabilidadeIcon, InfoIcon, LeafIcon, MenuIcon, PoderIcon, ResistenciaIcon, SparklesIcon, TransformIcon, CrownIcon, TriangleDownIcon, SwordsIcon, ShieldIcon, MedalIcon, TargetIcon, AlertTriangleIcon } from '../common/Icons';
 import PlayAttacksSection from './PlayAttacksSection';
@@ -59,6 +59,7 @@ type PlayModeProps = {
   configureAssistedBonus: (id: string, updates: NonNullable<RollBonus['assistedState']>) => void;
   endAssistedBonus: (id: string) => void;
   maintainTemporaryPackage: (id: string) => void;
+  createPreparedMagic?: (draft: PreparedMagicDraft) => boolean;
 };
 
 export default function PlayMode(props: PlayModeProps) {
@@ -114,6 +115,7 @@ export default function PlayMode(props: PlayModeProps) {
     configureAssistedBonus,
     endAssistedBonus,
     maintainTemporaryPackage,
+    createPreparedMagic,
   } = props;
 
   const { hasLuta, hasCombatSkill } = useMemo(() => {
@@ -125,6 +127,11 @@ export default function PlayMode(props: PlayModeProps) {
     const hasCombatSkill = hasLuta || (hasMistica && hasMagia);
     return { hasLuta, hasCombatSkill };
   }, [currentForm.skills, currentForm.advantages]);
+
+  const [isPrepareMagicOpen, setIsPrepareMagicOpen] = useState(false);
+  const [magicName, setMagicName] = useState('');
+  const [magicAttribute, setMagicAttribute] = useState<PreparedMagicDraft['attribute']>('any');
+  const [magicValue, setMagicValue] = useState(2);
 
   const activeKitBuffsList = useMemo(() => {
     if (!currentKit) return [];
@@ -654,7 +661,7 @@ export default function PlayMode(props: PlayModeProps) {
                 const assistedConfig = activeVariant?.persistentAssisted || bonus.persistentAssisted;
                 const temporaryConfig = activeVariant?.temporaryPackage || bonus.temporaryPackage;
                 return (
-                  <div key={bonus.id} className={`bonus-toggle ${(isPersistentAssisted || isTemporaryPackage || (bonus.variants && bonus.variants.length > 1)) ? 'play-action-card-detailed' : 'play-action-card-compact'} ${isActive ? 'active' : ''} ${isArchUsed ? 'is-used' : ''}`} style={isArchUsed ? { opacity: 0.6 } : undefined} onClick={() => toggleActiveBonus(bonus.id)} onContextMenu={(e) => { e.preventDefault(); setDetailModal({ title: bonus.alias || bonus.name, subtitle: getBonusSubtitle(bonus), body: `${bonus.name !== (bonus.alias || bonus.name) ? `Base: ${bonus.name}\n\n` : ''}${activeVariant?.note || bonus.persistentAssisted?.note || bonus.temporaryPackage?.note || 'Técnica configurada nesta forma.'}`, tone: 'technique' }); }} title={`${bonus.alias || bonus.name}: ${getBonusSubtitle(bonus)}${isArchUsed ? ' (Já utilizado nesta cena)' : ''}`}>
+                  <div key={bonus.id} className={`bonus-toggle ${(isPersistentAssisted || isTemporaryPackage || (bonus.variants && bonus.variants.length > 1)) ? 'play-action-card-detailed' : 'play-action-card-compact'} ${isActive ? 'active' : ''} ${isArchUsed ? 'is-used' : ''}`} style={isArchUsed ? { opacity: 0.6 } : undefined} onClick={() => { if (bonus.id === 'kitfx_mago_preparar_magias') { setIsPrepareMagicOpen(true); } else { toggleActiveBonus(bonus.id); } }} onContextMenu={(e) => { e.preventDefault(); setDetailModal({ title: bonus.alias || bonus.name, subtitle: getBonusSubtitle(bonus), body: `${bonus.name !== (bonus.alias || bonus.name) ? `Base: ${bonus.name}\n\n` : ''}${activeVariant?.note || bonus.persistentAssisted?.note || bonus.temporaryPackage?.note || 'Técnica configurada nesta forma.'}`, tone: 'technique' }); }} title={`${bonus.alias || bonus.name}: ${getBonusSubtitle(bonus)}${isArchUsed ? ' (Já utilizado nesta cena)' : ''}`}>
                     <div className="bt-top">
                       <div className="bt-title">
                         <span className="bt-name">{bonus.alias ? bonus.alias : bonus.name}</span>
@@ -723,6 +730,58 @@ export default function PlayMode(props: PlayModeProps) {
             {detailModal.subtitle && <div className="detail-modal-subtitle">{detailModal.subtitle}</div>}
             <p className="detail-modal-body">{detailModal.body}</p>
             <button className="btn-roll" style={{ marginTop: '1rem' }} onClick={() => setDetailModal(null)}>Fechar</button>
+          </div>
+        </div>
+      )}
+
+      {isPrepareMagicOpen && (
+        <div className="modal-overlay pop-in" style={{ zIndex: 360, alignItems: 'center' }} onClick={(event) => { if (event.target === event.currentTarget) setIsPrepareMagicOpen(false); }}>
+          <div className="modal-content prepared-magic-modal">
+            <button type="button" className="modal-close" onClick={() => setIsPrepareMagicOpen(false)}>
+              <CloseIcon size={18} />
+            </button>
+            <h2 className="panel-title">Preparar Magia</h2>
+            <p className="prepared-magic-help">
+              Crie um bônus mágico. O custo é metade do bônus, arredondado para cima, e fica bloqueado até a magia ser usada.
+            </p>
+            <div className="prepared-magic-form">
+              <label>
+                Nome da magia
+                <input className="bonus-name-input" value={magicName} onChange={(event) => setMagicName(event.target.value)} placeholder="Ex.: Escudo Arcano" />
+              </label>
+              <label>
+                Teste afetado
+                <select className="bonus-type-select" value={magicAttribute} onChange={(event) => setMagicAttribute(event.target.value as PreparedMagicDraft['attribute'])}>
+                  <option value="any">Qualquer teste</option>
+                  <option value="poder">Poder / ataque</option>
+                  <option value="habilidade">Habilidade</option>
+                  <option value="resistencia">Resistência / defesa</option>
+                </select>
+              </label>
+              <label>
+                Bônus (máximo H+2 = {habilidade + 2})
+                <input type="number" className="bonus-value-input" min={1} max={habilidade + 2} value={magicValue} onChange={(event) => setMagicValue(Math.max(1, Math.min(habilidade + 2, Number(event.target.value) || 1)))} />
+              </label>
+              <div className="prepared-magic-cost">
+                <span>Custo da preparação</span>
+                <strong>{Math.ceil(magicValue / 2)} PM</strong>
+              </div>
+              <button
+                type="button"
+                className="btn-roll"
+                disabled={!magicName.trim() || !createPreparedMagic || (props.currentPM || 0) < Math.ceil(magicValue / 2)}
+                onClick={() => {
+                  if (createPreparedMagic && createPreparedMagic({ name: magicName, attribute: magicAttribute, value: magicValue })) {
+                    setMagicName('');
+                    setMagicAttribute('any');
+                    setMagicValue(2);
+                    setIsPrepareMagicOpen(false);
+                  }
+                }}
+              >
+                Criar e Preparar
+              </button>
+            </div>
           </div>
         </div>
       )}
