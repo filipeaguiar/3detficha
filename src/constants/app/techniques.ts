@@ -115,7 +115,12 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     selectedVariantId: 'base',
     variants: [
       { id: 'base', label: 'Base', costValue: 1, costResource: 'PM', note: 'Disparo padrão usando Mística em vez de Luta.' },
-      { id: 'aprimorada', label: 'Aprimorada', costValue: 2, costResource: 'PM', note: 'Escolha em mesa: Ácido, Congelante, Debilitante, Distante, Elétrico ou Flamejante.' }
+      { id: 'flamejante', label: 'Flamejante (P+2)', costValue: 2, costResource: 'PM', value: 2, bonusType: 'attr_mod', note: 'Ataque mágico com Poder +2.' },
+      { id: 'acido', label: 'Ácido', costValue: 2, costResource: 'PM', note: 'Na próxima rodada, o alvo testa Resistência (6 + dano) ou sofre 1D–1 de dano extra.' },
+      { id: 'congelante', label: 'Congelante', costValue: 2, costResource: 'PM', note: 'Se sofrer dano, o alvo congela e sofre Perda no próximo teste.' },
+      { id: 'debilitante', label: 'Debilitante', costValue: 2, costResource: 'PM', note: 'Se vencer a defesa, reduz -1 em um atributo do alvo até o fim da cena em vez de causar dano.' },
+      { id: 'distante', label: 'Distante', costValue: 2, costResource: 'PM', note: 'O alcance do raio muda para Muito Longe.' },
+      { id: 'eletrico', label: 'Elétrico', costValue: 2, costResource: 'PM', note: 'Se causar dano, o próximo ataque contra o alvo tem Ganho.' }
     ]
   },
   {

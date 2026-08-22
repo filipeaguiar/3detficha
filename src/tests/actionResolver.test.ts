@@ -97,6 +97,41 @@ export function runActionResolverTests() {
     assert(!plan.hasConflicts, 'No conflicts detected');
   }
 
+  // 3b. Raio Místico Flamejante adds +2 to Poder and costs 2 PM
+  {
+    const form = createMockForm({
+      poder: 3,
+      habilidade: 2,
+      resistencia: 2,
+      skills: ['mistica'],
+      advantages: ['magia'],
+    });
+    const raioCatalog = ALL_TECHNIQUES.find((t) => t.catalogId === 'raio_mistico')!;
+    const raioBonus = { ...createTechniqueBonusFromCatalog(raioCatalog, form), selectedVariantId: 'flamejante' };
+
+    const plan = resolveActionPlan(
+      {
+        actionType: 'attack',
+        targetAttribute: 'poder',
+        selectedSkill: 'mistica',
+        activeBonusIds: new Set([raioBonus.id]),
+      },
+      {
+        currentForm: form,
+        rollBonuses: [raioBonus],
+        currentPV: 10,
+        currentPM: 10,
+        currentPA: 1,
+      }
+    );
+
+    assert(plan.effectiveAttributeName === 'poder', 'Raio Místico Flamejante attacks using Poder');
+    assert(plan.totalEffectiveAttribute === 5, 'Effective attribute is 5 (3 base + 2 Flamejante)');
+    assert(plan.diceCount === 2, 'Dice count is 2D (1 base + 1D Ganho from Mística)');
+    assert(plan.totalCostPM === 2, 'Raio Místico Flamejante costs 2 PM');
+    assert(plan.canAfford, 'Can afford attack with 10 PM');
+  }
+
   // 4. Potente modifier transfer when Preciso replaces attribute
   {
     const form = createMockForm({
