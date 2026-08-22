@@ -24,7 +24,7 @@ export default function SegmentedBar({ current, max, color, onClick, halfWidth, 
     segments.push(
       <div
         key={i}
-        className={isPulsing ? 'segment-pulse' : ''}
+        className={`segment-base ${isPulsing ? 'segment-pulse' : ''}`}
         style={{
           flex: compact ? undefined : 1,
           width: compact ? `${segmentWidth}px` : undefined,

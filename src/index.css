@@ -596,12 +596,18 @@ h1, h2, h3, h4, h5, h6 {
 
 @keyframes pulse-segment {
   0% { opacity: 1; transform: skewX(-10deg) scale(1); filter: brightness(1); }
-  50% { opacity: 0.6; transform: skewX(-10deg) scale(0.94); filter: brightness(1.8) drop-shadow(0 0 3px #fff); }
+  50% { opacity: var(--pulse-opacity, 1); transform: skewX(-10deg) scale(var(--pulse-scale, 1)); filter: var(--pulse-filter, brightness(1)); }
   100% { opacity: 1; transform: skewX(-10deg) scale(1); filter: brightness(1); }
 }
 
-.segment-pulse {
+.segment-base {
   animation: pulse-segment 1s infinite alternate ease-in-out;
+}
+
+.segment-pulse {
+  --pulse-opacity: 0.6;
+  --pulse-scale: 0.94;
+  --pulse-filter: brightness(1.8) drop-shadow(0 0 3px #fff);
   z-index: 5;
   position: relative;
 }
