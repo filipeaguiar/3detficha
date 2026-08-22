@@ -259,11 +259,11 @@ export const TECHNIQUES_CATALOG: TechniqueCatalogEntry[] = [
     variantSelectionMode: 'cycle',
     selectedVariantId: 'corpo_fechado',
     variants: [
-      { id: 'corpo_fechado', label: 'Corpo Fechado', actionScope: 'general', attribute: 'resistencia', costValue: 2, costResource: 'PM', extraDice: 1, note: 'Ganho em um teste de Resistência para evitar um efeito negativo de vantagens ou técnicas.' },
+      { id: 'corpo_fechado', label: 'Corpo Fechado', actionScope: 'any', attribute: 'resistencia', costValue: 2, costResource: 'PM', extraDice: 1, note: 'Ganho em um teste de Resistência para evitar um efeito negativo de vantagens ou técnicas.' },
       { id: 'inviolavel', label: 'Inviolável', actionScope: 'defense', attribute: 'resistencia', costValue: 2, costResource: 'PM', extraDice: 1, note: 'Se mantiver imóvel, tem Ganho e defesa perfeita em todos os testes de defesa até seu próximo turno.' },
-      { id: 'palma_de_ferro', label: 'Palma de Ferro', actionScope: 'general', attribute: 'poder', costValue: 2, costResource: 'PM', extraDice: 1, note: 'Ganho em um teste de Poder para quebrar objetos inanimados.' },
-      { id: 'realinhar_chakras', label: 'Realinhar Chakras', actionScope: 'general', attribute: 'resistencia', costValue: 2, costResource: 'PM', note: 'Repete um teste de Resistência para eliminar efeito negativo.' },
-      { id: 'realinhar_chakras_reforcado', label: 'Realinhar + Corpo Fechado', actionScope: 'general', attribute: 'resistencia', costValue: 4, costResource: 'PM', extraDice: 1, note: 'Repete o teste de Resistência e gasta +2PM para obter Corpo Fechado no mesmo teste.' }
+      { id: 'palma_de_ferro', label: 'Palma de Ferro', actionScope: 'any', attribute: 'poder', costValue: 2, costResource: 'PM', extraDice: 1, note: 'Ganho em um teste de Poder para quebrar objetos inanimados.' },
+      { id: 'realinhar_chakras', label: 'Realinhar Chakras', actionScope: 'any', attribute: 'resistencia', costValue: 2, costResource: 'PM', note: 'Repete um teste de Resistência para eliminar efeito negativo.' },
+      { id: 'realinhar_chakras_reforcado', label: 'Realinhar + Corpo Fechado', actionScope: 'any', attribute: 'resistencia', costValue: 4, costResource: 'PM', extraDice: 1, note: 'Repete o teste de Resistência e gasta +2PM para obter Corpo Fechado no mesmo teste.' }
     ]
   },
   {

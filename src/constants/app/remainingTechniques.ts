@@ -94,19 +94,19 @@ export const REMAINING_TECHNIQUES: TechniqueCatalogEntry[] = [
   }),
   base({
     catalogId: 'abrir_chakra_poder', name: 'Abrir Chakra — Poder', description: 'Abre o chakra de Poder até o fim da cena.',
-    actionScope: 'general',
+    actionScope: 'any',
     requirements: { anyAttributeMin: 4, skills: ['luta'] }, xpCost: 20, xpCategory: 'legendary', costValue: 15, costResource: 'PM', duration: 'scene', costTiming: 'activation', attribute: 'poder', extraDice: 1, autoCrit: true, gameplayPattern: 'temporary-package',
     temporaryPackage: { kind: 'temporary-package', statusLabel: 'Chakra de Poder', note: 'Ganho e crítico automático em Poder; alvo sofre Perda na defesa. Ao terminar, Poder cai a zero e há exaustão.' },
   }),
   base({
     catalogId: 'abrir_chakra_habilidade', name: 'Abrir Chakra — Habilidade', description: 'Abre o chakra de Habilidade até o fim da cena.',
-    actionScope: 'general',
+    actionScope: 'any',
     requirements: { anyAttributeMin: 4, skills: ['luta'] }, xpCost: 20, xpCategory: 'legendary', costValue: 15, costResource: 'PM', duration: 'scene', costTiming: 'activation', attribute: 'habilidade', extraDice: 1, autoCrit: true, gameplayPattern: 'temporary-package',
     temporaryPackage: { kind: 'temporary-package', statusLabel: 'Chakra de Habilidade', note: 'Ganho e crítico automático em Habilidade; movimentos extras custam 1PM. Ao terminar, Habilidade cai a zero e há exaustão.' },
   }),
   base({
     catalogId: 'abrir_chakra_resistencia', name: 'Abrir Chakra — Resistência', description: 'Abre o chakra de Resistência até o fim da cena.',
-    actionScope: 'defense',
+    actionScope: 'any',
     requirements: { anyAttributeMin: 4, skills: ['luta'] }, xpCost: 20, xpCategory: 'legendary', costValue: 15, costResource: 'PM', duration: 'scene', costTiming: 'activation', attribute: 'resistencia', extraDice: 1, autoCrit: true, gameplayPattern: 'temporary-package',
     temporaryPackage: { kind: 'temporary-package', statusLabel: 'Chakra de Resistência', note: 'Ganho e crítico automático em Resistência, +20PV e defesas perfeitas. Ao terminar, Resistência cai a zero.' },
   }),

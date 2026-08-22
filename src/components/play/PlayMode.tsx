@@ -6,7 +6,7 @@ import { createStrikeBonus, getActiveBonusVariant, getBonusSubtitle, getKnownStr
 import { resolveActionPlan } from '../../utils/actionResolver';
 import type { CharacterForm, CharacterKit, KitPower, RollBonus } from '../../types/character';
 import SegmentedBar from '../common/SegmentedBar';
-import { CheckIcon, ZapIcon, HourglassIcon, SquareIcon, CheckSquareIcon, CloseIcon, DiceCountIcon, HabilidadeIcon, InfoIcon, LeafIcon, MaskIcon, MenuIcon, PoderIcon, ResistenciaIcon, SkillsIcon, SparklesIcon, TransformIcon, BookIcon, CrownIcon, TriangleDownIcon, SwordsIcon, ShieldIcon } from '../common/Icons';
+import { CheckIcon, ZapIcon, HourglassIcon, SquareIcon, CheckSquareIcon, CloseIcon, DiceCountIcon, HabilidadeIcon, InfoIcon, LeafIcon, MenuIcon, PoderIcon, ResistenciaIcon, SparklesIcon, TransformIcon, CrownIcon, TriangleDownIcon, SwordsIcon, ShieldIcon, MedalIcon, TargetIcon, AlertTriangleIcon } from '../common/Icons';
 import PlayAttacksSection from './PlayAttacksSection';
 import PlayTechniquesSection from './PlayTechniquesSection';
 
@@ -35,6 +35,7 @@ type PlayModeProps = {
   activeKitActionPowers: KitPower[];
   activeKitBuffs: Set<string>;
   usedKitPowers: Record<string, number>;
+  usedArchetypeEffects?: Record<string, number>;
   activeBonuses: Set<string>;
   visibleRollBonuses: RollBonus[];
   allowedAttributes: { poder: boolean; habilidade: boolean; resistencia: boolean };
@@ -90,6 +91,7 @@ export default function PlayMode(props: PlayModeProps) {
     activeKitActionPowers,
     activeKitBuffs,
     usedKitPowers,
+    usedArchetypeEffects = {},
     activeBonuses,
     visibleRollBonuses,
     allowedAttributes,
@@ -124,6 +126,16 @@ export default function PlayMode(props: PlayModeProps) {
     return { hasLuta, hasCombatSkill };
   }, [currentForm.skills, currentForm.advantages]);
 
+  const activeKitBuffsList = useMemo(() => {
+    if (!currentKit) return [];
+    return currentKit.powers
+      .filter((p) => activeKitBuffs.has(p.id))
+      .map((p) => ({
+        power: p,
+        mod: getKitPowerModifier(p),
+      }));
+  }, [currentKit, activeKitBuffs]);
+
   const attackActions = getKnownStrikes(currentForm);
   const attributeColor = (attribute: 'poder' | 'habilidade' | 'resistencia') => attribute === 'poder' ? '#FF9E00' : attribute === 'habilidade' ? '#894EC6' : '#5EB05D';
   const techniqueActions = visibleRollBonuses.filter((bonus) => bonus.sourceCatalogId !== 'golpes');
@@ -146,9 +158,10 @@ export default function PlayMode(props: PlayModeProps) {
         currentPV,
         currentPM,
         currentPA,
+        activeKitBuffsList,
       }
     );
-  }, [currentForm, visibleRollBonuses, activeBonuses, currentPV, currentPM, currentPA, hasCombatSkill, hasLuta, manualDiceCount]);
+  }, [currentForm, visibleRollBonuses, activeBonuses, currentPV, currentPM, currentPA, hasCombatSkill, hasLuta, manualDiceCount, activeKitBuffsList]);
 
   const defensePlan = useMemo(() => {
     return resolveActionPlan(
@@ -165,9 +178,10 @@ export default function PlayMode(props: PlayModeProps) {
         currentPV,
         currentPM,
         currentPA,
+        activeKitBuffsList,
       }
     );
-  }, [currentForm, visibleRollBonuses, activeBonuses, currentPV, currentPM, currentPA, hasCombatSkill, hasLuta, manualDiceCount]);
+  }, [currentForm, visibleRollBonuses, activeBonuses, currentPV, currentPM, currentPA, hasCombatSkill, hasLuta, manualDiceCount, activeKitBuffsList]);
 
   return (
     <div style={{ gridColumn: '1 / -1', maxWidth: '600px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -423,7 +437,7 @@ export default function PlayMode(props: PlayModeProps) {
                       tone: 'technique'
                     })}
                   >
-                    <BookIcon size={13} />
+                    <MedalIcon size={13} />
                     <span>{currentKit.name}</span>
                   </button>
                 </div>
@@ -498,7 +512,7 @@ export default function PlayMode(props: PlayModeProps) {
                           tone: 'skill'
                         })}
                       >
-                        <SkillsIcon size={12} />
+                        <TargetIcon size={12} />
                         <span>{skill.name}</span>
                       </button>
                     ) : null;
@@ -529,7 +543,7 @@ export default function PlayMode(props: PlayModeProps) {
                           tone: 'disadvantage'
                         })}
                       >
-                        <MaskIcon size={12} />
+                        <AlertTriangleIcon size={12} />
                         <span>{displayName}</span>
                       </button>
                     ) : null;
@@ -633,13 +647,14 @@ export default function PlayMode(props: PlayModeProps) {
               {techniqueActions.map((bonus) => {
                 const isActive = activeBonuses.has(bonus.id);
                 const activeVariant = getActiveBonusVariant(bonus);
+                const isArchUsed = bonus.id.startsWith('arch_') && (usedArchetypeEffects[bonus.id] || 0) > 0;
                 const isImmediate = !!(activeVariant?.immediateAction || bonus.immediateAction);
                 const isPersistentAssisted = !!(activeVariant?.persistentAssisted || bonus.persistentAssisted);
                 const isTemporaryPackage = !!(activeVariant?.temporaryPackage || bonus.temporaryPackage);
                 const assistedConfig = activeVariant?.persistentAssisted || bonus.persistentAssisted;
                 const temporaryConfig = activeVariant?.temporaryPackage || bonus.temporaryPackage;
                 return (
-                                    <div key={bonus.id} className={`bonus-toggle ${(isPersistentAssisted || isTemporaryPackage || (bonus.variants && bonus.variants.length > 1)) ? 'play-action-card-detailed' : 'play-action-card-compact'} ${isActive ? 'active' : ''}`} onClick={() => toggleActiveBonus(bonus.id)} onContextMenu={(e) => { e.preventDefault(); setDetailModal({ title: bonus.alias || bonus.name, subtitle: getBonusSubtitle(bonus), body: `${bonus.name !== (bonus.alias || bonus.name) ? `Base: ${bonus.name}\n\n` : ''}${activeVariant?.note || bonus.persistentAssisted?.note || bonus.temporaryPackage?.note || 'Técnica configurada nesta forma.'}`, tone: 'technique' }); }} title={`${bonus.alias || bonus.name}: ${getBonusSubtitle(bonus)}`}>
+                  <div key={bonus.id} className={`bonus-toggle ${(isPersistentAssisted || isTemporaryPackage || (bonus.variants && bonus.variants.length > 1)) ? 'play-action-card-detailed' : 'play-action-card-compact'} ${isActive ? 'active' : ''} ${isArchUsed ? 'is-used' : ''}`} style={isArchUsed ? { opacity: 0.6 } : undefined} onClick={() => toggleActiveBonus(bonus.id)} onContextMenu={(e) => { e.preventDefault(); setDetailModal({ title: bonus.alias || bonus.name, subtitle: getBonusSubtitle(bonus), body: `${bonus.name !== (bonus.alias || bonus.name) ? `Base: ${bonus.name}\n\n` : ''}${activeVariant?.note || bonus.persistentAssisted?.note || bonus.temporaryPackage?.note || 'Técnica configurada nesta forma.'}`, tone: 'technique' }); }} title={`${bonus.alias || bonus.name}: ${getBonusSubtitle(bonus)}${isArchUsed ? ' (Já utilizado nesta cena)' : ''}`}>
                     <div className="bt-top">
                       <div className="bt-title">
                         <span className="bt-name">{bonus.alias ? bonus.alias : bonus.name}</span>
@@ -656,6 +671,7 @@ export default function PlayMode(props: PlayModeProps) {
                         })()}
                       </div>
                       <div className="bt-badges">
+                        {isArchUsed && <span className="bonus-attr-micro" style={{ background: '#ffd166', color: '#000' }}>USADO</span>}
                         {bonus.duration === 'scene' && <span className="bonus-attr-micro" style={{ background: 'transparent', color: '#33ccff', padding: 0 }} title="Dura até o fim da cena"><HourglassIcon size={14} /></span>}
                         {isImmediate && <span className="bonus-attr-micro" style={{ background: 'transparent', color: '#ffd166', padding: 0 }} title="Ação Imediata"><ZapIcon size={14} /></span>}
                         {isPersistentAssisted && <span className="bonus-attr-micro" style={{ background: bonus.assistedState?.active ? '#7bd389' : '#ff8fab', color: '#000' }}>{bonus.assistedState?.active ? (assistedConfig?.statusLabel || 'ATIVO') : 'ASSISTIDO'}</span>}

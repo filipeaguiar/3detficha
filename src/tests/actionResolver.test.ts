@@ -324,17 +324,125 @@ export function runActionResolverTests() {
     assert(Boolean(potenteEffect), 'Derived effect for Ataque Especial (Potente) is generated alongside Área');
   }
 
-  // 12. Defesa Especial Cobertura Derived Effect
+  // 13. Mais Além (Humano Archetype) Ganho in Attack and Defense
   {
-    const form = createMockForm({
+    const formWithLuta = createMockForm({
+      poder: 2,
       resistencia: 2,
-      advantages: ['defesa_especial::cobertura'],
+      skills: ['luta'],
     });
-    const derived = getDerivedAdvantageEffects(form);
-    const cobertura = derived.find((e) => e.effectKey === 'defesa_especial_cobertura');
-    assert(Boolean(cobertura), 'Derived effect for Defesa Especial (Cobertura) is generated');
-    assert(cobertura?.costValue === 1, 'Defesa Especial (Cobertura) costs 1 PM');
-    assert(cobertura?.actionScope === 'defense', 'Defesa Especial (Cobertura) is scoped to defense');
+
+    const maisAlemBonus: RollBonus = {
+      id: 'arch_humano_mais_alem',
+      name: 'Mais Além',
+      alias: '',
+      attribute: 'any',
+      bonusType: 'none',
+      value: 0,
+      duration: 'instant',
+      attrSource: 'poder',
+      critThresholdMod: 0,
+      autoCrit: false,
+      extraDice: 1,
+      costValue: 2,
+      costResource: 'PM',
+      costTiming: 'instant',
+      actionScope: 'any',
+    };
+
+    // Attack with Luta + Mais Além -> 3D (1 base + 1 Luta + 1 Mais Além)
+    const attackPlanWithLuta = resolveActionPlan(
+      {
+        actionType: 'attack',
+        targetAttribute: 'poder',
+        selectedSkill: 'luta',
+        activeBonusIds: new Set([maisAlemBonus.id]),
+      },
+      {
+        currentForm: formWithLuta,
+        rollBonuses: [maisAlemBonus],
+        currentPV: 10,
+        currentPM: 10,
+        currentPA: 1,
+      }
+    );
+    assert(attackPlanWithLuta.diceCount === 3, 'Attack with Luta + Mais Além rolls 3D (1 base + 1 Luta + 1 Ganho)');
+    assert(attackPlanWithLuta.totalCostPM === 2, 'Mais Além costs 2 PM on attack');
+
+    // Defense with Luta + Mais Além -> 3D (1 base + 1 Luta + 1 Mais Além)
+    const defensePlanWithLuta = resolveActionPlan(
+      {
+        actionType: 'defense',
+        targetAttribute: 'resistencia',
+        selectedSkill: 'luta',
+        activeBonusIds: new Set([maisAlemBonus.id]),
+      },
+      {
+        currentForm: formWithLuta,
+        rollBonuses: [maisAlemBonus],
+        currentPV: 10,
+        currentPM: 10,
+        currentPA: 1,
+      }
+    );
+    assert(defensePlanWithLuta.diceCount === 3, 'Defense with Luta + Mais Além rolls 3D (1 base + 1 Luta + 1 Ganho)');
+    assert(defensePlanWithLuta.totalCostPM === 2, 'Mais Além costs 2 PM on defense');
+
+    // Form without combat skill + Mais Além -> 2D (1 base + 1 Mais Além)
+    const formWithoutLuta = createMockForm({
+      poder: 2,
+      resistencia: 2,
+      skills: [],
+    });
+
+    const attackPlanNoSkill = resolveActionPlan(
+      {
+        actionType: 'attack',
+        targetAttribute: 'poder',
+        activeBonusIds: new Set([maisAlemBonus.id]),
+      },
+      {
+        currentForm: formWithoutLuta,
+        rollBonuses: [maisAlemBonus],
+        currentPV: 10,
+        currentPM: 10,
+        currentPA: 1,
+      }
+    );
+    assert(attackPlanNoSkill.diceCount === 2, 'Attack without skill + Mais Além rolls 2D (1 base + 1 Ganho)');
+
+    const defensePlanNoSkill = resolveActionPlan(
+      {
+        actionType: 'defense',
+        targetAttribute: 'resistencia',
+        activeBonusIds: new Set([maisAlemBonus.id]),
+      },
+      {
+        currentForm: formWithoutLuta,
+        rollBonuses: [maisAlemBonus],
+        currentPV: 10,
+        currentPM: 10,
+        currentPA: 1,
+      }
+    );
+    assert(defensePlanNoSkill.diceCount === 2, 'Defense without skill + Mais Além rolls 2D (1 base + 1 Ganho)');
+
+    // General test + Mais Além -> 2D
+    const generalPlan = resolveActionPlan(
+      {
+        actionType: 'general',
+        targetAttribute: 'habilidade',
+        activeBonusIds: new Set([maisAlemBonus.id]),
+      },
+      {
+        currentForm: formWithoutLuta,
+        rollBonuses: [maisAlemBonus],
+        currentPV: 10,
+        currentPM: 10,
+        currentPA: 1,
+      }
+    );
+    assert(generalPlan.diceCount === 2, 'General roll + Mais Além rolls 2D (1 base + 1 Ganho)');
   }
 
   console.log(`--- TEST RESULTS: ${passed} passed, ${failed} failed ---`);

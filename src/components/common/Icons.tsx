@@ -201,6 +201,32 @@ export const CheckIcon = ({ size = 14 }: { size?: number }) => (
   </svg>
 );
 
+export const MedalIcon = ({ size = 16 }: { size?: number }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15" />
+    <path d="M11 12 5.12 2.2" />
+    <path d="m13 12 5.88-9.8" />
+    <circle cx="12" cy="17" r="5" />
+    <path d="M12 18v-2h-.5" />
+  </svg>
+);
+
+export const TargetIcon = ({ size = 16 }: { size?: number }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="10" />
+    <circle cx="12" cy="12" r="6" />
+    <circle cx="12" cy="12" r="2" />
+  </svg>
+);
+
+export const AlertTriangleIcon = ({ size = 16 }: { size?: number }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+    <line x1="12" y1="9" x2="12" y2="13" />
+    <line x1="12" y1="17" x2="12.01" y2="17" />
+  </svg>
+);
+
 export const MaskIcon = ({ size = 16 }: { size?: number }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 512 512" fill="currentColor" aria-hidden="true">
     <path d="M320 96c0 17.7-14.3 32-32 32H224c-17.7 0-32-14.3-32-32s14.3-32 32-32h64c17.7 0 32 14.3 32 32zM160 256a40 40 0 1 1 -80 0 40 40 0 1 1 80 0zm272 40a40 40 0 1 0 0-80 40 40 0 1 0 0 80zM32 32C14.3 32 0 46.3 0 64V224c0 123.7 100.3 224 224 224h64c123.7 0 224-100.3 224-224V64c0-17.7-14.3-32-32-32H32zm80 96a48 48 0 1 1 0 96 48 48 0 1 1 0-96zm256 144a48 48 0 1 1 0-96 48 48 0 1 1 0 96z"/>
@@ -208,14 +234,20 @@ export const MaskIcon = ({ size = 16 }: { size?: number }) => (
 );
 
 export const SparklesIcon = ({ size = 16 }: { size?: number }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 512 512" fill="currentColor" aria-hidden="true">
-    <path d="M316.9 18.4C311.6 7.6 300.7 0 288.5 0s-23.1 7.6-28.4 18.4L214.6 112 121 157.5c-10.8 5.3-18.4 16.2-18.4 28.4s7.6 23.1 18.4 28.4L214.6 260l45.5 93.6c5.3 10.8 16.2 18.4 28.4 18.4s23.1-7.6 28.4-18.4L362.4 260l93.6-45.5c10.8-5.3 18.4-16.2 18.4-28.4s-7.6-23.1-18.4-28.4L362.4 112 316.9 18.4zM18.4 260.1C7.6 265.4 0 276.3 0 288.5s7.6 23.1 18.4 28.4L80 346.9l29.9 61.6C115.2 419.3 126.1 427 138.3 427s23.1-7.6 28.4-18.4l29.9-61.6 61.6-29.9c10.8-5.3 18.4-16.2 18.4-28.4s-7.6-23.1-18.4-28.4l-61.6-29.9-29.9-61.6C161.4 157.6 150.5 150 138.3 150s-23.1 7.6-28.4 18.4L80 230.2 18.4 260.1zM352 352l-24.6 50.7L276.7 427c-10.8 5.3-18.4 16.2-18.4 28.4s7.6 23.1 18.4 28.4l50.7 24.6L352 559.1c5.3 10.8 16.2 18.4 28.4 18.4s23.1-7.6 28.4-18.4l24.6-50.7 50.7-24.6c10.8-5.3 18.4-16.2 18.4-28.4s-7.6-23.1-18.4-28.4l-50.7-24.6L408.9 352c-5.3-10.8-16.2-18.4-28.4-18.4s-23.1 7.6-28.4 18.4z" transform="scale(0.82) translate(56 -28)"/>
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+    <path d="M5 3v4" />
+    <path d="M19 17v4" />
+    <path d="M3 5h4" />
+    <path d="M17 19h4" />
   </svg>
 );
 
 export const SkillsIcon = ({ size = 16 }: { size?: number }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 512 512" fill="currentColor" aria-hidden="true">
-    <path d="M78.6 5C87.1-3.5 100.9-3.5 109.4 5L160 55.7 206.1 9.6c8.5-8.5 22.3-8.5 30.8 0s8.5 22.3 0 30.8L190.7 86.6 336 232 441.4 126.6l-46.1-46.1c-8.5-8.5-8.5-22.3 0-30.8s22.3-8.5 30.8 0L472 95.7 502.6 65c8.5-8.5 22.3-8.5 30.8 0s8.5 22.3 0 30.8L502.3 126.9 548.4 173c8.5 8.5 8.5 22.3 0 30.8s-22.3 8.5-30.8 0L471.5 157.7 366.1 263.1 511.5 408.6l46.1-46.1c8.5-8.5 22.3-8.5 30.8 0s8.5 22.3 0 30.8L542.3 439.4 593 490.1c8.5 8.5 8.5 22.3 0 30.8s-22.3 8.5-30.8 0L511.5 470.3 465.4 516.4c-8.5 8.5-22.3 8.5-30.8 0s-8.5-22.3 0-30.8l46.1-46.1L335.3 294 229.9 399.4l46.1 46.1c8.5 8.5 8.5 22.3 0 30.8s-22.3 8.5-30.8 0L199.1 430.3 148.4 481c-8.5 8.5-22.3 8.5-30.8 0s-8.5-22.3 0-30.8l50.7-50.7L122.2 353.4c-8.5-8.5-8.5-22.3 0-30.8s22.3-8.5 30.8 0l46.1 46.1L304.5 263.3 159.1 117.9 113 164c-8.5 8.5-22.3 8.5-30.8 0s-8.5-22.3 0-30.8l46.1-46.1L77.6 36.4c-8.5-8.5-8.5-22.3 0-30.8z" transform="scale(0.72) translate(-40 70)"/>
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="10" />
+    <circle cx="12" cy="12" r="6" />
+    <circle cx="12" cy="12" r="2" />
   </svg>
 );
 

@@ -155,6 +155,10 @@ export default function App() {
       costValue: effect.costValue || 0,
       costResource: effect.costResource || 'none',
       costTiming: effect.costTiming || 'instant',
+      actionScope: (effect as any).actionScope || 'any',
+      effectKey: (effect as any).effectKey,
+      automationLevel: (effect as any).automationLevel,
+      requiredSkill: (effect as any).requiredSkill,
       variants: undefined,
       selectedVariantId: undefined,
       variantSelectionMode: undefined,
@@ -175,6 +179,10 @@ export default function App() {
       costValue: effect.costValue || 0,
       costResource: effect.costResource || 'none',
       costTiming: effect.costTiming || 'instant',
+      actionScope: (effect as any).actionScope || 'any',
+      effectKey: (effect as any).effectKey,
+      automationLevel: (effect as any).automationLevel,
+      requiredSkill: (effect as any).requiredSkill,
       variants: undefined,
       selectedVariantId: undefined,
       variantSelectionMode: undefined,
@@ -204,6 +212,7 @@ export default function App() {
     setCurrentPM(recoverableMaxPM);
     setCurrentPA(maxPA);
     setTemporaryPM(0);
+    setManualDiceCount(null);
     setActiveFormIndex(0);
   }, [activeCharacterId]);
 
@@ -576,11 +585,9 @@ export default function App() {
     const activeVariant = getActiveBonusVariant(bonus);
 
     if (id.startsWith('arch_')) {
-      if (activeBonuses.has(id)) {
-        setUsedArchetypeEffects(prev => { const next = { ...prev }; delete next[id]; return next; });
-      } else {
-        if (usedArchetypeEffects[id]) return;
-        setUsedArchetypeEffects(prev => ({ ...prev, [id]: 1 }));
+      if (!activeBonuses.has(id) && (usedArchetypeEffects[id] || 0) > 0) {
+        alert('Este poder de arquétipo já foi utilizado nesta cena (1 vez por cena).');
+        return;
       }
     }
 
@@ -768,6 +775,7 @@ export default function App() {
   };
 
   const handleResetScene = () => {
+    setManualDiceCount(null);
     setUsedKitPowers({});
     setUsedArchetypeEffects({});
     setActiveKitBuffs(new Set());
@@ -935,12 +943,44 @@ export default function App() {
         return next;
       });
 
-      // Reset prepared state only for prepared magic consumed by this action.
-      activeBonusesList.forEach(b => {
-        if (b.gameplayPattern === 'prepared-magic' && b.assistedState?.prepared) {
-          updateRollBonus(b.id, { assistedState: { ...(b.assistedState || {}), prepared: false } });
+      // Track consumed archetype effects (1/scene)
+      activeBonusesList.forEach((bonus) => {
+        if (bonus.id.startsWith('arch_') && bonus.duration === 'instant') {
+          setUsedArchetypeEffects((prev) => ({ ...prev, [bonus.id]: (prev[bonus.id] || 0) + 1 }));
         }
       });
+
+      // Batch update bonuses in currentForm to avoid stale state from multiple synchronous updateRollBonus calls
+      // 1. Reset prepared state for prepared magic consumed by this action.
+      // 2. Reset variant selection to the base variant for any active bonus used in this roll.
+      let hasChanges = false;
+      const updatedRollBonuses = (currentForm.rollBonuses || []).map(b => {
+        let bModified = b;
+        
+        // Check if this bonus is active in the current roll
+        if (activeBonuses.has(b.id)) {
+          // Reset prepared state if consumed
+          if (bModified.gameplayPattern === 'prepared-magic' && bModified.assistedState?.prepared) {
+            bModified = { ...bModified, assistedState: { ...(bModified.assistedState || {}), prepared: false } };
+            hasChanges = true;
+          }
+          
+          // Reset variant to base variant if changed
+          if (bModified.variants && bModified.variants.length > 1 && bModified.selectedVariantId && bModified.selectedVariantId !== bModified.variants[0].id) {
+            bModified = { ...bModified, selectedVariantId: bModified.variants[0].id };
+            hasChanges = true;
+          }
+        }
+        
+        return bModified;
+      });
+      
+      if (hasChanges) {
+        updateCurrentFormForActiveIndex({ rollBonuses: updatedRollBonuses });
+      }
+
+      // Unset manual dice count so subsequent rolls revert to automatic calculation
+      setManualDiceCount(null);
 
       const label = effectiveAttrName === 'poder' ? 'Poder' : effectiveAttrName === 'habilidade' ? 'Habilidade' : 'Resistência';
 
@@ -1100,6 +1140,7 @@ export default function App() {
             activeKitActionPowers={activeKitActionPowers}
             activeKitBuffs={activeKitBuffs}
             usedKitPowers={usedKitPowers}
+            usedArchetypeEffects={usedArchetypeEffects}
             activeBonuses={activeBonuses}
             visibleRollBonuses={visibleRollBonuses}
             allowedAttributes={allowedAttributes}
