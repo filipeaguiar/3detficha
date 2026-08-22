@@ -605,9 +605,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .segment-pulse {
-  --pulse-opacity: 0.6;
-  --pulse-scale: 0.94;
-  --pulse-filter: brightness(1.8) drop-shadow(0 0 3px #fff);
+  --pulse-opacity: 0.3;
+  --pulse-scale: 1;
+  --pulse-filter: brightness(1);
   z-index: 5;
   position: relative;
 }
