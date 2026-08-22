@@ -94,7 +94,7 @@ export default function ActionWorkspace({ characterName, currentForm, forms, act
         </div>
         <div className="bt-body" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
           <span className="bt-effect">{getBonusSubtitle(bonus)}</span>
-          {bonus.gameplayPattern !== 'prepared-magic' && effectiveCostResource === 'PM' && effectiveCostValue && effectiveCostValue > 0 ? <SegmentedBar current={effectiveCostValue} max={effectiveCostValue} color="#894EC6" segmentWidth={8} /> : null}
+          {bonus.gameplayPattern !== 'prepared-magic' && effectiveCostValue && effectiveCostValue > 0 && effectiveCostResource !== 'none' ? <SegmentedBar current={effectiveCostValue} max={effectiveCostValue} color={effectiveCostResource === 'PV' ? "#5EB05D" : effectiveCostResource === 'PA' ? "#FF9E00" : "#894EC6"} segmentWidth={8} /> : null}
         </div>
         {bonus.sourceCatalogId === 'setas_infaliveis_de_petrovna' && <div className="bt-footer action-workspace-inline-controls"><span>Setas a preparar:</span><button type="button" className="control-btn" onClick={() => { const current = bonus.assistedState?.configuredStock || 1; updateRollBonus(bonus.id, { assistedState: { ...(bonus.assistedState || {}), configuredStock: Math.max(1, current - 1) } }); }}>−</button><strong>{Math.min(currentForm.habilidade, bonus.assistedState?.configuredStock || 1)}</strong><button type="button" className="control-btn" onClick={() => { const current = bonus.assistedState?.configuredStock || 1; updateRollBonus(bonus.id, { assistedState: { ...(bonus.assistedState || {}), configuredStock: Math.min(Math.max(1, currentForm.habilidade), current + 1) } }); }}>+</button></div>}
         {bonus.sourceCatalogId === 'area_de_batalha' && (() => { const selected = bonus.assistedState?.packageChoices || []; const total = selected.reduce((sum, id) => sum + (areaAdvantageOptions.find((option) => option.id === id)?.pointCost || 0), 0); return <div className="bt-footer action-workspace-package"><div className={total === 2 ? 'complete' : ''}>Pacote da Área: {total}/2 pontos</div><EditorPillGroup options={areaAdvantageOptions.map((option) => { const checked = selected.includes(option.id); return { key: option.id, selected: checked, disabled: !checked && (selected.length >= 2 || total + option.pointCost > 2), label: <>{checked && <CheckIcon size={11} />}{option.name} ({option.pointCost})</>, onClick: () => updateRollBonus(bonus.id, { assistedState: { ...(bonus.assistedState || {}), packageChoices: checked ? selected.filter((id) => id !== option.id) : [...selected, option.id] } }) }; })} /></div>; })()}
@@ -147,15 +147,10 @@ export default function ActionWorkspace({ characterName, currentForm, forms, act
             <div className="combat-action-button-icon" style={{ marginTop: '-8px' }}>
               <SwordsIcon size={38} />
             </div>
-            <div className="action-corner bottom-right" style={{ display: 'flex', justifyContent: 'flex-end', paddingBottom: '2px' }}>
-              {attackPlan.totalCostPM > 0 && (
-                <SegmentedBar
-                  current={attackPlan.totalCostPM}
-                  max={attackPlan.totalCostPM}
-                  color="#ffffff"
-                  segmentWidth={8}
-                />
-              )}
+            <div className="action-corner bottom-right" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px', paddingBottom: '2px' }}>
+              {attackPlan.totalCostPV > 0 && <SegmentedBar current={attackPlan.totalCostPV} max={attackPlan.totalCostPV} color="#ffffff" segmentWidth={8} />}
+              {attackPlan.totalCostPM > 0 && <SegmentedBar current={attackPlan.totalCostPM} max={attackPlan.totalCostPM} color="#ffffff" segmentWidth={8} />}
+              {attackPlan.totalCostPA > 0 && <SegmentedBar current={attackPlan.totalCostPA} max={attackPlan.totalCostPA} color="#ffffff" segmentWidth={8} />}
             </div>
           </article>
           <article
@@ -178,15 +173,10 @@ export default function ActionWorkspace({ characterName, currentForm, forms, act
             <div className="combat-action-button-icon" style={{ marginTop: '-8px' }}>
               <ShieldIcon size={38} />
             </div>
-            <div className="action-corner bottom-right" style={{ display: 'flex', justifyContent: 'flex-end', paddingBottom: '2px' }}>
-              {defensePlan.totalCostPM > 0 && (
-                <SegmentedBar
-                  current={defensePlan.totalCostPM}
-                  max={defensePlan.totalCostPM}
-                  color="#ffffff"
-                  segmentWidth={8}
-                />
-              )}
+            <div className="action-corner bottom-right" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px', paddingBottom: '2px' }}>
+              {defensePlan.totalCostPV > 0 && <SegmentedBar current={defensePlan.totalCostPV} max={defensePlan.totalCostPV} color="#ffffff" segmentWidth={8} />}
+              {defensePlan.totalCostPM > 0 && <SegmentedBar current={defensePlan.totalCostPM} max={defensePlan.totalCostPM} color="#ffffff" segmentWidth={8} />}
+              {defensePlan.totalCostPA > 0 && <SegmentedBar current={defensePlan.totalCostPA} max={defensePlan.totalCostPA} color="#ffffff" segmentWidth={8} />}
             </div>
           </article>
           {actions.attacks.map(({ acquisitionId, strike }) => strike && <article key={`${acquisitionId}:${strike.id}`} className={`bonus-toggle action-workspace-preview-card ${strike.note.length > 70 ? 'play-action-card-detailed' : 'play-action-card-compact'}`}><div className="bonus-toggle-header"><span className="bonus-toggle-label">{strike.name}</span></div><span className="bonus-toggle-value">{strike.description}{strike.costResource !== 'none' && strike.costValue ? ` [-${strike.costValue} ${strike.costResource}]` : ''}</span><div className="bt-footer"><span>{strike.note}</span><span>Prévia no modo de jogo</span></div></article>)}

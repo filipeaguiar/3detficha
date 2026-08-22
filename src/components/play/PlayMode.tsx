@@ -350,15 +350,10 @@ export default function PlayMode(props: PlayModeProps) {
                     <SwordsIcon size={38} />
                   </div>
 
-                  <div className="action-corner bottom-right" style={{ display: 'flex', justifyContent: 'flex-end', paddingBottom: '2px' }}>
-                    {attackPlan.totalCostPM > 0 && (
-                      <SegmentedBar
-                        current={attackPlan.totalCostPM}
-                        max={attackPlan.totalCostPM}
-                        color="#ffffff"
-                        segmentWidth={8}
-                      />
-                    )}
+                  <div className="action-corner bottom-right" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px', paddingBottom: '2px' }}>
+                    {attackPlan.totalCostPV > 0 && <SegmentedBar current={attackPlan.totalCostPV} max={attackPlan.totalCostPV} color="#ffffff" segmentWidth={8} />}
+                    {attackPlan.totalCostPM > 0 && <SegmentedBar current={attackPlan.totalCostPM} max={attackPlan.totalCostPM} color="#ffffff" segmentWidth={8} />}
+                    {attackPlan.totalCostPA > 0 && <SegmentedBar current={attackPlan.totalCostPA} max={attackPlan.totalCostPA} color="#ffffff" segmentWidth={8} />}
                   </div>
                 </button>
 
@@ -388,15 +383,10 @@ export default function PlayMode(props: PlayModeProps) {
                     <ShieldIcon size={38} />
                   </div>
 
-                  <div className="action-corner bottom-right" style={{ display: 'flex', justifyContent: 'flex-end', paddingBottom: '2px' }}>
-                    {defensePlan.totalCostPM > 0 && (
-                      <SegmentedBar
-                        current={defensePlan.totalCostPM}
-                        max={defensePlan.totalCostPM}
-                        color="#ffffff"
-                        segmentWidth={8}
-                      />
-                    )}
+                  <div className="action-corner bottom-right" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px', paddingBottom: '2px' }}>
+                    {defensePlan.totalCostPV > 0 && <SegmentedBar current={defensePlan.totalCostPV} max={defensePlan.totalCostPV} color="#ffffff" segmentWidth={8} />}
+                    {defensePlan.totalCostPM > 0 && <SegmentedBar current={defensePlan.totalCostPM} max={defensePlan.totalCostPM} color="#ffffff" segmentWidth={8} />}
+                    {defensePlan.totalCostPA > 0 && <SegmentedBar current={defensePlan.totalCostPA} max={defensePlan.totalCostPA} color="#ffffff" segmentWidth={8} />}
                   </div>
                 </button>
               </div>
@@ -696,8 +686,9 @@ export default function PlayMode(props: PlayModeProps) {
                           {(() => {
                             const effectiveCostValue = typeof activeVariant?.costValue === 'number' ? activeVariant.costValue : bonus.costValue;
                             const effectiveCostResource = activeVariant?.costResource || bonus.costResource;
-                            if (bonus.gameplayPattern !== 'prepared-magic' && effectiveCostResource === 'PM' && effectiveCostValue && effectiveCostValue > 0) {
-                              return <SegmentedBar current={effectiveCostValue} max={effectiveCostValue} color={isActive ? "#ffffff" : "#894EC6"} segmentWidth={8} />;
+                            if (bonus.gameplayPattern !== 'prepared-magic' && effectiveCostValue && effectiveCostValue > 0 && effectiveCostResource !== 'none') {
+                              const barColor = effectiveCostResource === 'PV' ? "#5EB05D" : effectiveCostResource === 'PA' ? "#FF9E00" : "#894EC6";
+                              return <SegmentedBar current={effectiveCostValue} max={effectiveCostValue} color={isActive ? "#ffffff" : barColor} segmentWidth={8} />;
                             }
                             return null;
                           })()}
